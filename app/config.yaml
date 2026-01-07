@@ -1,0 +1,29 @@
+capital:
+  manual_capital_limit: 10000
+  max_positions: 5
+  fee_usd: 1.0
+
+strategy:
+  dip_mode: DAILY         # DAILY / HOURLY
+  buy_drop: 0.02
+  sell_gain: 0.03
+
+  use_stop_loss: false
+  stop_loss: 0.15
+
+  rsi_limit: 30
+  rsi_period: 14
+
+  use_sma_filter: false
+  sma_period: 200
+
+runtime:
+  timezone: US/Eastern
+  sp100_cache_file: sp100_tickers_cache.txt
+  sp100_cache_max_age_hours: 24
+
+report:
+  show_candidates_rsi_below: 60
+  candidates_limit: 15
+  trades_table_limit: 10
+

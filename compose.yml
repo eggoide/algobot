@@ -1,0 +1,63 @@
+services:
+  ib-gateway:
+    container_name: ib-gateway
+    restart: always
+    image: ghcr.io/gnzsnz/ib-gateway:latest
+    env_file:
+      - .env
+    environment:
+      TRADING_MODE: ${TRADING_MODE:-paper}
+
+      relogin_after_twofa_timeout: "yes"
+      existing_session_detected_action: "primary"
+
+      TIME_ZONE: America/New_York
+      TZ: America/New_York
+
+      READ_ONLY_API: "no"
+      TWS_ACCEPT_INCOMING: "true"
+    volumes:
+      - ibgateway_jts:/home/ibgateway/Jts
+    ports:
+      - "127.0.0.1:4002:4004"
+      - "127.0.0.1:4001:4002"
+      - "5900:5900"
+
+  bot:
+    container_name: algobot
+    build:
+      context: .
+      dockerfile: docker/bot/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    environment:
+      IB_HOST: ib-gateway
+      IB_PORT: "4002"
+      CLIENT_ID: "2"
+
+      DB_PATH: /data/algobot.db
+      STATE_FILE: /data/bot_state.json
+      REPORT_FILE: /reports/index.html
+      CONFIG_FILE: /app/config.yaml
+    volumes:
+      - ./app:/app
+      - ./volumes/data:/data
+      - ./volumes/reports:/reports
+    depends_on:
+      - ib-gateway
+
+  dashboard:
+    image: nginx:alpine
+    container_name: algobot-dashboard
+    restart: always
+    volumes:
+      - ./volumes/reports:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - bot
+
+
+volumes:
+  ibgateway_jts:

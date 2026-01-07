@@ -1,0 +1,10 @@
+pandas
+yfinance
+requests
+numpy
+pytz
+ib_insync
+lxml
+html5lib
+PyYAML
+

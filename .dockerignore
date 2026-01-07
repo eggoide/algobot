@@ -1,0 +1,7 @@
+# ignore everything by default (fast builds)
+*
+
+# allow these paths into build context
+!app/**
+!docker/bot/Dockerfile
+

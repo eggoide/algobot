@@ -1,0 +1,18 @@
+# secrets
+.env
+
+# runtime data
+volumes/data/*
+volumes/ib_settings/*
+volumes/reports/index.html
+
+# python
+__pycache__/
+*.pyc
+
+# sqlite
+*.db
+
+# editor
+.vscode/
+.idea/
