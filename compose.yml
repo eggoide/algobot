@@ -19,8 +19,8 @@ services:
     volumes:
       - ibgateway_jts:/home/ibgateway/Jts
     ports:
-      - "127.0.0.1:4002:4004"
-      - "127.0.0.1:4001:4002"
+      - "4001:4001" # Live
+      - "4002:4002" # Paper
       - "5900:5900"
 
   bot:
@@ -57,7 +57,6 @@ services:
       - "8080:80"
     depends_on:
       - bot
-
 
 volumes:
   ibgateway_jts:

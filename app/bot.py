@@ -564,6 +564,9 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
                 <div style="margin-top: 10px; font-size: 0.9rem; color: #8b949e;">
                     Hotovost: <span style="color:#fff">${cash:,.0f}</span>
                 </div>
+                <div style="margin-top: 10px; font-size: 0.9rem; color: #8b949e;">
+                    K obchodování: <span style="color:#fff">${MANUAL_CAPITAL_LIMIT}</span>
+                </div>
             </div>
 
             <div class="card">
