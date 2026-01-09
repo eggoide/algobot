@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from collections import deque
 from io import StringIO
 from typing import Any, Dict, List, Tuple, Optional
 
@@ -45,6 +46,11 @@ REPORT_FILE = os.getenv("REPORT_FILE", "/reports/index.html")
 TG_TOKEN = os.getenv("TG_TOKEN", "")
 TG_CHAT_ID = os.getenv("TG_CHAT_ID", "")
 
+# --- NEW: Live status + live log for HTML dashboard (no backend needed)
+LOG_FILE = os.getenv("LOG_FILE", "/data/bot.log")                # persistent log in data volume
+STATUS_FILE = os.getenv("STATUS_FILE", "/reports/status.json")   # for dashboard
+LOG_TAIL_FILE = os.getenv("LOG_TAIL_FILE", "/reports/log_tail.txt")
+
 # =========================================================
 # PARAMS (from config.yaml)
 # =========================================================
@@ -74,19 +80,69 @@ CANDIDATES_LIMIT = int(REPORT_CFG.get("candidates_limit", 15))
 TRADES_TABLE_LIMIT = int(REPORT_CFG.get("trades_table_limit", 10))
 
 # Dashboard refresh (UX)
-DASH_REFRESH_OPEN_SEC = int(REPORT_CFG.get("dashboard_refresh_open_sec", 60))      # auto-refresh HTML během trhu
-DASH_REFRESH_CLOSED_SEC = int(REPORT_CFG.get("dashboard_refresh_closed_sec", 600)) # refresh mimo trh (10 min)
+DASH_REFRESH_OPEN_SEC = int(REPORT_CFG.get("dashboard_refresh_open_sec", 60))
+DASH_REFRESH_CLOSED_SEC = int(REPORT_CFG.get("dashboard_refresh_closed_sec", 600))
 DASH_REFRESH_ON_START = bool(REPORT_CFG.get("dashboard_refresh_on_start", True))
+
+# --- NEW: live status + live log refresh knobs
+LOG_TAIL_LINES = int(REPORT_CFG.get("log_tail_lines", 200))
+STATUS_POLL_SEC = int(REPORT_CFG.get("status_poll_sec", 5))
+LOG_POLL_SEC = int(REPORT_CFG.get("log_poll_sec", 5))
 
 LAST_CANDIDATES_REPORT: List[Dict[str, Any]] = []
 SMA_CACHE: Dict[str, Tuple[datetime.datetime, bool]] = {}
 
 # =========================================================
-# LOGGING
+# LOGGING (stdout + file + tail for dashboard)
 # =========================================================
+_log_tail = deque(maxlen=LOG_TAIL_LINES)
+_last_error: Optional[str] = None
+
+def _ensure_parent_dir(path: str) -> None:
+    try:
+        d = os.path.dirname(path)
+        if d:
+            os.makedirs(d, exist_ok=True)
+    except Exception:
+        pass
+
+def _load_existing_tail() -> None:
+    try:
+        if os.path.exists(LOG_TAIL_FILE):
+            with open(LOG_TAIL_FILE, "r", encoding="utf-8") as f:
+                lines = f.read().splitlines()[-LOG_TAIL_LINES:]
+                for ln in lines:
+                    _log_tail.append(ln)
+    except Exception:
+        pass
+
+def _write_log_files(line: str) -> None:
+    # persistent full log
+    try:
+        _ensure_parent_dir(LOG_FILE)
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
+    # tail log for dashboard
+    try:
+        _ensure_parent_dir(LOG_TAIL_FILE)
+        _log_tail.append(line)
+        with open(LOG_TAIL_FILE, "w", encoding="utf-8") as f:
+            f.write("\n".join(_log_tail) + "\n")
+    except Exception:
+        pass
+
 def log(msg: str, level: str = "INFO") -> None:
+    global _last_error
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{ts} [{level}] {msg}", flush=True)
+    line = f"{ts} [{level}] {msg}"
+    print(line, flush=True)
+    _write_log_files(line)
+
+    if level.upper() in ("ERROR", "CRITICAL"):
+        _last_error = msg
 
 # =========================================================
 # TELEGRAM
@@ -253,6 +309,44 @@ def save_state(state: dict) -> None:
             json.dump(state, f)
     except Exception as e:
         log(f"STATE save error: {e}", "ERROR")
+
+# =========================================================
+# LIVE STATUS FILE (for dashboard)
+# =========================================================
+def write_status(
+    *,
+    market_open: bool,
+    ib_connected: bool,
+    ny_time: datetime.datetime,
+    secs_to_open: Optional[int],
+    next_sell: Optional[datetime.datetime],
+    next_buy: Optional[datetime.datetime],
+    equity: Optional[float],
+    cash: Optional[float],
+    positions_count: Optional[int],
+    last_action: Optional[str] = None,
+) -> None:
+    payload = {
+        "ts_local": datetime.datetime.now().isoformat(timespec="seconds"),
+        "ts_ny": ny_time.isoformat(timespec="seconds"),
+        "market_open": market_open,
+        "ib_connected": ib_connected,
+        "secs_to_open": secs_to_open,
+        "next_sell_ny": next_sell.isoformat(timespec="seconds") if next_sell else None,
+        "next_buy_ny": next_buy.isoformat(timespec="seconds") if next_buy else None,
+        "equity": equity,
+        "cash": cash,
+        "positions_count": positions_count,
+        "last_action": last_action,
+        "last_error": _last_error,
+        "version": "2026-01-09",
+    }
+    try:
+        _ensure_parent_dir(STATUS_FILE)
+        with open(STATUS_FILE, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
 
 # =========================================================
 # SP100 (Wikipedia + cache)
@@ -544,6 +638,7 @@ def generate_html_report(
         <meta http-equiv="refresh" content="{int(max(10, auto_refresh_sec))}">
         <title>AlgoBot Dashboard</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="icon" type="image/png" sizes="32x32" href="/candlestick-chart.png">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
         <style>
             :root {{
@@ -578,6 +673,21 @@ def generate_html_report(
             .subtle {{ color:#8b949e; font-size: 12px; }}
             .kv {{ display:flex; gap:14px; flex-wrap: wrap; justify-content: flex-end; }}
             .kv > div {{ text-align:right; }}
+
+            /* live log */
+            pre.live-log {{
+                white-space: pre-wrap;
+                margin: 0;
+                max-height: 280px;
+                overflow: auto;
+                font-size: 12px;
+                line-height: 1.35;
+                color: #c9d1d9;
+                background: rgba(0,0,0,0.12);
+                border: 1px solid rgba(48,54,61,0.8);
+                border-radius: 10px;
+                padding: 12px;
+            }}
         </style>
     </head>
     <body>
@@ -617,6 +727,18 @@ def generate_html_report(
             </div>
         </div>
 
+        <!-- NEW: LIVE STATUS + LIVE LOG -->
+        <div class="grid">
+            <div class="card">
+                <h2>Live Status</h2>
+                <div id="statusBox" class="subtle">Načítám status…</div>
+            </div>
+            <div class="card">
+                <h2>Live Log (tail)</h2>
+                <pre id="logBox" class="live-log"></pre>
+            </div>
+        </div>
+
         <div class="grid">
             <div class="card">
                 <h2>Celková Equity</h2>
@@ -628,7 +750,7 @@ def generate_html_report(
                 </div>
                 <div style="margin-top: 10px; font-size: 0.9rem; color: #8b949e;">
                     K obchodování: <span style="color:#fff">${MANUAL_CAPITAL_LIMIT}</span>
-                </div>                
+                </div>
             </div>
 
             <div class="card">
@@ -693,6 +815,7 @@ def generate_html_report(
         <div class="footer">AlgoBot 2026</div>
 
         <script>
+            // Chart
             const ctx = document.getElementById('pnlChart').getContext('2d');
             new Chart(ctx, {{
                 type: 'line',
@@ -718,6 +841,70 @@ def generate_html_report(
                     }}
                 }}
             }});
+
+            // Live status + log (no backend; just fetch files served by nginx)
+            const STATUS_POLL_SEC = {int(max(2, STATUS_POLL_SEC))};
+            const LOG_POLL_SEC = {int(max(2, LOG_POLL_SEC))};
+
+            function fmtHMS(sec) {{
+                if (sec === null || sec === undefined) return "-";
+                sec = Math.max(0, parseInt(sec, 10));
+                const h = String(Math.floor(sec / 3600)).padStart(2,'0');
+                const m = String(Math.floor((sec % 3600) / 60)).padStart(2,'0');
+                const s = String(sec % 60).padStart(2,'0');
+                return `${{h}}:${{m}}:${{s}}`;
+            }}
+
+            async function refreshStatus() {{
+                try {{
+                    const r = await fetch('status.json', {{ cache: 'no-store' }});
+                    if (!r.ok) throw new Error('status fetch failed');
+                    const st = await r.json();
+
+                    const market = st.market_open ? 'OPEN' : 'CLOSED';
+                    const ib = st.ib_connected ? 'CONNECTED' : 'DISCONNECTED';
+                    const toOpen = st.market_open ? '00:00:00' : fmtHMS(st.secs_to_open);
+
+                    const html = `
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <span class="pill ${{st.market_open ? 'ok' : 'warn'}}">MARKET ${{market}}</span>
+                            <span class="pill ${{st.ib_connected ? 'ok' : 'bad'}}">IB ${{ib}}</span>
+                        </div>
+                        <div>NY time: <span style="color:#fff">${{st.ts_ny || '-'}}</span></div>
+                        <div>Do open: <span style="color:#fff">${{toOpen}}</span></div>
+                        <div>Next SELL: <span style="color:#fff">${{st.next_sell_ny || '-'}}</span></div>
+                        <div>Next BUY: <span style="color:#fff">${{st.next_buy_ny || '-'}}</span></div>
+                        <div>Equity: <span style="color:#fff">${{st.equity ?? '-'}}</span> | Cash: <span style="color:#fff">${{st.cash ?? '-'}}</span></div>
+                        <div>Pozice: <span style="color:#fff">${{st.positions_count ?? '-'}}</span></div>
+                        <div>Last action: <span style="color:#fff">${{st.last_action || '-'}}</span></div>
+                        <div>Last error: <span style="color:#fff">${{st.last_error || '-'}}</span></div>
+                        <div class="subtle" style="margin-top:8px;">Updated: ${{st.ts_local || '-'}}</div>
+                    `;
+                    document.getElementById('statusBox').innerHTML = html;
+                }} catch (e) {{
+                    document.getElementById('statusBox').textContent = 'Status nedostupný';
+                }}
+            }}
+
+            async function refreshLog() {{
+                try {{
+                    const r = await fetch('log_tail.txt', {{ cache: 'no-store' }});
+                    if (!r.ok) throw new Error('log fetch failed');
+                    const txt = await r.text();
+                    const box = document.getElementById('logBox');
+
+                    const atBottom = (box.scrollTop + box.clientHeight + 20) >= box.scrollHeight;
+                    box.textContent = txt;
+                    if (atBottom) box.scrollTop = box.scrollHeight;
+                }} catch (e) {{
+                    // keep previous
+                }}
+            }}
+
+            refreshStatus();
+            refreshLog();
+            setInterval(refreshStatus, STATUS_POLL_SEC * 1000);
+            setInterval(refreshLog, LOG_POLL_SEC * 1000);
         </script>
     </body>
     </html>
@@ -732,21 +919,42 @@ def generate_html_report(
 # =========================================================
 # DASHBOARD REFRESH (works even when market closed)
 # =========================================================
-def refresh_dashboard(conn, ib: IB) -> None:
+def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
     """
     Vygeneruje HTML report kdykoliv (i mimo trh).
     - pokud IB není připojeno, zkusí se připojit
     - načte cash/equity + pozice
     - doplní ceny (yfinance/IB snapshot fallback)
+    - zapíše status.json + log_tail.txt (to řeší log())
     """
     now_ny = get_ny_time()
     market_open = is_market_open()
 
+    # next run times (always)
+    next_sell = next_sell_run_time(now_ny)
+    next_buy = next_buy_run_time(now_ny)
+    secs_to_open = 0 if market_open else seconds_until_market_open()
+
+    # Try connect if needed (non-fatal outside market)
     if not ib.isConnected():
-        # mimo trh to nechceme brát jako "fatal"; jen zkusíme connect
-        ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
-        # 3 = delayed (dobré pro paper / bez real-time subs)
-        ib.reqMarketDataType(3)
+        try:
+            ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
+            ib.reqMarketDataType(3)  # delayed
+        except Exception as e:
+            # still write status even without IB
+            write_status(
+                market_open=market_open,
+                ib_connected=False,
+                ny_time=now_ny,
+                secs_to_open=secs_to_open,
+                next_sell=next_sell,
+                next_buy=next_buy,
+                equity=None,
+                cash=None,
+                positions_count=None,
+                last_action=last_action,
+            )
+            raise e
 
     account_cash, portfolio_equity = read_account_summary(ib)
 
@@ -764,9 +972,19 @@ def refresh_dashboard(conn, ib: IB) -> None:
             'pnl_pct': pp
         })
 
-    next_sell = next_sell_run_time(now_ny)
-    next_buy = next_buy_run_time(now_ny)
-    secs_to_open = 0 if market_open else seconds_until_market_open()
+    # Write status.json for live UI
+    write_status(
+        market_open=market_open,
+        ib_connected=ib.isConnected(),
+        ny_time=now_ny,
+        secs_to_open=secs_to_open,
+        next_sell=next_sell,
+        next_buy=next_buy,
+        equity=portfolio_equity,
+        cash=account_cash,
+        positions_count=len(portfolio_data_latest),
+        last_action=last_action,
+    )
 
     generate_html_report(
         conn,
@@ -779,7 +997,7 @@ def refresh_dashboard(conn, ib: IB) -> None:
         next_sell=next_sell,
         next_buy=next_buy,
         secs_to_open=secs_to_open,
-        auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),  # auto-refresh stránky necháme konzistentně
+        auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),
     )
 
 # =========================================================
@@ -989,6 +1207,8 @@ def main_loop():
 
     conn = db_connect(DB_PATH)
 
+    _load_existing_tail()
+
     log("STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)")
     send_telegram_msg("AlgoBot start")
 
@@ -996,10 +1216,29 @@ def main_loop():
     alert_sent = False
     did_startup_dump = False
 
+    # Always write initial status early (even before any IB connect)
+    try:
+        now_ny = get_ny_time()
+        market_open = is_market_open()
+        write_status(
+            market_open=market_open,
+            ib_connected=False,
+            ny_time=now_ny,
+            secs_to_open=(0 if market_open else seconds_until_market_open()),
+            next_sell=next_sell_run_time(now_ny),
+            next_buy=next_buy_run_time(now_ny),
+            equity=None,
+            cash=None,
+            positions_count=None,
+            last_action="START",
+        )
+    except Exception:
+        pass
+
     # 1) Dashboard hned po startu (i mimo trh)
     if DASH_REFRESH_ON_START:
         try:
-            refresh_dashboard(conn, ib)
+            refresh_dashboard(conn, ib, last_action="STARTUP_REFRESH")
             log("Dashboard inicializován hned po startu.")
         except Exception as e:
             log(f"Dashboard init error: {e}", "ERROR")
@@ -1032,6 +1271,25 @@ def main_loop():
                         if not alert_sent:
                             send_telegram_msg(f"CRITICAL: Chyba spojení s IB Gateway - {e}")
                             alert_sent = True
+
+                        # status update (disconnected)
+                        try:
+                            now_ny2 = get_ny_time()
+                            write_status(
+                                market_open=True,
+                                ib_connected=False,
+                                ny_time=now_ny2,
+                                secs_to_open=0,
+                                next_sell=next_sell_run_time(now_ny2),
+                                next_buy=next_buy_run_time(now_ny2),
+                                equity=None,
+                                cash=None,
+                                positions_count=None,
+                                last_action="IB_CONNECT_FAILED",
+                            )
+                        except Exception:
+                            pass
+
                         countdown_sleep(60, "Retry za:")
                         continue
 
@@ -1074,9 +1332,24 @@ def main_loop():
                                     'pnl_pct': pp
                                 })
 
-                        # report po SELL cyklu
-                        next_sell = next_sell_run_time(get_ny_time())
-                        next_buy = next_buy_run_time(get_ny_time())
+                        # report + status after SELL
+                        now_ny2 = get_ny_time()
+                        next_sell = next_sell_run_time(now_ny2)
+                        next_buy = next_buy_run_time(now_ny2)
+
+                        write_status(
+                            market_open=True,
+                            ib_connected=ib.isConnected(),
+                            ny_time=now_ny2,
+                            secs_to_open=0,
+                            next_sell=next_sell,
+                            next_buy=next_buy,
+                            equity=portfolio_equity,
+                            cash=account_cash,
+                            positions_count=len(portfolio_data_latest),
+                            last_action=f"SELL_CYCLE {sell_id}",
+                        )
+
                         generate_html_report(
                             conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash,
                             market_open=True, ib_connected=ib.isConnected(),
@@ -1114,9 +1387,24 @@ def main_loop():
                                 'pnl_pct': pp
                             })
 
-                        # report po BUY cyklu
-                        next_sell = next_sell_run_time(get_ny_time())
-                        next_buy = next_buy_run_time(get_ny_time())
+                        # report + status after BUY
+                        now_ny2 = get_ny_time()
+                        next_sell = next_sell_run_time(now_ny2)
+                        next_buy = next_buy_run_time(now_ny2)
+
+                        write_status(
+                            market_open=True,
+                            ib_connected=ib.isConnected(),
+                            ny_time=now_ny2,
+                            secs_to_open=0,
+                            next_sell=next_sell,
+                            next_buy=next_buy,
+                            equity=portfolio_equity,
+                            cash=account_cash,
+                            positions_count=len(portfolio_data_latest),
+                            last_action=f"BUY_CYCLE {buy_id}",
+                        )
+
                         generate_html_report(
                             conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash,
                             market_open=True, ib_connected=ib.isConnected(),
@@ -1124,9 +1412,9 @@ def main_loop():
                             auto_refresh_sec=DASH_REFRESH_OPEN_SEC
                         )
 
-                # průběžně: i když zrovna nebyl BUY/SELL, refreshni report občas
+                # průběžně: refresh dashboard i bez BUY/SELL
                 try:
-                    refresh_dashboard(conn, ib)
+                    refresh_dashboard(conn, ib, last_action="PERIODIC_REFRESH_OPEN")
                 except Exception as e:
                     log(f"Dashboard refresh error (open): {e}", "WARNING")
 
@@ -1142,14 +1430,12 @@ def main_loop():
             else:
                 did_startup_dump = False
 
-                # 2) Trh zavřený: refresh dashboard po "chunkech" (např. 10 min),
-                # aby stránka žila a ty viděl pozice kdykoliv.
                 total_wait = seconds_until_market_open()
                 chunk = max(60, int(DASH_REFRESH_CLOSED_SEC))
 
                 while total_wait > 0:
                     try:
-                        refresh_dashboard(conn, ib)
+                        refresh_dashboard(conn, ib, last_action="PERIODIC_REFRESH_CLOSED")
                         log("Dashboard refresh (trh zavřený).")
                     except Exception as e:
                         log(f"Dashboard refresh error (market closed): {e}", "ERROR")
@@ -1175,6 +1461,24 @@ def main_loop():
             break
         except Exception as e:
             log(f"CRASH: {e}", "ERROR")
+            try:
+                now_ny2 = get_ny_time()
+                market_open = is_market_open()
+                write_status(
+                    market_open=market_open,
+                    ib_connected=ib.isConnected() if 'ib' in locals() else False,
+                    ny_time=now_ny2,
+                    secs_to_open=(0 if market_open else seconds_until_market_open()),
+                    next_sell=next_sell_run_time(now_ny2),
+                    next_buy=next_buy_run_time(now_ny2),
+                    equity=None,
+                    cash=None,
+                    positions_count=None,
+                    last_action="CRASH",
+                )
+            except Exception:
+                pass
+
             countdown_sleep(60, "Restart za:")
 
 if __name__ == "__main__":
