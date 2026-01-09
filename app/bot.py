@@ -688,12 +688,50 @@ def generate_html_report(
                 border-radius: 10px;
                 padding: 12px;
             }}
+
+
+            /* ===== Custom scrollbar for log ===== */
+            #logBox {{
+                scrollbar-width: thin;
+                scrollbar-color: #30363d transparent;
+            }}
+
+            /* Chrome / Edge / Safari */
+            #logBox::-webkit-scrollbar {{
+                width: 8px;
+            }}
+
+            #logBox::-webkit-scrollbar-track {{
+                background: transparent;
+            }}
+
+            #logBox::-webkit-scrollbar-thumb {{
+                background-color: #30363d;
+                border-radius: 8px;
+                border: 2px solid transparent;
+                background-clip: content-box;
+            }}
+
+            #logBox::-webkit-scrollbar-thumb:hover {{
+                background-color: #58a6ff;
+            }}
+
+
         </style>
     </head>
     <body>
         <div class="header">
             <div>
-                <h1>AlgoBot <span style="font-weight:300; color:#8b949e;">Dashboard</span></h1>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="/candlestick-chart.png" alt="AlgoBot" style="
+                        width:28px;
+                        height:28px;
+                        filter: drop-shadow(0 0 6px rgba(88,166,255,0.35));
+                    ">
+                    <h1 style="margin:0;">
+                        AlgoBot <span style="font-weight:300; color:#8b949e;">Dashboard</span>
+                    </h1>
+                </div>
                 <div class="subtle" style="margin-top: 6px;">
                     Mode: <span style="color:#fff">{DIP_MODE}</span>
                     | Buy -{BUY_DROP*100:.0f}% / Sell +{SELL_GAIN*100:.0f}%
@@ -734,8 +772,18 @@ def generate_html_report(
                 <div id="statusBox" class="subtle">Načítám status…</div>
             </div>
             <div class="card">
-                <h2>Live Log (tail)</h2>
-                <pre id="logBox" class="live-log"></pre>
+                <h2>Live Log <span class="subtle">(tail)</span></h2>
+                <pre id="logBox" style="
+                white-space:pre-wrap;
+                margin:0;
+                max-height:260px;
+                overflow:auto;
+                font-size:12px;
+                line-height:1.35;
+                background: rgba(0,0,0,0.25);
+                border-radius: 8px;
+                padding: 12px;
+            "></pre>
             </div>
         </div>
 
