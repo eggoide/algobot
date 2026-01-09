@@ -4,7 +4,7 @@ import os
 import sys
 import time
 from io import StringIO
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -73,6 +73,11 @@ SHOW_CANDIDATES_RSI_BELOW = float(REPORT_CFG.get("show_candidates_rsi_below", 60
 CANDIDATES_LIMIT = int(REPORT_CFG.get("candidates_limit", 15))
 TRADES_TABLE_LIMIT = int(REPORT_CFG.get("trades_table_limit", 10))
 
+# Dashboard refresh (UX)
+DASH_REFRESH_OPEN_SEC = int(REPORT_CFG.get("dashboard_refresh_open_sec", 60))      # auto-refresh HTML během trhu
+DASH_REFRESH_CLOSED_SEC = int(REPORT_CFG.get("dashboard_refresh_closed_sec", 600)) # refresh mimo trh (10 min)
+DASH_REFRESH_ON_START = bool(REPORT_CFG.get("dashboard_refresh_on_start", True))
+
 LAST_CANDIDATES_REPORT: List[Dict[str, Any]] = []
 SMA_CACHE: Dict[str, Tuple[datetime.datetime, bool]] = {}
 
@@ -128,6 +133,13 @@ def seconds_until(dt_target: datetime.datetime) -> int:
     now = get_ny_time()
     return max(1, int((dt_target - now).total_seconds()))
 
+def fmt_hms(seconds: int) -> str:
+    seconds = int(max(0, seconds))
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = seconds % 60
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
 def countdown_sleep(seconds: int, prefix: str) -> None:
     seconds = int(max(0, seconds))
     if sys.stdout.isatty():
@@ -142,10 +154,7 @@ def countdown_sleep(seconds: int, prefix: str) -> None:
         print()
         return
 
-    h = seconds // 3600
-    m = (seconds % 3600) // 60
-    s = seconds % 60
-    log(f"{prefix} {h:02d}:{m:02d}:{s:02d}")
+    log(f"{prefix} {fmt_hms(seconds)}")
     time.sleep(seconds)
 
 # =========================================================
@@ -431,7 +440,20 @@ def log_trade(conn, action, symbol, price, qty, pnl=0.0, note=""):
 # =========================================================
 # REPORT
 # =========================================================
-def generate_html_report(conn, equity, portfolio, candidates, cash):
+def generate_html_report(
+    conn,
+    equity,
+    portfolio,
+    candidates,
+    cash,
+    *,
+    market_open: bool,
+    ib_connected: bool,
+    next_sell: Optional[datetime.datetime] = None,
+    next_buy: Optional[datetime.datetime] = None,
+    secs_to_open: Optional[int] = None,
+    auto_refresh_sec: int = 60,
+):
     history_rows = ""
     try:
         hist = last_trades(conn, TRADES_TABLE_LIMIT)
@@ -506,12 +528,20 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
 
     sl_text = f"SL {STOP_LOSS*100:.0f}%" if USE_STOP_LOSS else "NO SL"
 
+    market_badge = '<span class="pill ok">MARKET OPEN</span>' if market_open else '<span class="pill warn">MARKET CLOSED</span>'
+    ib_badge = '<span class="pill ok">IB CONNECTED</span>' if ib_connected else '<span class="pill bad">IB DISCONNECTED</span>'
+
+    ns = next_sell.strftime("%H:%M:%S") if next_sell else "-"
+    nb = next_buy.strftime("%H:%M:%S") if next_buy else "-"
+    to_open = fmt_hms(secs_to_open) if (secs_to_open is not None) else "-"
+
     html = f"""
     <!DOCTYPE html>
     <html lang="cs">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="refresh" content="{int(max(10, auto_refresh_sec))}">
         <title>AlgoBot Dashboard</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -521,11 +551,13 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
                 --text: #c9d1d9; --accent: #58a6ff;
             }}
             body {{ font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; font-size: 14px; }}
-            .header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }}
+            .header {{ position: sticky; top: 0; background: rgba(15,17,22,0.92); backdrop-filter: blur(6px);
+                      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+                      border-bottom: 1px solid var(--border); padding: 15px 0; z-index: 10; }}
             h1 {{ margin: 0; font-weight: 600; color: var(--accent); font-size: 1.5rem; }}
             h2 {{ font-size: 1rem; margin-bottom: 15px; color: #8b949e; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }}
             .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }}
-            .card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }}
+            .card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }}
             .stat-box {{ display: flex; justify-content: space-between; align-items: baseline; }}
             .stat-val {{ font-size: 2rem; font-weight: 600; color: #fff; }}
             table {{ width: 100%; border-collapse: collapse; }}
@@ -539,19 +571,49 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
             .loss {{ color: #f85149; font-weight: 600; }}
             .neutral {{ color: #c9d1d9; }}
             .footer {{ text-align: center; margin-top: 40px; color: #484f58; font-size: 0.8rem; }}
+            .pill {{ display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); }}
+            .pill.ok {{ color:#3fb950; background: rgba(35,134,54,0.12); border-color: rgba(35,134,54,0.35); }}
+            .pill.warn {{ color:#d29922; background: rgba(210,153,34,0.12); border-color: rgba(210,153,34,0.35); }}
+            .pill.bad {{ color:#f85149; background: rgba(248,81,73,0.12); border-color: rgba(248,81,73,0.35); }}
+            .subtle {{ color:#8b949e; font-size: 12px; }}
+            .kv {{ display:flex; gap:14px; flex-wrap: wrap; justify-content: flex-end; }}
+            .kv > div {{ text-align:right; }}
         </style>
     </head>
     <body>
         <div class="header">
             <div>
                 <h1>AlgoBot <span style="font-weight:300; color:#8b949e;">Dashboard</span></h1>
-                <div style="color: #8b949e; font-size: 0.85rem; margin-top: 5px;">
-                    Mode: <span style="color:#fff">{DIP_MODE}</span> | Buy -{BUY_DROP*100:.0f}% / Sell +{SELL_GAIN*100:.0f}% / RSI &lt; {RSI_LIMIT} / {sl_text}
+                <div class="subtle" style="margin-top: 6px;">
+                    Mode: <span style="color:#fff">{DIP_MODE}</span>
+                    | Buy -{BUY_DROP*100:.0f}% / Sell +{SELL_GAIN*100:.0f}%
+                    | RSI &lt; {RSI_LIMIT}
+                    | {sl_text}
+                    | Auto-refresh: {int(max(10, auto_refresh_sec))}s
+                </div>
+                <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                    {market_badge}
+                    {ib_badge}
                 </div>
             </div>
-            <div style="text-align: right;">
-                <div style="font-weight: 600; color: #fff;">{datetime.datetime.now().strftime("%d.%m. %H:%M")}</div>
-                <div style="color: #484f58;">Poslední aktualizace</div>
+
+            <div class="kv">
+                <div>
+                    <div style="font-weight: 600; color: #fff;">{datetime.datetime.now().strftime("%d.%m. %H:%M")}</div>
+                    <div class="subtle">Poslední aktualizace</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #fff;">{to_open}</div>
+                    <div class="subtle">Do open (NY)</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #fff;">{ns}</div>
+                    <div class="subtle">Next SELL (NY)</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: #fff;">{nb}</div>
+                    <div class="subtle">Next BUY (NY)</div>
+                </div>
             </div>
         </div>
 
@@ -563,9 +625,6 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
                 </div>
                 <div style="margin-top: 10px; font-size: 0.9rem; color: #8b949e;">
                     Hotovost: <span style="color:#fff">${cash:,.0f}</span>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.9rem; color: #8b949e;">
-                    K obchodování: <span style="color:#fff">${MANUAL_CAPITAL_LIMIT}</span>
                 </div>
             </div>
 
@@ -666,6 +725,59 @@ def generate_html_report(conn, equity, portfolio, candidates, cash):
         log(f"REPORT aktualizován: {REPORT_FILE}")
     except Exception as e:
         log(f"REPORT ERROR: {e}", "ERROR")
+
+# =========================================================
+# DASHBOARD REFRESH (works even when market closed)
+# =========================================================
+def refresh_dashboard(conn, ib: IB) -> None:
+    """
+    Vygeneruje HTML report kdykoliv (i mimo trh).
+    - pokud IB není připojeno, zkusí se připojit
+    - načte cash/equity + pozice
+    - doplní ceny (yfinance/IB snapshot fallback)
+    """
+    now_ny = get_ny_time()
+    market_open = is_market_open()
+
+    if not ib.isConnected():
+        # mimo trh to nechceme brát jako "fatal"; jen zkusíme connect
+        ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
+        # 3 = delayed (dobré pro paper / bez real-time subs)
+        ib.reqMarketDataType(3)
+
+    account_cash, portfolio_equity = read_account_summary(ib)
+
+    portfolio_data_latest = []
+    ib.reqPositions()
+    ib.sleep(0.5)
+    for pos in ib.positions():
+        cp = get_current_price(pos.contract.symbol, pos.contract, ib) or pos.avgCost
+        pp = (cp - pos.avgCost) / pos.avgCost if pos.avgCost else 0
+        portfolio_data_latest.append({
+            'symbol': pos.contract.symbol,
+            'qty': pos.position,
+            'avgCost': pos.avgCost,
+            'marketPrice': cp,
+            'pnl_pct': pp
+        })
+
+    next_sell = next_sell_run_time(now_ny)
+    next_buy = next_buy_run_time(now_ny)
+    secs_to_open = 0 if market_open else seconds_until_market_open()
+
+    generate_html_report(
+        conn,
+        portfolio_equity,
+        portfolio_data_latest,
+        LAST_CANDIDATES_REPORT,
+        account_cash,
+        market_open=market_open,
+        ib_connected=ib.isConnected(),
+        next_sell=next_sell,
+        next_buy=next_buy,
+        secs_to_open=secs_to_open,
+        auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),  # auto-refresh stránky necháme konzistentně
+    )
 
 # =========================================================
 # CORE: SELL
@@ -881,6 +993,19 @@ def main_loop():
     alert_sent = False
     did_startup_dump = False
 
+    # 1) Dashboard hned po startu (i mimo trh)
+    if DASH_REFRESH_ON_START:
+        try:
+            refresh_dashboard(conn, ib)
+            log("Dashboard inicializován hned po startu.")
+        except Exception as e:
+            log(f"Dashboard init error: {e}", "ERROR")
+            try:
+                if ib.isConnected():
+                    ib.disconnect()
+            except Exception:
+                pass
+
     while True:
         try:
             now_ny = get_ny_time()
@@ -888,7 +1013,7 @@ def main_loop():
             if is_market_open():
                 if not ib.isConnected():
                     try:
-                        ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID)
+                        ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
                         ib.reqMarketDataType(3)
                         log(f"IB připojeno (MarketDataType: 3-Delayed). NY={now_ny.strftime('%H:%M:%S')}")
                         if alert_sent:
@@ -946,7 +1071,15 @@ def main_loop():
                                     'pnl_pct': pp
                                 })
 
-                        generate_html_report(conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash)
+                        # report po SELL cyklu
+                        next_sell = next_sell_run_time(get_ny_time())
+                        next_buy = next_buy_run_time(get_ny_time())
+                        generate_html_report(
+                            conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash,
+                            market_open=True, ib_connected=ib.isConnected(),
+                            next_sell=next_sell, next_buy=next_buy, secs_to_open=0,
+                            auto_refresh_sec=DASH_REFRESH_OPEN_SEC
+                        )
 
                 if in_buy_window(now_ny):
                     buy_id = buy_cycle_id_hour(now_ny)
@@ -978,7 +1111,21 @@ def main_loop():
                                 'pnl_pct': pp
                             })
 
-                        generate_html_report(conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash)
+                        # report po BUY cyklu
+                        next_sell = next_sell_run_time(get_ny_time())
+                        next_buy = next_buy_run_time(get_ny_time())
+                        generate_html_report(
+                            conn, portfolio_equity, portfolio_data_latest, LAST_CANDIDATES_REPORT, account_cash,
+                            market_open=True, ib_connected=ib.isConnected(),
+                            next_sell=next_sell, next_buy=next_buy, secs_to_open=0,
+                            auto_refresh_sec=DASH_REFRESH_OPEN_SEC
+                        )
+
+                # průběžně: i když zrovna nebyl BUY/SELL, refreshni report občas
+                try:
+                    refresh_dashboard(conn, ib)
+                except Exception as e:
+                    log(f"Dashboard refresh error (open): {e}", "WARNING")
 
                 now_ny = get_ny_time()
                 next_sell = next_sell_run_time(now_ny)
@@ -990,19 +1137,37 @@ def main_loop():
                 countdown_sleep(wait, "Sleep:")
 
             else:
-                if ib.isConnected():
-                    ib.disconnect()
-                    log("IB odpojeno (trh zavřený).")
                 did_startup_dump = False
 
-                wait = seconds_until_market_open()
-                next_wake_ny = get_ny_time() + datetime.timedelta(seconds=wait)
-                log(f"Trh zavřený. Další open za {wait//3600:02d}:{(wait%3600)//60:02d} | NY {next_wake_ny.strftime('%Y-%m-%d %H:%M:%S')}")
-                countdown_sleep(wait, "Sleep:")
+                # 2) Trh zavřený: refresh dashboard po "chunkech" (např. 10 min),
+                # aby stránka žila a ty viděl pozice kdykoliv.
+                total_wait = seconds_until_market_open()
+                chunk = max(60, int(DASH_REFRESH_CLOSED_SEC))
+
+                while total_wait > 0:
+                    try:
+                        refresh_dashboard(conn, ib)
+                        log("Dashboard refresh (trh zavřený).")
+                    except Exception as e:
+                        log(f"Dashboard refresh error (market closed): {e}", "ERROR")
+                        try:
+                            if ib.isConnected():
+                                ib.disconnect()
+                        except Exception:
+                            pass
+
+                    sleep_now = min(chunk, total_wait)
+                    next_wake_ny = get_ny_time() + datetime.timedelta(seconds=sleep_now)
+                    log(f"Trh zavřený. Další open za {fmt_hms(total_wait)} | NY {next_wake_ny.strftime('%Y-%m-%d %H:%M:%S')}")
+                    countdown_sleep(sleep_now, "Sleep:")
+                    total_wait -= sleep_now
 
         except KeyboardInterrupt:
-            if ib.isConnected():
-                ib.disconnect()
+            try:
+                if ib.isConnected():
+                    ib.disconnect()
+            except Exception:
+                pass
             log("Ukončeno uživatelem.")
             break
         except Exception as e:
@@ -1011,4 +1176,3 @@ def main_loop():
 
 if __name__ == "__main__":
     main_loop()
-

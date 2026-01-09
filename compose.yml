@@ -40,6 +40,9 @@ services:
       STATE_FILE: /data/bot_state.json
       REPORT_FILE: /reports/index.html
       CONFIG_FILE: /app/config.yaml
+
+      TIME_ZONE: Europe/Prague
+      TZ: Europe/Prague  
       
     volumes:
       - ./app:/app
