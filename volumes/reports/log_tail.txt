@@ -1,0 +1,30 @@
+2026-01-09 11:14:11 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-01-09 11:14:15 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:14:15 [INFO] Dashboard inicializován hned po startu.
+2026-01-09 11:14:16 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:14:16 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 11:14:16 [INFO] Trh zavřený. Další open za 04:15:44 | NY 2026-01-09 05:24:16
+2026-01-09 11:14:16 [INFO] Sleep: 00:10:00
+2026-01-09 11:24:17 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:24:17 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 11:24:17 [INFO] Trh zavřený. Další open za 04:05:44 | NY 2026-01-09 05:34:17
+2026-01-09 11:24:17 [INFO] Sleep: 00:10:00
+2026-01-09 11:34:19 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:34:19 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 11:34:19 [INFO] Trh zavřený. Další open za 03:55:44 | NY 2026-01-09 05:44:19
+2026-01-09 11:34:19 [INFO] Sleep: 00:10:00
+2026-01-09 11:44:21 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:44:21 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 11:44:21 [INFO] Trh zavřený. Další open za 03:45:44 | NY 2026-01-09 05:54:21
+2026-01-09 11:44:21 [INFO] Sleep: 00:10:00
+2026-01-09 11:54:23 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 11:54:23 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 11:54:23 [INFO] Trh zavřený. Další open za 03:35:44 | NY 2026-01-09 06:04:23
+2026-01-09 11:54:23 [INFO] Sleep: 00:10:00
+2026-01-09 12:01:15 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-01-09 12:01:18 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 12:01:18 [INFO] Dashboard inicializován hned po startu.
+2026-01-09 12:01:19 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-09 12:01:19 [INFO] Dashboard refresh (trh zavřený).
+2026-01-09 12:01:19 [INFO] Trh zavřený. Další open za 03:28:41 | NY 2026-01-09 06:11:19
+2026-01-09 12:01:19 [INFO] Sleep: 00:10:00

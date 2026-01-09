@@ -1,0 +1,15 @@
+{
+  "ts_local": "2026-01-09T12:01:19",
+  "ts_ny": "2026-01-09T06:01:18-05:00",
+  "market_open": false,
+  "ib_connected": true,
+  "secs_to_open": 12521,
+  "next_sell_ny": "2026-01-09T09:35:00-05:00",
+  "next_buy_ny": "2026-01-09T10:31:00-05:00",
+  "equity": 1009159.32,
+  "cash": 999320.9,
+  "positions_count": 5,
+  "last_action": "PERIODIC_REFRESH_CLOSED",
+  "last_error": null,
+  "version": "2026-01-09"
+}
