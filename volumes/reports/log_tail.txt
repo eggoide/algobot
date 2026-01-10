@@ -1,10 +1,3 @@
-2026-01-09 20:44:58 [INFO] Sleep: 00:00:05
-2026-01-09 20:45:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-14-45
-2026-01-09 20:45:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 20:45:04 [INFO] ADBE PnL -0.49% (Cena 333.66)
-2026-01-09 20:45:04 [INFO] MO PnL +2.84% (Cena 57.30)
-2026-01-09 20:45:04 [INFO] AMD PnL +0.13% (Cena 204.81)
-2026-01-09 20:45:04 [INFO] AIG PnL -2.07% (Cena 75.76)
 2026-01-09 20:45:04 [INFO] PLTR PnL -6.33% (Cena 177.54)
 2026-01-09 20:45:05 [INFO] REPORT aktualizován: /reports/index.html
 2026-01-09 20:45:05 [INFO] NY 14:45:05 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 292s
@@ -198,3 +191,10 @@
 2026-01-09 21:55:05 [INFO] REPORT aktualizován: /reports/index.html
 2026-01-09 21:55:05 [INFO] NY 15:55:05 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 236392s
 2026-01-09 21:55:05 [INFO] Sleep: 65:39:52
+2026-01-10 15:31:29 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-01-10 15:31:31 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-10 15:31:31 [INFO] Dashboard inicializován hned po startu.
+2026-01-10 15:31:33 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-10 15:31:33 [INFO] Dashboard refresh (trh zavřený).
+2026-01-10 15:31:33 [INFO] Trh zavřený. Další open za 47:58:28 | NY 2026-01-10 09:41:33
+2026-01-10 15:31:33 [INFO] Sleep: 00:10:00
