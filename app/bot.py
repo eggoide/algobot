@@ -1045,7 +1045,9 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
         next_sell=next_sell,
         next_buy=next_buy,
         secs_to_open=secs_to_open,
-        auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),
+        #auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),
+        auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_CLOSED_SEC)
+
     )
 
 # =========================================================
@@ -1108,6 +1110,7 @@ def manage_positions_sell_only(conn, ib: IB):
 
             ib.sleep(1)
             realized = (curr_price - pos.avgCost) * pos.position - FEE
+            log(f"TRADE SELL {contract.symbol} qty={int(pos.position)} price={curr_price:.2f} realized=${realized:.2f} reason={reason}")
             log_trade(conn, 'SELL', contract.symbol, curr_price, int(pos.position), float(realized), reason)
             send_telegram_msg(f"SELL {contract.symbol} ({reason}) PnL ${realized:.2f}")
             positions_changed = True
@@ -1237,6 +1240,7 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
         ib.placeOrder(contract, order)
 
         note_text = f"Mode:{DIP_MODE}, Dip:{BUY_DROP*100:.0f}%"
+        log(f"TRADE BUY {ib_sym} qty={qty} price={float(top['price']):.2f} fee=${FEE:.2f} note={note_text}")
         log_trade(conn, 'BUY', ib_sym, float(top['price']), int(qty), -FEE, note_text)
         send_telegram_msg(f"BUY {ib_sym} ({note_text})")
         positions_changed = True

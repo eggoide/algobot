@@ -1,200 +1,200 @@
-2026-01-09 20:45:04 [INFO] PLTR PnL -6.33% (Cena 177.54)
-2026-01-09 20:45:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:45:05 [INFO] NY 14:45:05 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 292s
-2026-01-09 20:45:05 [INFO] Sleep: 00:04:52
-2026-01-09 20:49:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:49:59 [INFO] NY 14:49:59 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 20:49:59 [INFO] Sleep: 00:00:05
-2026-01-09 20:50:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-14-50
-2026-01-09 20:50:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 20:50:05 [INFO] ADBE PnL -0.58% (Cena 333.35)
-2026-01-09 20:50:05 [INFO] MO PnL +2.95% (Cena 57.37)
-2026-01-09 20:50:05 [INFO] AMD PnL +0.02% (Cena 204.59)
-2026-01-09 20:50:05 [INFO] AIG PnL -2.20% (Cena 75.66)
-2026-01-09 20:50:05 [INFO] PLTR PnL -6.40% (Cena 177.40)
-2026-01-09 20:50:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:50:06 [INFO] NY 14:50:06 | next SELL 14:55:00 | next BUY 15:31:00 | sleep 291s
-2026-01-09 20:50:06 [INFO] Sleep: 00:04:51
-2026-01-09 20:54:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:54:59 [INFO] NY 14:54:59 | next SELL 14:55:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 20:54:59 [INFO] Sleep: 00:00:05
-2026-01-09 20:55:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-14-55
-2026-01-09 20:55:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 20:55:04 [INFO] ADBE PnL -0.57% (Cena 333.38)
-2026-01-09 20:55:04 [INFO] MO PnL +2.97% (Cena 57.38)
-2026-01-09 20:55:04 [INFO] AMD PnL -0.05% (Cena 204.43)
-2026-01-09 20:55:05 [INFO] AIG PnL -2.43% (Cena 75.48)
-2026-01-09 20:55:05 [INFO] PLTR PnL -6.45% (Cena 177.31)
-2026-01-09 20:55:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:55:06 [INFO] NY 14:55:06 | next SELL 15:00:00 | next BUY 15:31:00 | sleep 291s
-2026-01-09 20:55:06 [INFO] Sleep: 00:04:51
-2026-01-09 20:59:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 20:59:58 [INFO] NY 14:59:58 | next SELL 15:00:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 20:59:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:00:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-00
-2026-01-09 21:00:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:00:04 [INFO] ADBE PnL -0.56% (Cena 333.43)
-2026-01-09 21:00:04 [INFO] MO PnL +2.97% (Cena 57.38)
-2026-01-09 21:00:04 [INFO] AMD PnL -0.00% (Cena 204.54)
-2026-01-09 21:00:04 [INFO] AIG PnL -2.73% (Cena 75.25)
-2026-01-09 21:00:04 [INFO] PLTR PnL -6.36% (Cena 177.49)
-2026-01-09 21:00:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:00:05 [INFO] NY 15:00:05 | next SELL 15:05:00 | next BUY 15:31:00 | sleep 292s
-2026-01-09 21:00:05 [INFO] Sleep: 00:04:52
-2026-01-09 21:04:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:04:59 [INFO] NY 15:04:59 | next SELL 15:05:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:04:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:05:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-05
-2026-01-09 21:05:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:05:05 [INFO] ADBE PnL -0.55% (Cena 333.46)
-2026-01-09 21:05:05 [INFO] MO PnL +2.97% (Cena 57.38)
-2026-01-09 21:05:05 [INFO] AMD PnL -0.02% (Cena 204.50)
-2026-01-09 21:05:05 [INFO] AIG PnL -2.91% (Cena 75.11)
-2026-01-09 21:05:05 [INFO] PLTR PnL -6.28% (Cena 177.63)
-2026-01-09 21:05:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:05:06 [INFO] NY 15:05:06 | next SELL 15:10:00 | next BUY 15:31:00 | sleep 291s
-2026-01-09 21:05:06 [INFO] Sleep: 00:04:51
-2026-01-09 21:09:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:09:59 [INFO] NY 15:09:59 | next SELL 15:10:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:09:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:10:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-10
-2026-01-09 21:10:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:10:04 [INFO] ADBE PnL -0.58% (Cena 333.34)
-2026-01-09 21:10:04 [INFO] MO PnL +3.00% (Cena 57.39)
-2026-01-09 21:10:04 [INFO] AMD PnL +0.03% (Cena 204.61)
-2026-01-09 21:10:04 [INFO] AIG PnL -2.70% (Cena 75.27)
-2026-01-09 21:10:05 [INFO] PLTR PnL -6.28% (Cena 177.63)
-2026-01-09 21:10:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:10:06 [INFO] NY 15:10:06 | next SELL 15:15:00 | next BUY 15:31:00 | sleep 291s
-2026-01-09 21:10:06 [INFO] Sleep: 00:04:51
-2026-01-09 21:14:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:14:58 [INFO] NY 15:14:58 | next SELL 15:15:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:14:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:15:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-15
-2026-01-09 21:15:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:15:04 [INFO] ADBE PnL -0.55% (Cena 333.46)
-2026-01-09 21:15:04 [INFO] MO PnL +3.04% (Cena 57.41)
-2026-01-09 21:15:05 [INFO] AMD PnL -0.02% (Cena 204.50)
-2026-01-09 21:15:06 [INFO] AIG PnL -2.40% (Cena 75.50)
-2026-01-09 21:15:06 [INFO] PLTR PnL -6.33% (Cena 177.55)
-2026-01-09 21:15:09 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:15:09 [INFO] NY 15:15:09 | next SELL 15:20:00 | next BUY 15:31:00 | sleep 288s
-2026-01-09 21:15:09 [INFO] Sleep: 00:04:48
-2026-01-09 21:19:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:19:58 [INFO] NY 15:19:58 | next SELL 15:20:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:19:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:20:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-20
-2026-01-09 21:20:04 [INFO] SELL-CHECK: pozic 4
-2026-01-09 21:20:04 [INFO] ADBE PnL -0.53% (Cena 333.52)
-2026-01-09 21:20:04 [INFO] AMD PnL +0.10% (Cena 204.74)
-2026-01-09 21:20:04 [INFO] AIG PnL -2.44% (Cena 75.47)
-2026-01-09 21:20:04 [INFO] PLTR PnL -6.42% (Cena 177.38)
-2026-01-09 21:20:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:20:05 [INFO] NY 15:20:05 | next SELL 15:25:00 | next BUY 15:31:00 | sleep 292s
-2026-01-09 21:20:05 [INFO] Sleep: 00:04:52
-2026-01-09 21:24:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:24:59 [INFO] NY 15:24:59 | next SELL 15:25:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:24:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:25:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-25
-2026-01-09 21:25:04 [INFO] SELL-CHECK: pozic 4
-2026-01-09 21:25:04 [INFO] ADBE PnL -0.49% (Cena 333.65)
-2026-01-09 21:25:04 [INFO] AMD PnL -0.02% (Cena 204.51)
-2026-01-09 21:25:04 [INFO] AIG PnL -2.09% (Cena 75.74)
-2026-01-09 21:25:05 [INFO] PLTR PnL -6.40% (Cena 177.40)
-2026-01-09 21:25:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:25:05 [INFO] NY 15:25:05 | next SELL 15:30:00 | next BUY 15:31:00 | sleep 292s
-2026-01-09 21:25:05 [INFO] Sleep: 00:04:52
-2026-01-09 21:29:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:29:59 [INFO] NY 15:29:59 | next SELL 15:30:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:29:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:30:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-30
-2026-01-09 21:30:04 [INFO] SELL-CHECK: pozic 4
-2026-01-09 21:30:04 [INFO] ADBE PnL -0.48% (Cena 333.68)
-2026-01-09 21:30:05 [INFO] AMD PnL -0.19% (Cena 204.16)
-2026-01-09 21:30:05 [INFO] AIG PnL -2.29% (Cena 75.59)
-2026-01-09 21:30:05 [INFO] PLTR PnL -6.43% (Cena 177.36)
-2026-01-09 21:30:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:30:06 [INFO] NY 15:30:06 | next SELL 15:35:00 | next BUY 15:31:00 | sleep 51s
-2026-01-09 21:30:06 [INFO] Sleep: 00:00:51
-2026-01-09 21:30:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:30:58 [INFO] NY 15:30:58 | next SELL 15:35:00 | next BUY 15:31:00 | sleep 5s
-2026-01-09 21:30:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:31:03 [INFO] SPOUŠTÍM BUY-CYCLE: 2026-01-09-15
-2026-01-09 21:31:04 [INFO] SP100: načteno 101 tickerů (uloženo do cache).
-2026-01-09 21:31:04 [INFO] BUY-SCAN: stahuji data pro 101 tickerů
-2026-01-09 21:31:37 [INFO] BUY NOW RSI 25.2 drop -3.00% qty=14
-2026-01-09 21:31:41 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:31:41 [INFO] NY 15:31:41 | next SELL 15:35:00 | next BUY 10:31:00 | sleep 196s
-2026-01-09 21:31:41 [INFO] Sleep: 00:03:16
-2026-01-09 21:34:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:34:58 [INFO] NY 15:34:58 | next SELL 15:35:00 | next BUY 10:31:00 | sleep 5s
-2026-01-09 21:34:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:35:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-35
-2026-01-09 21:35:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:35:04 [INFO] ADBE PnL -0.43% (Cena 333.87)
-2026-01-09 21:35:04 [INFO] AMD PnL -0.29% (Cena 203.95)
-2026-01-09 21:35:04 [INFO] AIG PnL -2.30% (Cena 75.58)
-2026-01-09 21:35:04 [INFO] PLTR PnL -6.37% (Cena 177.46)
-2026-01-09 21:35:05 [INFO] NOW PnL -0.02% (Cena 141.85)
-2026-01-09 21:35:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:35:06 [INFO] NY 15:35:06 | next SELL 15:40:00 | next BUY 10:31:00 | sleep 291s
-2026-01-09 21:35:06 [INFO] Sleep: 00:04:51
-2026-01-09 21:39:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:39:58 [INFO] NY 15:39:58 | next SELL 15:40:00 | next BUY 10:31:00 | sleep 5s
-2026-01-09 21:39:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:40:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-40
-2026-01-09 21:40:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:40:04 [INFO] ADBE PnL -0.58% (Cena 333.37)
-2026-01-09 21:40:04 [INFO] AMD PnL -0.46% (Cena 203.60)
-2026-01-09 21:40:04 [INFO] AIG PnL -2.20% (Cena 75.66)
-2026-01-09 21:40:04 [INFO] PLTR PnL -6.42% (Cena 177.38)
-2026-01-09 21:40:04 [INFO] NOW PnL -0.10% (Cena 141.73)
-2026-01-09 21:40:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:40:05 [INFO] NY 15:40:05 | next SELL 15:45:00 | next BUY 10:31:00 | sleep 292s
-2026-01-09 21:40:05 [INFO] Sleep: 00:04:52
-2026-01-09 21:44:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:44:59 [INFO] NY 15:44:59 | next SELL 15:45:00 | next BUY 10:31:00 | sleep 5s
-2026-01-09 21:44:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:45:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-45
-2026-01-09 21:45:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:45:04 [INFO] ADBE PnL -0.58% (Cena 333.37)
-2026-01-09 21:45:05 [INFO] AMD PnL -0.45% (Cena 203.63)
-2026-01-09 21:45:05 [INFO] AIG PnL -2.11% (Cena 75.73)
-2026-01-09 21:45:05 [INFO] PLTR PnL -6.40% (Cena 177.41)
-2026-01-09 21:45:05 [INFO] NOW PnL -0.09% (Cena 141.74)
-2026-01-09 21:45:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:45:06 [INFO] NY 15:45:06 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 291s
-2026-01-09 21:45:06 [INFO] Sleep: 00:04:51
-2026-01-09 21:49:59 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:49:59 [INFO] NY 15:49:59 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 5s
-2026-01-09 21:49:59 [INFO] Sleep: 00:00:05
-2026-01-09 21:50:04 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-50
-2026-01-09 21:50:05 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:50:05 [INFO] ADBE PnL -0.57% (Cena 333.38)
-2026-01-09 21:50:05 [INFO] AMD PnL -0.33% (Cena 203.86)
-2026-01-09 21:50:05 [INFO] AIG PnL -2.16% (Cena 75.69)
-2026-01-09 21:50:05 [INFO] PLTR PnL -6.31% (Cena 177.57)
-2026-01-09 21:50:05 [INFO] NOW PnL -0.17% (Cena 141.63)
-2026-01-09 21:50:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:50:07 [INFO] NY 15:50:07 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 290s
-2026-01-09 21:50:07 [INFO] Sleep: 00:04:50
-2026-01-09 21:54:58 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:54:58 [INFO] NY 15:54:58 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 5s
-2026-01-09 21:54:58 [INFO] Sleep: 00:00:05
-2026-01-09 21:55:03 [INFO] SPOUŠTÍM SELL-CYCLE: 2026-01-09-15-55
-2026-01-09 21:55:04 [INFO] SELL-CHECK: pozic 5
-2026-01-09 21:55:04 [INFO] ADBE PnL -0.34% (Cena 334.16)
-2026-01-09 21:55:04 [INFO] AMD PnL -0.63% (Cena 203.26)
-2026-01-09 21:55:04 [INFO] AIG PnL -2.02% (Cena 75.80)
-2026-01-09 21:55:04 [INFO] PLTR PnL -6.50% (Cena 177.22)
-2026-01-09 21:55:04 [INFO] NOW PnL -0.28% (Cena 141.48)
-2026-01-09 21:55:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-09 21:55:05 [INFO] NY 15:55:05 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 236392s
-2026-01-09 21:55:05 [INFO] Sleep: 65:39:52
-2026-01-10 15:31:29 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-01-10 15:31:31 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-10 15:31:31 [INFO] Dashboard inicializován hned po startu.
-2026-01-10 15:31:33 [INFO] REPORT aktualizován: /reports/index.html
-2026-01-10 15:31:33 [INFO] Dashboard refresh (trh zavřený).
-2026-01-10 15:31:33 [INFO] Trh zavřený. Další open za 47:58:28 | NY 2026-01-10 09:41:33
-2026-01-10 15:31:33 [INFO] Sleep: 00:10:00
+2026-01-12 20:31:00 [INFO] AIG PnL -3.83% (Cena 74.39)
+2026-01-12 20:31:00 [INFO] PLTR PnL -5.34% (Cena 179.42)
+2026-01-12 20:31:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:31:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:31:01 [INFO] NY 14:31:01 | next SELL 14:35:00 | next BUY 15:31:00 | sleep 238s
+2026-01-12 20:31:01 [INFO] Sleep: 00:03:58
+2026-01-12 20:35:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:35:01 [INFO] NY 14:35:01 | next SELL 14:40:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 20:35:01 [INFO] Sleep: 00:04:58
+2026-01-12 20:40:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:40:01 [INFO] NY 14:40:01 | next SELL 14:45:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 20:40:01 [INFO] Sleep: 00:04:58
+2026-01-12 20:45:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:45:01 [INFO] NY 14:45:01 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 20:45:01 [INFO] Sleep: 00:04:58
+2026-01-12 20:50:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:50:00 [INFO] NY 14:50:00 | next SELL 14:55:00 | next BUY 15:31:00 | sleep 299s
+2026-01-12 20:50:00 [INFO] Sleep: 00:04:59
+2026-01-12 20:55:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 20:55:01 [INFO] NY 14:55:01 | next SELL 15:00:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 20:55:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:00:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:00:01 [INFO] NY 15:00:01 | next SELL 15:05:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 21:00:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:05:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:05:00 [INFO] NY 15:05:00 | next SELL 15:10:00 | next BUY 15:31:00 | sleep 299s
+2026-01-12 21:05:00 [INFO] Sleep: 00:04:59
+2026-01-12 21:10:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:10:01 [INFO] NY 15:10:01 | next SELL 15:15:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 21:10:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:15:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:15:01 [INFO] NY 15:15:01 | next SELL 15:20:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 21:15:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:20:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:20:00 [INFO] NY 15:20:00 | next SELL 15:25:00 | next BUY 15:31:00 | sleep 299s
+2026-01-12 21:20:00 [INFO] Sleep: 00:04:59
+2026-01-12 21:25:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:25:01 [INFO] NY 15:25:01 | next SELL 15:30:00 | next BUY 15:31:00 | sleep 298s
+2026-01-12 21:25:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:30:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:30:00 [INFO] NY 15:30:00 | next SELL 15:35:00 | next BUY 15:31:00 | sleep 59s
+2026-01-12 21:30:00 [INFO] Sleep: 00:00:59
+2026-01-12 21:30:59 [INFO] SELL-CYCLE 2026-01-12-15-30 | NY=15:30:59
+2026-01-12 21:31:00 [INFO] SELL-CHECK: pozic 5
+2026-01-12 21:31:00 [INFO] ADBE PnL -2.03% (Cena 328.49)
+2026-01-12 21:31:00 [INFO] AMD PnL +1.98% (Cena 208.59)
+2026-01-12 21:31:01 [INFO] NOW PnL +0.39% (Cena 142.42)
+2026-01-12 21:31:01 [INFO] AIG PnL -3.92% (Cena 74.33)
+2026-01-12 21:31:01 [INFO] PLTR PnL -5.61% (Cena 178.91)
+2026-01-12 21:31:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:31:02 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:31:02 [INFO] NY 15:31:02 | next SELL 15:35:00 | next BUY 10:31:00 | sleep 237s
+2026-01-12 21:31:02 [INFO] Sleep: 00:03:57
+2026-01-12 21:35:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:35:01 [INFO] NY 15:35:01 | next SELL 15:40:00 | next BUY 10:31:00 | sleep 298s
+2026-01-12 21:35:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:40:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:40:00 [INFO] NY 15:40:00 | next SELL 15:45:00 | next BUY 10:31:00 | sleep 299s
+2026-01-12 21:40:00 [INFO] Sleep: 00:04:59
+2026-01-12 21:45:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:45:01 [INFO] NY 15:45:01 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 298s
+2026-01-12 21:45:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:50:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:50:01 [INFO] NY 15:50:01 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 298s
+2026-01-12 21:50:01 [INFO] Sleep: 00:04:58
+2026-01-12 21:55:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-12 21:55:00 [INFO] NY 15:55:00 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 63599s
+2026-01-12 21:55:00 [INFO] Sleep: 17:39:59
+2026-01-13 15:14:23 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-01-13 15:14:26 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:14:26 [INFO] Dashboard inicializován hned po startu.
+2026-01-13 15:14:27 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:14:27 [INFO] Dashboard refresh (trh zavřený).
+2026-01-13 15:14:27 [INFO] Trh zavřený. Další open za 00:15:33 | NY 2026-01-13 09:24:27
+2026-01-13 15:14:27 [INFO] Sleep: 00:10:00
+2026-01-13 15:24:28 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:24:28 [INFO] Dashboard refresh (trh zavřený).
+2026-01-13 15:24:28 [INFO] Trh zavřený. Další open za 00:05:33 | NY 2026-01-13 09:30:01
+2026-01-13 15:24:28 [INFO] Sleep: 00:05:33
+2026-01-13 15:30:08 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:30:08 [INFO] NY 09:30:08 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 291s
+2026-01-13 15:30:08 [INFO] Sleep: 00:04:51
+2026-01-13 15:35:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:35:00 [INFO] NY 09:35:00 | next SELL 09:40:00 | next BUY 10:31:00 | sleep 299s
+2026-01-13 15:35:00 [INFO] Sleep: 00:04:59
+2026-01-13 15:40:09 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:40:09 [INFO] NY 09:40:09 | next SELL 09:45:00 | next BUY 10:31:00 | sleep 290s
+2026-01-13 15:40:09 [INFO] Sleep: 00:04:50
+2026-01-13 15:45:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:45:00 [INFO] NY 09:45:00 | next SELL 09:50:00 | next BUY 10:31:00 | sleep 299s
+2026-01-13 15:45:00 [INFO] Sleep: 00:04:59
+2026-01-13 15:50:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:50:01 [INFO] NY 09:50:01 | next SELL 09:55:00 | next BUY 10:31:00 | sleep 298s
+2026-01-13 15:50:01 [INFO] Sleep: 00:04:58
+2026-01-13 15:55:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 15:55:00 [INFO] NY 09:55:00 | next SELL 10:00:00 | next BUY 10:31:00 | sleep 299s
+2026-01-13 15:55:00 [INFO] Sleep: 00:04:59
+2026-01-13 16:00:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:00:01 [INFO] NY 10:00:01 | next SELL 10:05:00 | next BUY 10:31:00 | sleep 298s
+2026-01-13 16:00:01 [INFO] Sleep: 00:04:58
+2026-01-13 16:05:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:05:01 [INFO] NY 10:05:01 | next SELL 10:10:00 | next BUY 10:31:00 | sleep 298s
+2026-01-13 16:05:01 [INFO] Sleep: 00:04:58
+2026-01-13 16:10:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:10:00 [INFO] NY 10:10:00 | next SELL 10:15:00 | next BUY 10:31:00 | sleep 299s
+2026-01-13 16:10:00 [INFO] Sleep: 00:04:59
+2026-01-13 16:15:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:15:01 [INFO] NY 10:15:01 | next SELL 10:20:00 | next BUY 10:31:00 | sleep 298s
+2026-01-13 16:15:01 [INFO] Sleep: 00:04:58
+2026-01-13 16:20:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:20:00 [INFO] NY 10:20:00 | next SELL 10:25:00 | next BUY 10:31:00 | sleep 299s
+2026-01-13 16:20:00 [INFO] Sleep: 00:04:59
+2026-01-13 16:25:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:25:01 [INFO] NY 10:25:01 | next SELL 10:30:00 | next BUY 10:31:00 | sleep 298s
+2026-01-13 16:25:01 [INFO] Sleep: 00:04:58
+2026-01-13 16:30:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:30:01 [INFO] NY 10:30:01 | next SELL 10:35:00 | next BUY 10:31:00 | sleep 58s
+2026-01-13 16:30:01 [INFO] Sleep: 00:00:58
+2026-01-13 16:30:59 [INFO] SELL-CYCLE 2026-01-13-10-30 | NY=10:30:59
+2026-01-13 16:30:59 [INFO] SELL-CHECK: pozic 5
+2026-01-13 16:30:59 [INFO] ADBE PnL -5.78% (Cena 315.93)
+2026-01-13 16:31:00 [INFO] AMD PnL +6.68% (Cena 218.20)
+2026-01-13 16:31:01 [INFO] NOW PnL -1.57% (Cena 139.65)
+2026-01-13 16:31:01 [INFO] AIG PnL -4.89% (Cena 73.57)
+2026-01-13 16:31:01 [INFO] PLTR PnL -6.53% (Cena 177.17)
+2026-01-13 16:31:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:31:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:31:04 [INFO] NY 10:31:04 | next SELL 10:35:00 | next BUY 11:31:00 | sleep 235s
+2026-01-13 16:31:04 [INFO] Sleep: 00:03:55
+2026-01-13 16:35:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:35:01 [INFO] NY 10:35:01 | next SELL 10:40:00 | next BUY 11:31:00 | sleep 298s
+2026-01-13 16:35:01 [INFO] Sleep: 00:04:58
+2026-01-13 16:40:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:40:00 [INFO] NY 10:40:00 | next SELL 10:45:00 | next BUY 11:31:00 | sleep 299s
+2026-01-13 16:40:00 [INFO] Sleep: 00:04:59
+2026-01-13 16:45:02 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:45:02 [INFO] NY 10:45:02 | next SELL 10:50:00 | next BUY 11:31:00 | sleep 297s
+2026-01-13 16:45:02 [INFO] Sleep: 00:04:57
+2026-01-13 16:50:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:50:00 [INFO] NY 10:50:00 | next SELL 10:55:00 | next BUY 11:31:00 | sleep 299s
+2026-01-13 16:50:00 [INFO] Sleep: 00:04:59
+2026-01-13 16:55:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 16:55:00 [INFO] NY 10:55:00 | next SELL 11:00:00 | next BUY 11:31:00 | sleep 299s
+2026-01-13 16:55:00 [INFO] Sleep: 00:04:59
+2026-01-13 17:00:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:00:01 [INFO] NY 11:00:01 | next SELL 11:05:00 | next BUY 11:31:00 | sleep 298s
+2026-01-13 17:00:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:05:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:05:00 [INFO] NY 11:05:00 | next SELL 11:10:00 | next BUY 11:31:00 | sleep 299s
+2026-01-13 17:05:00 [INFO] Sleep: 00:04:59
+2026-01-13 17:10:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:10:01 [INFO] NY 11:10:01 | next SELL 11:15:00 | next BUY 11:31:00 | sleep 298s
+2026-01-13 17:10:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:15:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:15:00 [INFO] NY 11:15:00 | next SELL 11:20:00 | next BUY 11:31:00 | sleep 299s
+2026-01-13 17:15:00 [INFO] Sleep: 00:04:59
+2026-01-13 17:20:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:20:01 [INFO] NY 11:20:01 | next SELL 11:25:00 | next BUY 11:31:00 | sleep 298s
+2026-01-13 17:20:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:25:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:25:01 [INFO] NY 11:25:01 | next SELL 11:30:00 | next BUY 11:31:00 | sleep 298s
+2026-01-13 17:25:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:30:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:30:00 [INFO] NY 11:30:00 | next SELL 11:35:00 | next BUY 11:31:00 | sleep 59s
+2026-01-13 17:30:00 [INFO] Sleep: 00:00:59
+2026-01-13 17:30:59 [INFO] SELL-CYCLE 2026-01-13-11-30 | NY=11:30:59
+2026-01-13 17:30:59 [INFO] SELL-CHECK: pozic 4
+2026-01-13 17:31:00 [INFO] ADBE PnL -6.19% (Cena 314.55)
+2026-01-13 17:31:00 [INFO] NOW PnL -1.88% (Cena 139.21)
+2026-01-13 17:31:00 [INFO] AIG PnL -5.78% (Cena 72.89)
+2026-01-13 17:31:00 [INFO] PLTR PnL -5.73% (Cena 178.68)
+2026-01-13 17:31:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:31:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:31:01 [INFO] NY 11:31:01 | next SELL 11:35:00 | next BUY 12:31:00 | sleep 238s
+2026-01-13 17:31:01 [INFO] Sleep: 00:03:58
+2026-01-13 17:35:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:35:00 [INFO] NY 11:35:00 | next SELL 11:40:00 | next BUY 12:31:00 | sleep 299s
+2026-01-13 17:35:00 [INFO] Sleep: 00:04:59
+2026-01-13 17:40:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:40:01 [INFO] NY 11:40:01 | next SELL 11:45:00 | next BUY 12:31:00 | sleep 298s
+2026-01-13 17:40:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:45:00 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:45:00 [INFO] NY 11:45:00 | next SELL 11:50:00 | next BUY 12:31:00 | sleep 299s
+2026-01-13 17:45:00 [INFO] Sleep: 00:04:59
+2026-01-13 17:50:01 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:50:01 [INFO] NY 11:50:01 | next SELL 11:55:00 | next BUY 12:31:00 | sleep 298s
+2026-01-13 17:50:01 [INFO] Sleep: 00:04:58
+2026-01-13 17:50:30 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-01-13 17:50:32 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:50:32 [INFO] Dashboard inicializován hned po startu.
+2026-01-13 17:50:32 [INFO] SELL-CYCLE 2026-01-13-11-50 | NY=11:50:32
+2026-01-13 17:50:33 [INFO] SELL-CHECK: pozic 4
+2026-01-13 17:50:33 [INFO] ADBE PnL -6.33% (Cena 314.08)
+2026-01-13 17:50:33 [INFO] NOW PnL -1.97% (Cena 139.07)
+2026-01-13 17:50:33 [INFO] AIG PnL -5.77% (Cena 72.90)
+2026-01-13 17:50:33 [INFO] PLTR PnL -4.82% (Cena 180.40)
+2026-01-13 17:50:33 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:50:34 [INFO] REPORT aktualizován: /reports/index.html
+2026-01-13 17:50:34 [INFO] NY 11:50:34 | next SELL 11:55:00 | next BUY 12:31:00 | sleep 265s
+2026-01-13 17:50:34 [INFO] Sleep: 00:04:25
