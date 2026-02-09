@@ -674,7 +674,6 @@ def generate_html_report(
             .kv {{ display:flex; gap:14px; flex-wrap: wrap; justify-content: flex-end; }}
             .kv > div {{ text-align:right; }}
 
-            /* live log */
             pre.live-log {{
                 white-space: pre-wrap;
                 margin: 0;
@@ -689,34 +688,19 @@ def generate_html_report(
                 padding: 12px;
             }}
 
-
-            /* ===== Custom scrollbar for log ===== */
             #logBox {{
                 scrollbar-width: thin;
                 scrollbar-color: #30363d transparent;
             }}
-
-            /* Chrome / Edge / Safari */
-            #logBox::-webkit-scrollbar {{
-                width: 8px;
-            }}
-
-            #logBox::-webkit-scrollbar-track {{
-                background: transparent;
-            }}
-
+            #logBox::-webkit-scrollbar {{ width: 8px; }}
+            #logBox::-webkit-scrollbar-track {{ background: transparent; }}
             #logBox::-webkit-scrollbar-thumb {{
                 background-color: #30363d;
                 border-radius: 8px;
                 border: 2px solid transparent;
                 background-clip: content-box;
             }}
-
-            #logBox::-webkit-scrollbar-thumb:hover {{
-                background-color: #58a6ff;
-            }}
-
-
+            #logBox::-webkit-scrollbar-thumb:hover {{ background-color: #58a6ff; }}
         </style>
     </head>
     <body>
@@ -765,7 +749,6 @@ def generate_html_report(
             </div>
         </div>
 
-        <!-- NEW: LIVE STATUS + LIVE LOG -->
         <div class="grid">
             <div class="card">
                 <h2>Live Status</h2>
@@ -863,7 +846,6 @@ def generate_html_report(
         <div class="footer">AlgoBot 2026</div>
 
         <script>
-            // Chart
             const ctx = document.getElementById('pnlChart').getContext('2d');
             new Chart(ctx, {{
                 type: 'line',
@@ -890,7 +872,6 @@ def generate_html_report(
                 }}
             }});
 
-            // Live status + log (no backend; just fetch files served by nginx)
             const STATUS_POLL_SEC = {int(max(2, STATUS_POLL_SEC))};
             const LOG_POLL_SEC = {int(max(2, LOG_POLL_SEC))};
 
@@ -968,28 +949,18 @@ def generate_html_report(
 # DASHBOARD REFRESH (works even when market closed)
 # =========================================================
 def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
-    """
-    Vygeneruje HTML report kdykoliv (i mimo trh).
-    - pokud IB není připojeno, zkusí se připojit
-    - načte cash/equity + pozice
-    - doplní ceny (yfinance/IB snapshot fallback)
-    - zapíše status.json + log_tail.txt (to řeší log())
-    """
     now_ny = get_ny_time()
     market_open = is_market_open()
 
-    # next run times (always)
     next_sell = next_sell_run_time(now_ny)
     next_buy = next_buy_run_time(now_ny)
     secs_to_open = 0 if market_open else seconds_until_market_open()
 
-    # Try connect if needed (non-fatal outside market)
     if not ib.isConnected():
         try:
             ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
             ib.reqMarketDataType(3)  # delayed
         except Exception as e:
-            # still write status even without IB
             write_status(
                 market_open=market_open,
                 ib_connected=False,
@@ -1020,7 +991,6 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
             'pnl_pct': pp
         })
 
-    # Write status.json for live UI
     write_status(
         market_open=market_open,
         ib_connected=ib.isConnected(),
@@ -1045,9 +1015,7 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
         next_sell=next_sell,
         next_buy=next_buy,
         secs_to_open=secs_to_open,
-        #auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_OPEN_SEC),
         auto_refresh_sec=(DASH_REFRESH_OPEN_SEC if market_open else DASH_REFRESH_CLOSED_SEC)
-
     )
 
 # =========================================================
@@ -1268,7 +1236,6 @@ def main_loop():
     alert_sent = False
     did_startup_dump = False
 
-    # Always write initial status early (even before any IB connect)
     try:
         now_ny = get_ny_time()
         market_open = is_market_open()
@@ -1287,7 +1254,6 @@ def main_loop():
     except Exception:
         pass
 
-    # 1) Dashboard hned po startu (i mimo trh)
     if DASH_REFRESH_ON_START:
         try:
             refresh_dashboard(conn, ib, last_action="STARTUP_REFRESH")
@@ -1324,7 +1290,6 @@ def main_loop():
                             send_telegram_msg(f"CRITICAL: Chyba spojení s IB Gateway - {e}")
                             alert_sent = True
 
-                        # status update (disconnected)
                         try:
                             now_ny2 = get_ny_time()
                             write_status(
@@ -1357,14 +1322,22 @@ def main_loop():
 
                 portfolio_data_latest = []
 
+                # =========================================================
+                # SELL (FIXED): bez minute%5 gate + save_state až po SELL
+                # =========================================================
                 if in_sell_window(now_ny):
                     sell_id = sell_cycle_id_5min(now_ny)
-                    if sell_id != last_sell_id and (now_ny.minute % 5 == 0 or now_ny.minute % 5 == 1):
+
+                    # FIX 1: pouze bucket gating přes sell_id
+                    if sell_id != last_sell_id:
+                        log(f"SELL-CYCLE {sell_id} | NY={now_ny.strftime('%H:%M:%S')}")
+
+                        # provést SELL
+                        changed, portfolio_data_latest = manage_positions_sell_only(conn, ib)
+
+                        # FIX 2: save_state až po dokončení cyklu (a bez výjimky)
                         state["last_sell_cycle_id"] = sell_id
                         save_state(state)
-
-                        log(f"SELL-CYCLE {sell_id} | NY={now_ny.strftime('%H:%M:%S')}")
-                        changed, portfolio_data_latest = manage_positions_sell_only(conn, ib)
 
                         if changed:
                             ib.sleep(2)
@@ -1384,7 +1357,6 @@ def main_loop():
                                     'pnl_pct': pp
                                 })
 
-                        # report + status after SELL
                         now_ny2 = get_ny_time()
                         next_sell = next_sell_run_time(now_ny2)
                         next_buy = next_buy_run_time(now_ny2)
@@ -1409,6 +1381,7 @@ def main_loop():
                             auto_refresh_sec=DASH_REFRESH_OPEN_SEC
                         )
 
+                # BUY větev beze změn
                 if in_buy_window(now_ny):
                     buy_id = buy_cycle_id_hour(now_ny)
                     if buy_id != last_buy_id:
@@ -1439,7 +1412,6 @@ def main_loop():
                                 'pnl_pct': pp
                             })
 
-                        # report + status after BUY
                         now_ny2 = get_ny_time()
                         next_sell = next_sell_run_time(now_ny2)
                         next_buy = next_buy_run_time(now_ny2)
