@@ -8,14 +8,33 @@ strategy:
   buy_drop: 0.02
   sell_gain: 0.03
 
-  use_stop_loss: false
-  stop_loss: 0.15
+  use_stop_loss: true
+  stop_loss: 0.07
 
   rsi_limit: 30
   rsi_period: 14
 
   use_sma_filter: false
   sma_period: 200
+
+  # Enhanced strategy options (used by EnhancedDipBuyStrategy)
+  use_trailing_stop: true
+  trailing_stop_pct: 0.02    # sell if price drops 2% from high water mark (only when in profit)
+
+  use_time_stop: true
+  time_stop_bars: 120        # close position after ~5 trading days (hourly bars)
+
+  use_macd: true
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+
+  use_bollinger: true
+  bb_period: 20
+  bb_std: 2.0
+
+  use_volume_filter: false
+  volume_multiplier: 1.5
 
 runtime:
   timezone: US/Eastern
@@ -26,4 +45,3 @@ report:
   show_candidates_rsi_below: 60
   candidates_limit: 15
   trades_table_limit: 10
-

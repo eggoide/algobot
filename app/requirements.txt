@@ -7,4 +7,5 @@ ib_insync
 lxml
 html5lib
 PyYAML
+pyarrow
 

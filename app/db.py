@@ -42,6 +42,15 @@ def last_trades(conn: sqlite3.Connection, limit: int = 10) -> List[Dict[str, Any
     ).fetchall()
     return [dict(r) for r in rows]
 
+def get_buy_time(conn: sqlite3.Connection, symbol: str) -> str:
+    """Get the timestamp of the most recent BUY for a symbol (that hasn't been sold yet)."""
+    row = conn.execute(
+        "SELECT ts FROM trades WHERE symbol = ? AND action = 'BUY' ORDER BY ts DESC LIMIT 1",
+        (symbol,)
+    ).fetchone()
+    return row["ts"] if row else ""
+
+
 def cumulative_pnl_series(conn: sqlite3.Connection) -> Tuple[List[str], List[float]]:
     rows = conn.execute(
         """

@@ -15,7 +15,9 @@ import yaml
 import yfinance as yf
 from ib_insync import IB, MarketOrder, Stock
 
-from db import db_connect, insert_trade, last_trades, cumulative_pnl_series
+from db import db_connect, insert_trade, last_trades, cumulative_pnl_series, get_buy_time
+from indicators import rsi_wilder
+from strategy import EnhancedDipBuyStrategy
 
 # =========================================================
 # CONFIG LOADING
@@ -91,6 +93,34 @@ LOG_POLL_SEC = int(REPORT_CFG.get("log_poll_sec", 5))
 
 LAST_CANDIDATES_REPORT: List[Dict[str, Any]] = []
 SMA_CACHE: Dict[str, Tuple[datetime.datetime, bool]] = {}
+
+# =========================================================
+# STRATEGY INSTANCE
+# =========================================================
+STRATEGY = EnhancedDipBuyStrategy({
+    "dip_mode": DIP_MODE,
+    "buy_drop": BUY_DROP,
+    "sell_gain": SELL_GAIN,
+    "rsi_limit": RSI_LIMIT,
+    "rsi_period": RSI_PERIOD,
+    "use_stop_loss": USE_STOP_LOSS,
+    "stop_loss": STOP_LOSS,
+    "use_sma_filter": USE_SMA_FILTER,
+    "sma_period": SMA_PERIOD,
+    "use_trailing_stop": bool(STRAT.get("use_trailing_stop", True)),
+    "trailing_stop_pct": float(STRAT.get("trailing_stop_pct", 0.02)),
+    "use_time_stop": bool(STRAT.get("use_time_stop", True)),
+    "time_stop_bars": int(STRAT.get("time_stop_bars", 120)),
+    "use_macd": bool(STRAT.get("use_macd", True)),
+    "macd_fast": int(STRAT.get("macd_fast", 12)),
+    "macd_slow": int(STRAT.get("macd_slow", 26)),
+    "macd_signal": int(STRAT.get("macd_signal", 9)),
+    "use_bollinger": bool(STRAT.get("use_bollinger", True)),
+    "bb_period": int(STRAT.get("bb_period", 20)),
+    "bb_std": float(STRAT.get("bb_std", 2.0)),
+    "use_volume_filter": bool(STRAT.get("use_volume_filter", False)),
+    "volume_multiplier": float(STRAT.get("volume_multiplier", 1.5)),
+})
 
 # =========================================================
 # LOGGING (stdout + file + tail for dashboard)
@@ -416,16 +446,8 @@ def yf_to_ib_symbol(symbol: str) -> str:
     return symbol.replace('-', ' ')
 
 def calculate_rsi_wilder(series: pd.Series, period: int = 14) -> pd.Series:
-    delta = series.diff()
-    gain = delta.clip(lower=0)
-    loss = (-delta).clip(lower=0)
-
-    avg_gain = gain.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
-    avg_loss = loss.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
-
-    rs = avg_gain / avg_loss.replace(0, np.nan)
-    rsi = 100 - (100 / (1 + rs))
-    return rsi
+    """Wrapper for backwards compatibility. Uses indicators module."""
+    return rsi_wilder(series, period)
 
 def check_daily_sma200(symbol: str, period: int = 200, max_age_hours: int = 12) -> bool:
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -1021,6 +1043,20 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
 # =========================================================
 # CORE: SELL
 # =========================================================
+def _estimate_holding_hours(conn, symbol: str) -> int:
+    """Estimate how many hourly bars a position has been held, from DB buy time."""
+    buy_ts = get_buy_time(conn, symbol)
+    if not buy_ts:
+        return 0
+    try:
+        buy_dt = datetime.datetime.fromisoformat(buy_ts)
+        now = datetime.datetime.now()
+        hours = int((now - buy_dt).total_seconds() / 3600)
+        return max(0, hours)
+    except Exception:
+        return 0
+
+
 def manage_positions_sell_only(conn, ib: IB):
     ib.reqPositions()
     ib.sleep(0.5)
@@ -1029,7 +1065,7 @@ def manage_positions_sell_only(conn, ib: IB):
     positions_changed = False
     portfolio_data = []
 
-    log(f"SELL-CHECK: pozic {len(current_positions)}")
+    log(f"SELL-CHECK: pozic {len(current_positions)} (strategie: {STRATEGY.name})")
 
     for pos in current_positions:
         contract = pos.contract
@@ -1047,17 +1083,17 @@ def manage_positions_sell_only(conn, ib: IB):
             continue
 
         pnl_pct = (curr_price - pos.avgCost) / pos.avgCost if pos.avgCost else 0
-        action = None
-        reason = ""
+        holding_bars = _estimate_holding_hours(conn, contract.symbol)
 
-        if pnl_pct >= SELL_GAIN:
-            action, reason = "SELL", "Take Profit"
-        elif USE_STOP_LOSS and pnl_pct <= -STOP_LOSS:
-            action, reason = "SELL", "Stop Loss"
+        # Use Enhanced strategy for exit decision
+        exit_signal = STRATEGY.should_exit(
+            contract.symbol, pos.avgCost, curr_price, holding_bars
+        )
 
-        log(f"{contract.symbol} PnL {pnl_pct*100:+.2f}% (Cena {curr_price:.2f})")
+        reason = exit_signal.reason if exit_signal else ""
+        log(f"{contract.symbol} PnL {pnl_pct*100:+.2f}% (Cena {curr_price:.2f}, hold {holding_bars}h){' -> ' + reason if reason else ''}")
 
-        if action == "SELL":
+        if exit_signal:
             try:
                 if any(o.contract.symbol == contract.symbol and o.order.action == 'SELL' for o in ib.openOrders()):
                     log(f"{contract.symbol} SELL už existuje v openOrders, skip", "WARNING")
@@ -1109,7 +1145,7 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
         return False, candidates_report
 
     tickers = get_sp100_tickers()
-    log(f"BUY-SCAN: stahuji data pro {len(tickers)} tickerů")
+    log(f"BUY-SCAN: stahuji data pro {len(tickers)} tickerů (strategie: {STRATEGY.name})")
 
     try:
         data = yf.download(
@@ -1125,15 +1161,25 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
         capital_base = MANUAL_CAPITAL_LIMIT if MANUAL_CAPITAL_LIMIT else portfolio_equity
         position_size_usd = capital_base / MAX_POSITIONS if MAX_POSITIONS else capital_base
 
-        potential_buys = []
+        # Build per-symbol DataFrames for strategy
+        symbol_data = {}
         for t in tickers:
             try:
                 df = data[t] if isinstance(data.columns, pd.MultiIndex) else data
                 df = df.dropna(subset=['Close'])
                 if len(df) < RSI_PERIOD + 3:
                     continue
+                symbol_data[t] = df
+            except Exception:
+                continue
 
+        # Build candidates report (for dashboard watchlist)
+        for t, df in symbol_data.items():
+            try:
                 curr = float(df['Close'].iloc[-1])
+                rsi_val = float(calculate_rsi_wilder(df['Close'], RSI_PERIOD).iloc[-1])
+                if np.isnan(rsi_val):
+                    continue
 
                 if DIP_MODE == "DAILY":
                     last_bar_date = df.index[-1].date()
@@ -1141,20 +1187,13 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
                     reference_price = float(prev_days_df['Close'].iloc[-1]) if not prev_days_df.empty else float(df['Close'].iloc[-2])
                 else:
                     reference_price = float(df['Close'].iloc[-2])
-
                 if not reference_price:
                     continue
-
                 drop = (curr - reference_price) / reference_price
-                rsi_val = float(calculate_rsi_wilder(df['Close'], RSI_PERIOD).iloc[-1])
-                if np.isnan(rsi_val):
-                    continue
 
                 sma_passed = True
                 if USE_SMA_FILTER:
                     sma_passed = check_daily_sma200(t, SMA_PERIOD)
-
-                is_signal = (drop <= -BUY_DROP and rsi_val < RSI_LIMIT and sma_passed)
 
                 if rsi_val < SHOW_CANDIDATES_RSI_BELOW:
                     candidates_report.append({
@@ -1162,24 +1201,31 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
                         'price': curr,
                         'rsi': rsi_val,
                         'drop': drop,
-                        'is_buy_signal': is_signal,
+                        'is_buy_signal': False,  # will be updated below
                         'sma_ok': sma_passed
                     })
-
-                if is_signal:
-                    potential_buys.append({'symbol': t, 'price': curr, 'rsi': rsi_val, 'drop': drop})
-
             except Exception:
                 continue
 
-        potential_buys.sort(key=lambda x: x['rsi'])
+        # Use Enhanced strategy for signal generation
+        existing_symbols = [p.contract.symbol for p in current_positions]
+        # Also map yf symbols to IB symbols for dedup
+        existing_yf = [s.replace(' ', '-') for s in existing_symbols]
+        signals = STRATEGY.generate_signals(symbol_data, existing_symbols + existing_yf)
 
-        if not potential_buys:
+        # Mark buy signals in candidates report
+        signal_symbols = {s.symbol for s in signals}
+        for c in candidates_report:
+            if c['symbol'] in signal_symbols:
+                c['is_buy_signal'] = True
+
+        if not signals:
             log(f"BUY-SCAN: žádný signál (kandidátů do reportu {len(candidates_report)})")
             return False, candidates_report
 
-        top = potential_buys[0]
-        ib_sym = yf_to_ib_symbol(top['symbol'])
+        # Take best signal
+        top = signals[0]
+        ib_sym = yf_to_ib_symbol(top.symbol)
 
         has_pos = any(p.contract.symbol == ib_sym for p in current_positions)
         try:
@@ -1191,8 +1237,8 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log(f"BUY-SCAN: SKIP {ib_sym} už v portfoliu nebo v openOrders", "WARNING")
             return False, candidates_report
 
-        qty = int((position_size_usd / top['price']) // 1)
-        est_cost = qty * top['price']
+        qty = int((position_size_usd / top.price) // 1)
+        est_cost = qty * top.price
 
         if qty <= 0:
             log("BUY-SCAN: SKIP qty=0", "WARNING")
@@ -1202,14 +1248,14 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log(f"BUY-SCAN: SKIP nedostatek hotovosti (cash ${account_cash:.0f} < est ${est_cost:.0f})", "WARNING")
             return False, candidates_report
 
-        log(f"BUY {ib_sym} RSI {top['rsi']:.1f} drop {top['drop']*100:.2f}% qty={qty}")
+        log(f"BUY {ib_sym} | {top.reason} | qty={qty}")
         contract = Stock(ib_sym, 'SMART', 'USD')
         order = MarketOrder('BUY', qty, tif='DAY')
         ib.placeOrder(contract, order)
 
-        note_text = f"Mode:{DIP_MODE}, Dip:{BUY_DROP*100:.0f}%"
-        log(f"TRADE BUY {ib_sym} qty={qty} price={float(top['price']):.2f} fee=${FEE:.2f} note={note_text}")
-        log_trade(conn, 'BUY', ib_sym, float(top['price']), int(qty), -FEE, note_text)
+        note_text = f"Enhanced: {top.reason}"
+        log(f"TRADE BUY {ib_sym} qty={qty} price={float(top.price):.2f} fee=${FEE:.2f} note={note_text}")
+        log_trade(conn, 'BUY', ib_sym, float(top.price), int(qty), -FEE, note_text)
         send_telegram_msg(f"BUY {ib_sym} ({note_text})")
         positions_changed = True
 
