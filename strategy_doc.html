@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgoBot — Dokumentace strategie EnhancedDipBuy</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #1a1a1a;
+    --muted: #666;
+    --accent: #0066cc;
+    --accent-bg: #eef5ff;
+    --warn: #b45309;
+    --warn-bg: #fef3c7;
+    --ok: #047857;
+    --ok-bg: #d1fae5;
+    --bad: #b91c1c;
+    --bad-bg: #fee2e2;
+    --border: #e2e2e2;
+    --code-bg: #f3f4f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 28px 80px;
+  }
+  header {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  h2 {
+    margin-top: 48px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 22px;
+  }
+  h3 {
+    margin-top: 28px;
+    font-size: 17px;
+    color: var(--accent);
+  }
+  h4 {
+    margin-top: 20px;
+    font-size: 15px;
+  }
+  p { margin: 12px 0; }
+  code {
+    font-family: "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    border: 1px solid var(--border);
+  }
+  pre code { background: transparent; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  tr:hover td { background: #f8f8f8; }
+  .box {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-bg);
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .box.warn  { border-color: var(--warn); background: var(--warn-bg); }
+  .box.ok    { border-color: var(--ok);   background: var(--ok-bg); }
+  .box.bad   { border-color: var(--bad);  background: var(--bad-bg); }
+  .box .title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  .toc {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+  }
+  .toc ul { margin: 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .formula {
+    background: white;
+    border: 1px dashed var(--border);
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-family: "JetBrains Mono", Menlo, monospace;
+    font-size: 13px;
+    border-radius: 4px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pill.on  { background: var(--ok-bg);  color: var(--ok); }
+  .pill.off { background: #f3f4f6;       color: var(--muted); }
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>AlgoBot — strategie EnhancedDipBuy</h1>
+  <div class="subtitle">
+    Kompletní dokumentace obchodní logiky &middot;
+    Aktivní strategie: <code>EnhancedDipBuyStrategy</code> &middot;
+    Verze kódu: 2026-01-09
+  </div>
+</header>
+
+<div class="toc">
+  <strong>Obsah</strong>
+  <ul>
+    <li><a href="#prehled">1. Přehled</a></li>
+    <li><a href="#planovac">2. Plánovač cyklů (kdy bot pracuje)</a></li>
+    <li><a href="#buy">3. BUY logika — výběr titulů k nákupu</a></li>
+    <li><a href="#sell">4. SELL logika — kdy bot prodává</a></li>
+    <li><a href="#indikatory">5. Použité indikátory</a></li>
+    <li><a href="#sizing">6. Velikost pozice a kapitálový strop</a></li>
+    <li><a href="#config">7. Aktuální konfigurace (config.yaml)</a></li>
+    <li><a href="#scenare">8. Praktické scénáře</a></li>
+    <li><a href="#omezeni">9. Známá omezení a designové rysy</a></li>
+  </ul>
+</div>
+
+<h2 id="prehled">1. Přehled</h2>
+
+<p>
+  AlgoBot je automatizovaný obchodní robot pro akcie z indexu <strong>S&amp;P 100</strong>,
+  napojený přes Interactive Brokers Gateway (paper trading mode). Strategie je založena
+  na klasickém <em>mean-reversion / dip-buying</em> přístupu — kupuje akcie, které
+  právě poklesly o významné procento a zároveň jsou technicky přeprodané. Cíl: zachytit
+  krátkodobé technické odražení.
+</p>
+
+<p>
+  Aktivně používaná strategie je <code>EnhancedDipBuyStrategy</code>, která rozšiřuje původní
+  jednoduchou DipBuy logiku o vícefaktorové potvrzení signálu (MACD, Bollinger Bands)
+  a o sofistikovanější systém výstupu z pozice (trailing stop, time stop).
+</p>
+
+<div class="box">
+  <div class="title">Hrubý průběh dne</div>
+  Bot běží v jednom procesu, který:
+  (a) každých 5 minut kontroluje otevřené pozice na podmínku k prodeji a
+  (b) jednou za hodinu (v minutě <code>:31</code>) skenuje celý S&amp;P 100 a hledá nejlepšího kandidáta na nákup.
+</div>
+
+<h2 id="planovac">2. Plánovač cyklů</h2>
+
+<p>Časy jsou v <strong>NY time (US/Eastern)</strong>, tj. burzovním čase NYSE/NASDAQ.</p>
+
+<h3>SELL cyklus</h3>
+<ul>
+  <li>Spouští se každých <strong>5 minut</strong> v intervalu <code>09:35 — 15:55</code> NY času.</li>
+  <li>Funkce: <code>in_sell_window()</code>, <code>sell_cycle_id_5min()</code> v <code>bot.py</code>.</li>
+  <li>Při každém spuštění iteruje přes všechny <em>otevřené pozice</em> a pro každou volá
+      <code>strategy.should_exit()</code>. Pokud strategie vrátí signál, bot pošle market order na prodej.</li>
+  <li>Pokud nejsou žádné otevřené pozice, cyklus jen zaloguje <code>SELL-CHECK: pozic 0</code> a skončí.</li>
+</ul>
+
+<h3>BUY cyklus</h3>
+<ul>
+  <li>Spouští se <strong>1× za hodinu</strong> v minutě <code>:31</code> mezi
+      <code>10:31</code> a <code>15:31</code> NY (typicky 6 oken denně).</li>
+  <li>Funkce: <code>in_buy_window()</code>, <code>buy_cycle_id_hour()</code>, <code>scan_and_buy()</code>.</li>
+  <li>Stáhne pomocí <code>yfinance</code> hodinová data za posledních 7 dní pro celý S&amp;P 100,
+      pustí přes nich <code>strategy.generate_signals()</code> a koupí <strong>nejvýše 1 nejsilnější signál</strong> za cyklus.</li>
+  <li>Druhý nejlepší kandidát z téhož cyklu se zahodí — kupuje se až v <em>dalším</em> hodinovém okně,
+      pokud tehdy bude pořád splňovat kritéria.</li>
+</ul>
+
+<div class="box warn">
+  <div class="title">Důsledek</div>
+  Maximálně se za den nakoupí <strong>6 titulů</strong> (počet BUY oken).
+  Při <code>max_positions=5</code> se v praxi dosáhne stropu nejpozději v 5. okně,
+  nebo dříve, pokud strategie najde signál v každém slotu.
+</div>
+
+<h2 id="buy">3. BUY logika</h2>
+
+<p>
+  Funkce: <code>EnhancedDipBuyStrategy.generate_signals()</code> v
+  <code>app/strategy.py:204</code>. Pro každý ticker prochází dva kroky:
+  <strong>(A) tvrdé filtry</strong> (musí projít všechny, jinak ticker vyhodit) a
+  <strong>(B) skórování</strong> (vážený průměr potvrzujících signálů).
+</p>
+
+<h3>A. Tvrdé filtry — musí všechny projít</h3>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Podmínka</th><th>Význam</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><code>len(df) ≥ max(rsi_period+3, macd_slow+5, bb_period+3)</code></td>
+      <td>Dost historických dat na výpočet všech indikátorů. S výchozí konfigurací prakticky <code>≥ 31</code> hodinových svíček.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><code>symbol &notin; existing_positions</code></td>
+      <td>Ticker už není v portfoliu — bot nedoplňuje pozice (žádný averaging-in).</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><code>drop &le; -buy_drop</code> (default <code>-2 %</code>)</td>
+      <td>
+        Cena musí klesnout aspoň o <strong>2 %</strong> oproti referenci.
+        V <code>DAILY</code> módu je referencí <em>závěrečná cena předchozího obchodního dne</em>;
+        v <code>HOURLY</code> módu předchozí hodinová svíčka.
+      </td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><code>RSI(14) &lt; rsi_limit</code> (default <code>30</code>)</td>
+      <td>Wilderův RSI musí být v přeprodaném pásmu.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>SMA filtr <span class="pill off">VYP</span></td>
+      <td>
+        Pokud je v configu <code>use_sma_filter=true</code>, musí být <code>cena &gt; SMA(200)</code> (long-term uptrend).
+        Aktuálně vypnuto.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Pokud kterákoli z podmínek 1–4 selže, ticker se přeskočí a další body se vůbec nepočítají.</p>
+
+<h3>B. Skórování — váhy potvrzujících signálů</h3>
+
+<p>
+  Z titulů, které prošly tvrdými filtry, se počítá vážené skóre. Každý zapnutý subsystém přispívá
+  body do čitatele i jmenovatele:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Subsystém</th>
+      <th>Váha</th>
+      <th>Stav</th>
+      <th>Bodování</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RSI</td>
+      <td>3</td>
+      <td><span class="pill on">VŽDY ON</span></td>
+      <td>
+        <code>rsi_score = (rsi_limit - rsi) / rsi_limit</code>, omezeno na 0–1.
+        Čím nižší RSI (silnější přeprodanost), tím vyšší podíl plné váhy 3.
+      </td>
+    </tr>
+    <tr>
+      <td>MACD</td>
+      <td>2</td>
+      <td><span class="pill on">ON</span></td>
+      <td>
+        Plné 2 body, pokud <code>histogram[-1] &gt; histogram[-2]</code> (otáčení nahoru = bullish divergence).
+        Jinak 0 bodů.
+      </td>
+    </tr>
+    <tr>
+      <td>Bollinger %B</td>
+      <td>2</td>
+      <td><span class="pill on">ON</span></td>
+      <td>
+        <code>%B &lt; 0.2</code> → 2 body (cena pod/u dolního pásma).<br>
+        <code>%B &lt; 0.4</code> → 1 bod.<br>
+        Jinak 0 bodů.
+      </td>
+    </tr>
+    <tr>
+      <td>Volume</td>
+      <td>1</td>
+      <td><span class="pill off">OFF</span></td>
+      <td>
+        (Vypnuto.) Když by bylo zapnuté: 1 bod, pokud <code>volume[-1] &gt; SMA(volume,20) × 1.5</code>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="formula">
+strength = (skóre subsystémů) / (součet vah aktivních subsystémů)
+</div>
+
+<p>
+  S aktuální konfigurací je maximální dosažitelné skóre <code>(3 + 2 + 2) / (3 + 2 + 2) = 1.0</code>.
+  Reálná skóre se v logu objevují jako součást <em>reason</em>, např.
+  <code>Enhanced RSI=27.3 drop=-2.45% score=0.71</code>.
+</p>
+
+<h3>C. Výběr a nákup</h3>
+
+<ol>
+  <li>Všechny vyhovující signály se seřadí <strong>sestupně podle <code>strength</code></strong>.</li>
+  <li>Vezme se <strong>jen nejsilnější</strong> (<code>signals[0]</code>) — viz <code>bot.py:1227</code>.</li>
+  <li>Pokud je tento ticker už v portfoliu nebo má pending BUY order, cyklus skončí (bez fallbacku na druhý!).</li>
+  <li>Spočítá se <code>qty = floor(position_size_usd / price)</code>.</li>
+  <li>Když <code>qty &gt; 0</code> a hotovost stačí, pošle se <strong>market order BUY</strong> přes IB.</li>
+  <li>Trade se zapíše do SQLite (<code>db.py</code>) a pošle se Telegram notifikace.</li>
+</ol>
+
+<h2 id="sell">4. SELL logika</h2>
+
+<p>
+  Funkce: <code>EnhancedDipBuyStrategy.should_exit()</code> v
+  <code>app/strategy.py:298</code>. Pro každou otevřenou pozici se postupně vyhodnotí
+  <strong>čtyři důvody k prodeji</strong> v tomto pořadí:
+</p>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Důvod</th><th>Podmínka</th><th>Stav</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Take Profit</strong></td>
+      <td><code>pnl_pct &ge; sell_gain</code> (default <strong>+3 %</strong>)</td>
+      <td><span class="pill on">ON</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Stop Loss</strong></td>
+      <td><code>pnl_pct &le; -stop_loss</code> (default <strong>-7 %</strong>)</td>
+      <td><span class="pill on">ON</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Trailing Stop</strong></td>
+      <td>
+        Aktivuje se až <em>po</em> dosažení zisku (<code>pnl_pct &gt; 0</code>).
+        Bot pamatuje historicky nejvyšší cenu (<em>high water mark, HWM</em>) a prodá,
+        když cena klesne o <code>trailing_stop_pct</code> (default <strong>2 %</strong>) z HWM.
+      </td>
+      <td><span class="pill on">ON</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Time Stop</strong></td>
+      <td>
+        <code>holding_bars &ge; time_stop_bars</code> (default <strong>120 hodinových svíček ≈ 5 obchodních dnů</strong>).
+        Pojistka proti zaseknuté pozici, která ani nestoupá ani nepadá k SL.
+      </td>
+      <td><span class="pill on">ON</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box ok">
+  <div class="title">Logika v praxi</div>
+  Trailing stop se chová asymetricky: pokud pozice nikdy nezvedne hlavu nad nákupní cenu,
+  trailing stop nikdy nesepne — místo toho ji zavře pevný <strong>SL -7 %</strong> nebo časový limit.
+  Až když je pozice v zisku, trailing stop ji "zamkne" 2 % pod nejvyšší dosaženou cenu a chrání profit.
+</div>
+
+<h3>Pořadí vyhodnocení a HWM</h3>
+<p>
+  Funkce <code>should_exit</code> nejdřív aktualizuje HWM (<code>self._high_water_marks[symbol]</code>)
+  a pak postupně testuje TP → SL → Trailing → Time. Při <em>jakémkoli</em> exitu se HWM pro daný
+  symbol odstraní (čistý stav pro případný budoucí re-entry).
+</p>
+
+<h2 id="indikatory">5. Použité indikátory</h2>
+
+<p>Všechny indikátory jsou v <code>app/indicators.py</code>. Tady jsou jejich vzorce:</p>
+
+<h3>RSI Wilder (period 14)</h3>
+<div class="formula">
+delta = close.diff()<br>
+gain  = max(delta, 0)<br>
+loss  = max(-delta, 0)<br>
+avg_gain = EWM(gain, alpha=1/period)<br>
+avg_loss = EWM(loss, alpha=1/period)<br>
+RSI = 100 − 100 / (1 + avg_gain / avg_loss)
+</div>
+<p>
+  Wilderovo vyhlazení (EMA s alpha=1/period) se používá místo prostého klouzavého průměru,
+  protože dává hladší a stabilnější hodnoty — standard pro RSI od jeho autora J. Welles Wildera.
+</p>
+
+<h3>MACD (12, 26, 9)</h3>
+<div class="formula">
+ema_fast    = EMA(close, 12)<br>
+ema_slow    = EMA(close, 26)<br>
+macd_line   = ema_fast − ema_slow<br>
+signal_line = EMA(macd_line, 9)<br>
+histogram   = macd_line − signal_line
+</div>
+<p>
+  Strategie sleduje pouze <strong>změnu histogramu</strong> mezi posledními dvěma
+  hodnotami (<code>hist[-1] &gt; hist[-2]</code>) jako zachycení otáčení dynamiky — moment,
+  kdy fast EMA dohání slow EMA, často signál konce krátkodobé korekce.
+</p>
+
+<h3>Bollinger Bands (20, 2.0)</h3>
+<div class="formula">
+middle = SMA(close, 20)<br>
+std    = stdev(close, 20)<br>
+upper  = middle + 2 × std<br>
+lower  = middle − 2 × std<br>
+%B     = (close − lower) / (upper − lower)
+</div>
+<p>
+  <strong>%B</strong> je normovaná pozice ceny v rámci pásem: <code>0</code> = na dolním pásmu,
+  <code>0.5</code> = ve středu, <code>1</code> = na horním pásmu. Strategie považuje
+  <code>%B &lt; 0.2</code> za silně přeprodané.
+</p>
+
+<h3>SMA(200) — long-term filter (vypnuto)</h3>
+<div class="formula">
+SMA(close, 200) = průměr za 200 svíček
+</div>
+<p>
+  Při <code>use_sma_filter=true</code> by strategie kupovala jen tituly nad svým 200-svíčkovým průměrem.
+  V aktuální konfiguraci je <strong>vypnuto</strong> — strategie nakupuje i tituly pod svojí dlouhodobou trendovou linií.
+</p>
+
+<h3>Volume SMA(20) — vypnuto</h3>
+<p>
+  Volitelné potvrzení nákupního signálu zvýšeným objemem. V aktuální konfiguraci nepřispívá.
+</p>
+
+<h2 id="sizing">6. Velikost pozice a kapitálový strop</h2>
+
+<p>Logika v <code>scan_and_buy()</code>, <code>bot.py:1161</code>:</p>
+
+<pre><code>capital_base       = MANUAL_CAPITAL_LIMIT if MANUAL_CAPITAL_LIMIT else portfolio_equity
+position_size_usd  = capital_base / MAX_POSITIONS
+qty                = floor(position_size_usd / price)</code></pre>
+
+<p>S aktuální konfigurací:</p>
+
+<table>
+  <tbody>
+    <tr><th>capital_base</th><td><code>$10 000</code> (manual_capital_limit)</td></tr>
+    <tr><th>max_positions</th><td><code>5</code></td></tr>
+    <tr><th>position_size_usd</th><td><code>$2 000</code> na jeden ticker</td></tr>
+    <tr>
+      <th>fee_usd</th>
+      <td><code>$1.00</code> per trade — fixní poplatek zapisovaný do P&amp;L (jen účetně, ne reálná IB komise)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box warn">
+  <div class="title">Důležité</div>
+  Bot pracuje v paper účtu s equity přes 1 milion USD, ale strategicky používá jen ručně nastavený
+  <code>manual_capital_limit: 10000</code>. Pokud byste chtěli nasadit větší kapitál,
+  upravte <code>app/config.yaml</code> nebo nastavte <code>manual_capital_limit: 0</code>
+  (pak se použije celá equity účtu — pozor, drasticky to zvětší velikost pozic).
+</div>
+
+<h2 id="config">7. Aktuální konfigurace</h2>
+
+<p>Všechny parametry jsou v <code>app/config.yaml</code>. Aktuální hodnoty:</p>
+
+<table>
+  <thead>
+    <tr><th>Sekce</th><th>Parametr</th><th>Hodnota</th><th>Význam</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="3"><strong>capital</strong></td><td><code>manual_capital_limit</code></td><td>10000</td><td>Strop kapitálu v USD pro výpočet velikosti pozice.</td></tr>
+    <tr><td><code>max_positions</code></td><td>5</td><td>Maximální počet souběžných pozic.</td></tr>
+    <tr><td><code>fee_usd</code></td><td>1.0</td><td>Účetní poplatek per trade (do SQLite).</td></tr>
+
+    <tr><td rowspan="20"><strong>strategy</strong></td><td><code>dip_mode</code></td><td>DAILY</td><td>Reference pro výpočet dropu — close předchozího dne (vs. HOURLY = předchozí svíčka).</td></tr>
+    <tr><td><code>buy_drop</code></td><td>0.02</td><td>Min. pokles −2 % od reference, aby se ticker vůbec uvažoval.</td></tr>
+    <tr><td><code>sell_gain</code></td><td>0.03</td><td>Take-profit při +3 %.</td></tr>
+    <tr><td><code>use_stop_loss</code></td><td>true</td><td>Pevný stop-loss aktivní.</td></tr>
+    <tr><td><code>stop_loss</code></td><td>0.07</td><td>Stop-loss při −7 %.</td></tr>
+    <tr><td><code>rsi_limit</code></td><td>30</td><td>RSI musí být pod 30 (přeprodanost).</td></tr>
+    <tr><td><code>rsi_period</code></td><td>14</td><td>Standard 14 svíček.</td></tr>
+    <tr><td><code>use_sma_filter</code></td><td>false</td><td>Bez long-term trendového filtru.</td></tr>
+    <tr><td><code>sma_period</code></td><td>200</td><td>(Nepoužito.)</td></tr>
+    <tr><td><code>use_trailing_stop</code></td><td>true</td><td>Trailing stop ON.</td></tr>
+    <tr><td><code>trailing_stop_pct</code></td><td>0.02</td><td>2 % od HWM (jen v zisku).</td></tr>
+    <tr><td><code>use_time_stop</code></td><td>true</td><td>Časový stop ON.</td></tr>
+    <tr><td><code>time_stop_bars</code></td><td>120</td><td>≈ 5 obchodních dnů na hodinových datech.</td></tr>
+    <tr><td><code>use_macd</code></td><td>true</td><td>MACD potvrzení ON (váha 2).</td></tr>
+    <tr><td><code>macd_fast / slow / signal</code></td><td>12 / 26 / 9</td><td>Standardní MACD parametry.</td></tr>
+    <tr><td><code>use_bollinger</code></td><td>true</td><td>Bollinger %B potvrzení ON (váha 2).</td></tr>
+    <tr><td><code>bb_period</code></td><td>20</td><td>Standard.</td></tr>
+    <tr><td><code>bb_std</code></td><td>2.0</td><td>±2 σ.</td></tr>
+    <tr><td><code>use_volume_filter</code></td><td>false</td><td>Volume filter OFF.</td></tr>
+    <tr><td><code>volume_multiplier</code></td><td>1.5</td><td>(Nepoužito.)</td></tr>
+
+    <tr><td rowspan="3"><strong>runtime</strong></td><td><code>timezone</code></td><td>US/Eastern</td><td>Burzovní čas pro plánovač.</td></tr>
+    <tr><td><code>sp100_cache_file</code></td><td>sp100_tickers_cache.txt</td><td>Cache seznamu S&amp;P 100.</td></tr>
+    <tr><td><code>sp100_cache_max_age_hours</code></td><td>24</td><td>Refresh listu 1× denně.</td></tr>
+
+    <tr><td rowspan="3"><strong>report</strong></td><td><code>show_candidates_rsi_below</code></td><td>60</td><td>Watchlist na dashboardu zobrazuje tikery s RSI &lt; 60.</td></tr>
+    <tr><td><code>candidates_limit</code></td><td>15</td><td>Max. počet řádků watchlistu.</td></tr>
+    <tr><td><code>trades_table_limit</code></td><td>10</td><td>Posledních 10 trade na dashboardu.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="scenare">8. Praktické scénáře</h2>
+
+<h3>Scénář A — typický nákupní den</h3>
+<ol>
+  <li><strong>10:31 NY:</strong> Skenuje 100 tickerů. AAPL splňuje filtry (RSI 27, drop −2.8 %, MACD obrací nahoru, %B = 0.15). Skóre = 0.93. Bot kupuje 9 ks AAPL za $220 = $1 980.</li>
+  <li><strong>11:31 NY:</strong> Stejný sken, AAPL je již v portfoliu (přeskočeno). Druhý nejlepší kandidát MSFT splňuje vše, skóre 0.71. Kupuje se.</li>
+  <li><strong>12:31 NY:</strong> Žádný titul nesplňuje tvrdé filtry (drop ≤ −2 % a RSI &lt; 30). Log: <code>BUY-SCAN: žádný signál</code>. Watchlist na dashboardu se přesto naplní tickery s RSI &lt; 60.</li>
+  <li><strong>13:35 NY:</strong> AAPL stoupla o 3.1 % od nákupu. <code>should_exit</code> vrátí <em>Take Profit</em>. Pozice se zavře market sell.</li>
+</ol>
+
+<h3>Scénář B — trailing stop chrání profit</h3>
+<ol>
+  <li>Nákup TSLA za $200.</li>
+  <li>Cena vystoupá na $204 (+2 %), HWM = $204. Trailing stop "armed" 2 % pod HWM = $199.92.</li>
+  <li>Cena se otočí na $202 (+1 %). Trail drop oproti HWM = (202−204)/204 = −0.98 %. Ještě nestačí.</li>
+  <li>Cena padá dál na $200 (0 %). Trail drop = −1.96 %. Pořád nestačí na −2 %.</li>
+  <li>Cena na $199.91. Trail drop = −2.005 %. <em>Trailing Stop</em> sepne, pozice se zavře v zisku ~0 %.</li>
+</ol>
+
+<div class="box warn">
+  <div class="title">Pozor na pořadí TP vs trailing</div>
+  Vzhledem k tomu, že TP +3 % se vyhodnocuje <em>před</em> trailing stopem,
+  pozice typicky <strong>nikdy nedosáhne</strong> trailing stop scénáře, pokud cena pokračuje vzhůru —
+  vyletí přes 3 % a TP ji okamžitě zavře. Trailing reálně chrání jen úzké pásmo zisku 0–3 %,
+  kde se cena otočí dolů, aniž by dosáhla TP.
+</div>
+
+<h3>Scénář C — stop-loss</h3>
+<ol>
+  <li>Nákup NFLX za $400.</li>
+  <li>Trh se obrátí, NFLX padá na $371 (−7.25 %).</li>
+  <li>Při příštím SELL cyklu (do 5 min) <code>should_exit</code> vrátí <em>Stop Loss</em>. Pozice se zavře.</li>
+</ol>
+
+<h3>Scénář D — time stop</h3>
+<ol>
+  <li>Nákup KO za $58.</li>
+  <li>Cena se 5 obchodních dnů (120 hodinových svíček) drží v pásmu $57.5 – $59 — žádný TP, žádný SL.</li>
+  <li>Po 120. hodinové svíčce <code>should_exit</code> vrátí <em>Time Stop</em>, pozice se zavře a kapitál se uvolní pro lepší příležitost.</li>
+</ol>
+
+<h2 id="omezeni">9. Známá omezení a designové rysy</h2>
+
+<table>
+  <thead>
+    <tr><th>Rys</th><th>Důsledek</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BUY pouze 1 titul / hodinu</td>
+      <td>
+        I když strategie najde 5 vyhovujících tikerů v 10:31, nakoupí se jen jeden.
+        Plné portfolio se naplní nejdříve za 5 hodin (10:31 → 14:31).
+      </td>
+    </tr>
+    <tr>
+      <td>Žádný fallback při kolizi top signálu</td>
+      <td>
+        Když je nejsilnější kandidát už v portfoliu nebo má pending order, celý cyklus skončí.
+        Druhý nejlepší se neuvažuje. Lze jednoduše rozšířit (cyklus přes <code>signals</code>),
+        ale dnes to tak není.
+      </td>
+    </tr>
+    <tr>
+      <td>Ref. cena v DAILY módu = závěr předchozího dne</td>
+      <td>
+        Drop je počítán proti close předchozího obchodního dne, ne proti dnešnímu open.
+        To znamená, že u titulu, který otevřel s gap-down, bot vidí dropping window celý den
+        — i když intradenně cena již vystoupala.
+      </td>
+    </tr>
+    <tr>
+      <td>Bez intraday refreshe RSI/MACD pro otevřené pozice</td>
+      <td>
+        Exit logika (<code>should_exit</code>) používá pouze cenu a počet barů — ne RSI ani MACD.
+        Profit se realizuje výhradně přes pevné +3 % / SL / trailing / time.
+      </td>
+    </tr>
+    <tr>
+      <td>TP +3 % obvykle vyhodí pozici dřív, než se aktivuje trailing</td>
+      <td>
+        Vzhledem k pořadí vyhodnocení (TP → SL → Trailing → Time) trailing reálně chrání
+        jen velmi úzké pásmo zisku 0–3 %, kde se cena otočí dolů, aniž by dosáhla TP.
+      </td>
+    </tr>
+    <tr>
+      <td>Žádný averaging-in</td>
+      <td>
+        Pokud je ticker v portfoliu, generátor signálů ho přeskakuje. Bot nikdy nedokupuje stejný titul.
+      </td>
+    </tr>
+    <tr>
+      <td>HWM se po prodeji maže</td>
+      <td>
+        Pokud bot ticker prodá a v dalším dni ho znovu koupí, trailing stop začíná od nuly.
+      </td>
+    </tr>
+    <tr>
+      <td>Kapacita IB market data</td>
+      <td>
+        Bot používá <code>reqMarketDataType(3)</code> = <strong>delayed data</strong> (15-min zpoždění)
+        pro realtime ceny IB. Skutečný BUY skener používá yfinance hodinové close ceny — ty mohou být
+        zase mírně rozdílné od IB market price.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="box ok">
+  <div class="title">Backtest výsledky (referenční)</div>
+  Na 6měsíčním backtestu na 5 tickerech vyšla EnhancedDipBuyStrategy lépe než původní DipBuy:
+  <ul>
+    <li><strong>DipBuy:</strong> +6.78 %, Sharpe 1.14, Win Rate 90.5 %, Max DD −4.70 %</li>
+    <li><strong>EnhancedDipBuy:</strong> +8.35 %, Sharpe 1.49, Win Rate 75.9 %, Max DD −4.70 %</li>
+  </ul>
+  Enhanced má nižší win-rate, ale mnohem lepší risk-adjusted výnos — time stop drží v šachu malé ztráty,
+  které by jinak rostly.
+</div>
+
+<footer>
+  Dokument vygenerován z aktuálního stavu kódu v <code>app/strategy.py</code>,
+  <code>app/indicators.py</code>, <code>app/bot.py</code> a <code>app/config.yaml</code>.
+  Pokud se některý parametr změní, je třeba dokument aktualizovat ručně.
+</footer>
+
+</div>
+</body>
+</html>

@@ -16,7 +16,9 @@ Projekt využívá **IB Gateway**, **Python (ib_insync)**, **SQLite** pro perzis
   - IB Gateway
   - Trading bot
   - Dashboard (nginx)
-- Odolné vůči restartům (state + dedupe)
+- Odolné vůči restartům (state + dedupe SELL cooldown)
+- **NYSE kalendář svátků** přes `pandas_market_calendars` (Memorial Day, Thanksgiving, ranní zavření atd.)
+- **Wait-for-fill** ověření obchodů přes IB (do DB se zapisuje až po reálném fillu)
 - Telegram notifikace
 - Připravené na dlouhodobý běh (server / VPS)
 
@@ -117,7 +119,7 @@ strategy:
   trailing_stop_pct: 0.02       # 2% od high water mark
 
   use_time_stop: true           # Časový stop
-  time_stop_bars: 120           # Zavřít po ~5 dnech (120 hodinových barů)
+  time_stop_bars: 240           # POZOR: v live běhu se počítá ve wall-clock hodinách (viz Známé limity)
 
   use_macd: true                # MACD konfirmace signálu
   use_bollinger: true           # Bollinger Bands konfirmace
@@ -160,8 +162,11 @@ docker compose restart bot
 Po změně `requirements.txt` nebo `Dockerfile` je nutný rebuild:
 
 ```bash
-docker compose build bot && docker compose up -d bot
+docker compose build bot && docker compose up -d
 ```
+
+> **Pozn.:** Vždy `docker compose up -d` (bez konkrétního service), jinak compose recreatuje
+> síť a sourozenecké kontejnery (`dashboard`) v ní zůstanou odpojené.
 
 ---
 
@@ -282,7 +287,7 @@ Vylepšená strategie se scoring systémem a dalšími indikátory:
 - **Take Profit**: zisk >= 3%
 - **Stop Loss**: ztráta >= 7%
 - **Trailing Stop**: cena klesla 2% od maxima (jen když v zisku)
-- **Time Stop**: pozice držena > 120 hodin (~5 dní)
+- **Time Stop**: pozice držena déle než `time_stop_bars` (live: wall-clock hodiny, backtest: počet barů — viz Známé limity)
 
 ---
 
@@ -339,6 +344,20 @@ docker compose exec bot python /app/import_csv_to_sqlite.py
 ```
 
 CSV musí být v `volumes/data/trade_history.csv`.
+
+---
+
+## Známé limity a roadmapa
+
+| # | Téma | Popis |
+|---|------|-------|
+| 1 | **Backtest ≠ live u Time Stop** | `_estimate_holding_hours` v `bot.py` počítá držení ve wall-clock hodinách (`datetime.now()`), ale backtest dodává počet hodinových barů. S `time_stop_bars: 240` to v live znamená 240 wall-hours ≈ 10 kalendářních dní, zatímco backtest interpretuje 240 trading barů ≈ 37 trading dnů. Metriky z backtestu (Sharpe, return) nepředpovídají live chování. |
+| 2 | **`requirements.txt` bez pinů** | Build z 2026-05-25 dostal `pandas 3.0.3`, `numpy 2.4.6`, `yfinance 1.4.0`. Další rebuild může dostat něco nekompatibilního. Doporučení: `docker compose exec bot pip freeze > app/requirements.txt`. |
+| 3 | **`bot.py` má 1600+ řádků** | Single-file design — scheduler, IB klient, strategie, dashboard generátor, persistent state v jednom. Refactor by usnadnil testování. |
+| 4 | **Bez unit testů** | `app/strategy.py` je čistá funkce — perfektní kandidát na `pytest`. Pomohlo by zabránit regresím (např. fill-verification bug, který se objevil 2026-05-25). |
+| 5 | **Pouze MarketOrder** | Otevírací volatilita (9:30 NY) může způsobit horší fill. LimitOrder s pásmem nebo počkat 5-15 min po openu by chovalo se lépe. |
+| 6 | **Bez risk-managed sizingu** | `scan_and_buy` určuje qty mechanicky. Žádný "risk no more than 1% on stop loss" model. |
+| 7 | **`bot.py.bak`** | Starý soubor v repu, viz `app/bot.py.bak`. Pokud není potřeba, smazat. |
 
 ---
 

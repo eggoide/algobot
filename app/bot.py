@@ -15,6 +15,12 @@ import yaml
 import yfinance as yf
 from ib_insync import IB, MarketOrder, Stock
 
+try:
+    import pandas_market_calendars as mcal
+    _NYSE_CAL = mcal.get_calendar("NYSE")
+except Exception:
+    _NYSE_CAL = None
+
 from db import db_connect, insert_trade, last_trades, cumulative_pnl_series, get_buy_time
 from indicators import rsi_wilder
 from strategy import EnhancedDipBuyStrategy
@@ -59,6 +65,10 @@ LOG_TAIL_FILE = os.getenv("LOG_TAIL_FILE", "/reports/log_tail.txt")
 MANUAL_CAPITAL_LIMIT = float(CAPITAL.get("manual_capital_limit", 10000))
 MAX_POSITIONS = int(CAPITAL.get("max_positions", 5))
 FEE = float(CAPITAL.get("fee_usd", 1.0))
+
+# Anti-duplicate SELL: cooldown per symbol after any sell attempt (filled or not)
+SELL_COOLDOWN_SEC = 30 * 60
+_recent_sell_attempts: Dict[str, float] = {}
 
 DIP_MODE = str(STRAT.get("dip_mode", "DAILY")).upper()
 BUY_DROP = float(STRAT.get("buy_drop", 0.02))
@@ -193,19 +203,55 @@ def send_telegram_msg(message: str) -> None:
 def get_ny_time() -> datetime.datetime:
     return datetime.datetime.now(NYC_TZ)
 
+def _nyse_schedule(start_day, end_day):
+    """Return NYSE schedule (open/close per day) or None if calendar unavailable."""
+    if _NYSE_CAL is None:
+        return None
+    try:
+        return _NYSE_CAL.schedule(start_date=start_day, end_date=end_day)
+    except Exception:
+        return None
+
 def is_market_open() -> bool:
     ny_now = get_ny_time()
+
+    # Fast weekend reject (regardless of calendar availability)
     if ny_now.weekday() > 4:
         return False
+
+    sched = _nyse_schedule(ny_now.date(), ny_now.date())
+    if sched is not None and not sched.empty:
+        # Use actual NYSE open/close (handles holidays + early closes 1pm dny)
+        market_open = sched.iloc[0]["market_open"].tz_convert(NYC_TZ).to_pydatetime()
+        market_close = sched.iloc[0]["market_close"].tz_convert(NYC_TZ).to_pydatetime()
+        return market_open <= ny_now <= market_close
+    if sched is not None and sched.empty:
+        # Holiday — NYSE má prázdný rozvrh pro tento den
+        return False
+
+    # Fallback (calendar import failed): původní weekday + 9:30–16:00 logika
     market_open = ny_now.replace(hour=9, minute=30, second=0, microsecond=0)
     market_close = ny_now.replace(hour=16, minute=0, second=0, microsecond=0)
     return market_open <= ny_now <= market_close
 
 def seconds_until_market_open() -> int:
     ny_now = get_ny_time()
-    today_open = ny_now.replace(hour=9, minute=30, second=0, microsecond=0)
 
-    if ny_now < today_open:
+    # Use NYSE calendar if available — handles holidays correctly
+    if _NYSE_CAL is not None:
+        try:
+            end = (ny_now + datetime.timedelta(days=14)).date()
+            sched = _NYSE_CAL.schedule(start_date=ny_now.date(), end_date=end)
+            for _, row in sched.iterrows():
+                m_open = row["market_open"].tz_convert(NYC_TZ).to_pydatetime()
+                if m_open > ny_now:
+                    return max(60, int((m_open - ny_now).total_seconds()))
+        except Exception:
+            pass
+
+    # Fallback (calendar failed): weekday-only logic
+    today_open = ny_now.replace(hour=9, minute=30, second=0, microsecond=0)
+    if ny_now < today_open and ny_now.weekday() <= 4:
         return max(60, int((today_open - ny_now).total_seconds()))
 
     next_day = ny_now + datetime.timedelta(days=1)
@@ -1094,9 +1140,28 @@ def manage_positions_sell_only(conn, ib: IB):
         log(f"{contract.symbol} PnL {pnl_pct*100:+.2f}% (Cena {curr_price:.2f}, hold {holding_bars}h){' -> ' + reason if reason else ''}")
 
         if exit_signal:
+            # Cooldown: pokud jsme se v posledních SELL_COOLDOWN_SEC pokusili prodat
+            # (a order se nepotvrdil), neopakuj. Brání duplicitním phantom SELL.
+            last_attempt = _recent_sell_attempts.get(contract.symbol, 0.0)
+            if time.time() - last_attempt < SELL_COOLDOWN_SEC:
+                remaining = int(SELL_COOLDOWN_SEC - (time.time() - last_attempt))
+                log(f"{contract.symbol} SELL skip (cooldown {remaining}s po předchozím pokusu)", "WARNING")
+                portfolio_data.append({
+                    'symbol': contract.symbol,
+                    'qty': pos.position,
+                    'avgCost': pos.avgCost,
+                    'marketPrice': curr_price,
+                    'pnl_pct': pnl_pct
+                })
+                continue
+
+            # Resync open orders ze serveru (důležité po reconnectu)
             try:
-                if any(o.contract.symbol == contract.symbol and o.order.action == 'SELL' for o in ib.openOrders()):
+                ib.reqAllOpenOrders()
+                ib.sleep(0.3)
+                if any(t.contract.symbol == contract.symbol and t.order.action == 'SELL' for t in ib.openTrades()):
                     log(f"{contract.symbol} SELL už existuje v openOrders, skip", "WARNING")
+                    _recent_sell_attempts[contract.symbol] = time.time()
                     portfolio_data.append({
                         'symbol': contract.symbol,
                         'qty': pos.position,
@@ -1105,19 +1170,46 @@ def manage_positions_sell_only(conn, ib: IB):
                         'pnl_pct': pnl_pct
                     })
                     continue
-            except Exception:
-                pass
+            except Exception as e:
+                log(f"{contract.symbol} openOrders check failed: {e}", "WARNING")
 
             sell_contract = Stock(contract.symbol, 'SMART', 'USD')
             order = MarketOrder('SELL', pos.position, tif='DAY')
-            ib.placeOrder(sell_contract, order)
+            trade = ib.placeOrder(sell_contract, order)
+            _recent_sell_attempts[contract.symbol] = time.time()
 
-            ib.sleep(1)
-            realized = (curr_price - pos.avgCost) * pos.position - FEE
-            log(f"TRADE SELL {contract.symbol} qty={int(pos.position)} price={curr_price:.2f} realized=${realized:.2f} reason={reason}")
-            log_trade(conn, 'SELL', contract.symbol, curr_price, int(pos.position), float(realized), reason)
-            send_telegram_msg(f"SELL {contract.symbol} ({reason}) PnL ${realized:.2f}")
-            positions_changed = True
+            # Čekej na fill nebo terminální stav (až 8 s)
+            deadline = time.time() + 8.0
+            while time.time() < deadline:
+                ib.sleep(0.5)
+                st = trade.orderStatus.status
+                if st in ('Filled', 'Cancelled', 'Inactive', 'ApiCancelled'):
+                    break
+
+            status = trade.orderStatus.status
+            filled_qty = int(trade.orderStatus.filled or 0)
+            fill_price = float(trade.orderStatus.avgFillPrice or 0.0)
+            if fill_price <= 0:
+                fill_price = curr_price
+
+            if status == 'Filled' and filled_qty > 0:
+                realized = (fill_price - pos.avgCost) * filled_qty - FEE
+                log(f"TRADE SELL {contract.symbol} qty={filled_qty} price={fill_price:.2f} realized=${realized:.2f} reason={reason} [FILLED]")
+                log_trade(conn, 'SELL', contract.symbol, fill_price, filled_qty, float(realized), reason)
+                send_telegram_msg(f"SELL {contract.symbol} ({reason}) PnL ${realized:.2f}")
+                positions_changed = True
+            else:
+                # Order NEPROŠEL → žádný DB zápis, žádný Telegram trade alert.
+                # Cooldown už je nastavený, příští cyklus to nezopakuje.
+                log(f"{contract.symbol} SELL nepotvrzen (status={status}, filled={filled_qty}) — bez DB zápisu, cooldown {SELL_COOLDOWN_SEC//60} min", "ERROR")
+                send_telegram_msg(f"WARN: SELL {contract.symbol} nepotvrzen ({status}) — ručně zkontroluj IB")
+                portfolio_data.append({
+                    'symbol': contract.symbol,
+                    'qty': pos.position,
+                    'avgCost': pos.avgCost,
+                    'marketPrice': curr_price,
+                    'pnl_pct': pnl_pct
+                })
         else:
             portfolio_data.append({
                 'symbol': contract.symbol,
@@ -1229,7 +1321,7 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
 
         has_pos = any(p.contract.symbol == ib_sym for p in current_positions)
         try:
-            has_ord = any(o.contract.symbol == ib_sym and o.order.action == 'BUY' for o in ib.openOrders())
+            has_ord = any(t.contract.symbol == ib_sym and t.order.action == 'BUY' for t in ib.openTrades())
         except Exception:
             has_ord = False
 
@@ -1427,7 +1519,11 @@ def main_loop():
                             auto_refresh_sec=DASH_REFRESH_OPEN_SEC
                         )
 
-                # BUY větev beze změn
+                # BUY větev: refresh now_ny, aby SELL→BUY ve stejné iteraci
+                # neztratil otevřené okno kvůli stale snapshotu z začátku iterace
+                # (např. probuzení v :30:59 → SELL fire → BUY check by jinak proběhl
+                # se stale časem :30:59 a okno minute 31–33 by se minulo).
+                now_ny = get_ny_time()
                 if in_buy_window(now_ny):
                     buy_id = buy_cycle_id_hour(now_ny)
                     if buy_id != last_buy_id:
@@ -1493,7 +1589,9 @@ def main_loop():
                 next_buy = next_buy_run_time(now_ny)
                 next_wake = min(next_sell, next_buy)
 
-                wait = max(10, seconds_until(next_wake))
+                # +2s buffer, aby se bot probudil UVNITŘ okna (např. :31:01),
+                # ne těsně před ním (:30:59) kvůli undershootu time.sleep().
+                wait = max(10, seconds_until(next_wake) + 2)
                 log(f"NY {now_ny.strftime('%H:%M:%S')} | next SELL {next_sell.strftime('%H:%M:%S')} | next BUY {next_buy.strftime('%H:%M:%S')} | sleep {wait}s")
                 countdown_sleep(wait, "Sleep:")
 

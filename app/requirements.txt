@@ -8,4 +8,5 @@ lxml
 html5lib
 PyYAML
 pyarrow
+pandas_market_calendars
 
