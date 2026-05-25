@@ -1,0 +1,176 @@
+{% extends "_base.html" %}
+{% block title %}Backtest {{ job_id }}{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Backtest <span class="mono small">{{ job_id }}</span></h1>
+<div id="status-line" class="muted">Načítám…</div>
+
+<div id="content" class="hidden">
+  <section class="card">
+    <h2>Souhrn</h2>
+    <div class="kv" id="kv"></div>
+  </section>
+
+  <section class="card">
+    <h2>Equity křivka</h2>
+    <canvas id="equity-chart" height="120"></canvas>
+  </section>
+
+  <section class="card">
+    <h2>Důvody exitů</h2>
+    <canvas id="reasons-chart" height="120"></canvas>
+  </section>
+
+  <section class="card">
+    <h2>Obchody (<span id="trade-count">0</span>)</h2>
+    <input id="filter" placeholder="filtruj symbol…" class="filter">
+    <table class="trades" id="trades-table">
+      <thead><tr>
+        <th>Čas</th><th>Akce</th><th>Symbol</th><th>Cena</th><th>Qty</th>
+        <th>PnL</th><th>Fee</th><th>Bars</th><th>Důvod</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Config</h2>
+    <pre id="config-json" class="small"></pre>
+  </section>
+
+  <section class="card">
+    <h2>Log (posledních 200 řádků)</h2>
+    <pre id="log" class="small"></pre>
+  </section>
+</div>
+
+<script>
+const jobId = "{{ job_id }}";
+
+async function loadResult() {
+  const statusLine = document.getElementById('status-line');
+  while (true) {
+    const r = await fetch('/backtest/job/' + jobId);
+    const j = await r.json();
+    statusLine.textContent = `Status: ${j.status}` + (j.progress ? ` — ${j.progress}` : '');
+    if (j.status === 'done') break;
+    if (j.status === 'error') { statusLine.textContent = 'CHYBA: ' + j.error; return; }
+    await new Promise(res => setTimeout(res, 1500));
+  }
+  const rr = await fetch('/backtest/result/' + jobId);
+  const data = await rr.json();
+  render(data);
+  document.getElementById('content').classList.remove('hidden');
+  statusLine.classList.add('hidden');
+}
+
+function fmtMoney(n) { return '$' + Number(n).toLocaleString('en-US', {maximumFractionDigits: 2}); }
+function fmtPct(n)   { return Number(n).toFixed(2) + '%'; }
+function fmtSigned(n){ const s = (n >= 0 ? '+' : ''); return s + Number(n).toFixed(2); }
+
+function render(data) {
+  const m = data.metrics;
+  const c = data.config;
+
+  const kv = document.getElementById('kv');
+  const items = [
+    ['Strategie', data.strategy_name],
+    ['Symbolů', c.symbols.length],
+    ['Period / interval', `${c.period} / ${c.interval}`],
+    ['Kapitál', fmtMoney(c.initial_capital)],
+    ['Final equity', fmtMoney(m.final_equity)],
+    ['Return', `${fmtPct(m.total_return_pct)} (${fmtMoney(m.total_return)})`, m.total_return_pct >= 0 ? 'win' : 'loss'],
+    ['Benchmark', m.benchmark_return_pct != null ? fmtPct(m.benchmark_return_pct) : '—'],
+    ['Alpha', m.alpha != null ? fmtPct(m.alpha) : '—', (m.alpha || 0) >= 0 ? 'win' : 'loss'],
+    ['Sharpe', m.sharpe_ratio?.toFixed(2)],
+    ['Sortino', m.sortino_ratio === Infinity || m.sortino_ratio == null ? '∞' : m.sortino_ratio.toFixed(2)],
+    ['Calmar', m.calmar_ratio === Infinity || m.calmar_ratio == null ? '∞' : m.calmar_ratio.toFixed(2)],
+    ['Max DD', fmtPct(m.max_drawdown_pct), 'loss'],
+    ['Trades (B/S)', `${m.buy_trades}/${m.sell_trades}`],
+    ['Win rate', fmtPct(m.win_rate || 0)],
+    ['Profit factor', (m.profit_factor === Infinity ? '∞' : (m.profit_factor || 0).toFixed(2))],
+    ['Avg PnL', fmtMoney(m.avg_pnl || 0)],
+    ['Best / Worst', `${fmtMoney(m.best_trade || 0)} / ${fmtMoney(m.worst_trade || 0)}`],
+    ['Total fees', fmtMoney(m.total_fees || 0)],
+    ['Avg holding', (m.avg_holding_bars || 0).toFixed(0) + ' bars'],
+    ['Slippage', (c.slippage_pct * 100).toFixed(3) + '%'],
+    ['Fee model', c.fee_model],
+    ['Fill', c.use_next_open ? 'next-open' : 'close (legacy)'],
+  ];
+  kv.innerHTML = items.map(([k, v, cls]) =>
+    `<div class="kv-row"><span class="k">${k}</span><span class="v ${cls || ''}">${v}</span></div>`
+  ).join('');
+
+  // Equity chart
+  const eq = data.equity_curve;
+  const labels = eq.map(e => e.ts ? e.ts.slice(0, 16).replace('T', ' ') : String(e.i));
+  const equity = eq.map(e => e.equity);
+  const ds = [{
+    label: 'Equity',
+    data: equity, borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.15)',
+    tension: 0.05, pointRadius: 0, fill: true,
+  }];
+  if (data.benchmark_equity && data.benchmark_equity.length) {
+    ds.push({
+      label: 'Benchmark',
+      data: data.benchmark_equity,
+      borderColor: '#58a6ff', borderDash: [4, 4], tension: 0.05, pointRadius: 0, fill: false,
+    });
+  }
+  new Chart(document.getElementById('equity-chart'), {
+    type: 'line',
+    data: { labels, datasets: ds },
+    options: {
+      responsive: true, interaction: {mode: 'index', intersect: false},
+      plugins: { legend: {labels: {color: '#cfd6dc'}} },
+      scales: {
+        x: { ticks: { color: '#8b949e', maxTicksLimit: 12 }, grid: {color: '#222'} },
+        y: { ticks: { color: '#8b949e' }, grid: {color: '#222'} },
+      },
+    },
+  });
+
+  // Reasons pie
+  const reasons = m.exit_reasons || {};
+  new Chart(document.getElementById('reasons-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(reasons),
+      datasets: [{ data: Object.values(reasons), backgroundColor: ['#3fb950','#f85149','#d29922','#58a6ff','#a371f7','#ff7b72'] }],
+    },
+    options: { plugins: { legend: { labels: {color: '#cfd6dc'} } } },
+  });
+
+  // Trades table
+  const tbody = document.querySelector('#trades-table tbody');
+  document.getElementById('trade-count').textContent = data.trades.length;
+  function renderTrades(filter) {
+    const f = (filter || '').trim().toUpperCase();
+    const rows = data.trades.filter(t => !f || t.symbol.includes(f));
+    tbody.innerHTML = rows.map(t => `
+      <tr class="${t.action === 'SELL' ? (t.pnl >= 0 ? 'win' : 'loss') : ''}">
+        <td class="small mono">${t.ts ? t.ts.slice(0,16).replace('T',' ') : ''}</td>
+        <td>${t.action}</td>
+        <td class="mono">${t.symbol}</td>
+        <td>${fmtMoney(t.price)}</td>
+        <td>${t.qty}</td>
+        <td>${t.action === 'SELL' ? fmtMoney(t.pnl) : '—'}</td>
+        <td class="small">${fmtMoney(t.fee)}</td>
+        <td class="small">${t.holding_bars || ''}</td>
+        <td class="small">${t.reason}</td>
+      </tr>
+    `).join('');
+  }
+  renderTrades('');
+  document.getElementById('filter').addEventListener('input', e => renderTrades(e.target.value));
+
+  document.getElementById('config-json').textContent = JSON.stringify(c, null, 2);
+  document.getElementById('log').textContent = (data.log_tail || []).join('\n');
+}
+
+loadResult();
+</script>
+{% endblock %}

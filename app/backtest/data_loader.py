@@ -19,8 +19,9 @@ def _ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
 
 
-def _cache_path(cache_dir: str, symbol: str, interval: str) -> str:
-    return os.path.join(cache_dir, f"{symbol}_{interval}.parquet")
+def _cache_path(cache_dir: str, symbol: str, interval: str, auto_adjust: bool = True) -> str:
+    suffix = "" if auto_adjust else "_raw"
+    return os.path.join(cache_dir, f"{symbol}_{interval}{suffix}.parquet")
 
 
 def download_symbol(
@@ -30,10 +31,11 @@ def download_symbol(
     cache_dir: str = DEFAULT_CACHE_DIR,
     force_refresh: bool = False,
     max_cache_age_hours: int = 24,
+    auto_adjust: bool = True,
 ) -> Optional[pd.DataFrame]:
     """Download OHLCV data for a single symbol, with Parquet caching."""
     _ensure_dir(cache_dir)
-    cp = _cache_path(cache_dir, symbol, interval)
+    cp = _cache_path(cache_dir, symbol, interval, auto_adjust)
 
     # Check cache
     if not force_refresh and os.path.exists(cp):
@@ -54,7 +56,7 @@ def download_symbol(
             period=period,
             interval=interval,
             progress=False,
-            auto_adjust=True,
+            auto_adjust=auto_adjust,
             threads=False,
         )
         if df.empty:
@@ -83,13 +85,14 @@ def download_multiple(
     cache_dir: str = DEFAULT_CACHE_DIR,
     force_refresh: bool = False,
     max_cache_age_hours: int = 24,
+    auto_adjust: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     """Download data for multiple symbols. Returns dict of symbol -> DataFrame."""
     result = {}
     total = len(symbols)
     for i, sym in enumerate(symbols):
         print(f"  [{i+1}/{total}] {sym}...", end=" ", flush=True)
-        df = download_symbol(sym, period, interval, cache_dir, force_refresh, max_cache_age_hours)
+        df = download_symbol(sym, period, interval, cache_dir, force_refresh, max_cache_age_hours, auto_adjust)
         if df is not None and not df.empty:
             result[sym] = df
             print(f"{len(df)} bars")
@@ -105,6 +108,7 @@ def download_bulk(
     cache_dir: str = DEFAULT_CACHE_DIR,
     force_refresh: bool = False,
     max_cache_age_hours: int = 24,
+    auto_adjust: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     """
     Bulk download using yfinance's multi-ticker support.
@@ -118,7 +122,7 @@ def download_bulk(
         all_cached = True
         cached = {}
         for sym in symbols:
-            cp = _cache_path(cache_dir, sym, interval)
+            cp = _cache_path(cache_dir, sym, interval, auto_adjust)
             if os.path.exists(cp):
                 try:
                     mtime = datetime.datetime.fromtimestamp(os.path.getmtime(cp))
@@ -145,7 +149,7 @@ def download_bulk(
             interval=interval,
             progress=True,
             group_by='ticker',
-            auto_adjust=True,
+            auto_adjust=auto_adjust,
             threads=True,
         )
 
@@ -162,7 +166,7 @@ def download_bulk(
                     continue
 
                 # Cache
-                cp = _cache_path(cache_dir, sym, interval)
+                cp = _cache_path(cache_dir, sym, interval, auto_adjust)
                 try:
                     df.to_parquet(cp)
                 except Exception:
@@ -177,7 +181,7 @@ def download_bulk(
 
     except Exception as e:
         print(f"[data_loader] Bulk download failed: {e}. Falling back to individual downloads.")
-        return download_multiple(symbols, period, interval, cache_dir, force_refresh, max_cache_age_hours)
+        return download_multiple(symbols, period, interval, cache_dir, force_refresh, max_cache_age_hours, auto_adjust)
 
 
 def get_sp100_tickers() -> List[str]:

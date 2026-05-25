@@ -1090,13 +1090,36 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
 # CORE: SELL
 # =========================================================
 def _estimate_holding_hours(conn, symbol: str) -> int:
-    """Estimate how many hourly bars a position has been held, from DB buy time."""
+    """Count NYSE trading hours since the position was opened.
+
+    Matches the backtest semantic where 1 bar == 1 hourly trading bar.
+    Falls back to wall-clock hours if NYSE calendar is unavailable, but logs the divergence.
+    """
     buy_ts = get_buy_time(conn, symbol)
     if not buy_ts:
         return 0
     try:
         buy_dt = datetime.datetime.fromisoformat(buy_ts)
         now = datetime.datetime.now()
+        if now <= buy_dt:
+            return 0
+
+        if _NYSE_CAL is not None:
+            try:
+                sched = _NYSE_CAL.schedule(start_date=buy_dt.date(), end_date=now.date())
+                total = 0.0
+                for _, row in sched.iterrows():
+                    m_open = row["market_open"].tz_convert(NYC_TZ).to_pydatetime().replace(tzinfo=None)
+                    m_close = row["market_close"].tz_convert(NYC_TZ).to_pydatetime().replace(tzinfo=None)
+                    # Clip to [buy_dt, now]
+                    start = max(m_open, buy_dt)
+                    end = min(m_close, now)
+                    if end > start:
+                        total += (end - start).total_seconds() / 3600.0
+                return max(0, int(total))
+            except Exception:
+                pass
+
         hours = int((now - buy_dt).total_seconds() / 3600)
         return max(0, hours)
     except Exception:

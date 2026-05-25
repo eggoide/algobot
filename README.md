@@ -52,21 +52,32 @@ algobot/
 │   ├── strategy.py             # Abstrakce strategií (DipBuy + EnhancedDipBuy)
 │   ├── config.yaml             # Konfigurace strategie a parametrů
 │   ├── run_backtest.py         # CLI pro backtesting
-│   ├── requirements.txt        # Python závislosti
+│   ├── requirements.txt        # Python závislosti (bot)
 │   ├── wait_for_port.py        # Startup helper (čeká na IB Gateway)
 │   ├── import_csv_to_sqlite.py # Import CSV do SQLite
 │   ├── sp100_tickers_cache.txt # Cache S&P 100 tickerů
-│   └── backtest/               # Backtesting framework
-│       ├── __init__.py
-│       ├── engine.py           # Backtest engine + ParameterOptimizer
-│       ├── data_loader.py      # Stahování a cachování historických dat
-│       ├── portfolio.py        # Simulace portfolia
-│       ├── metrics.py          # Výpočet metrik (Sharpe, MaxDD, win rate...)
-│       └── report.py           # HTML report generátor
+│   ├── backtest/               # Backtesting framework
+│   │   ├── __init__.py
+│   │   ├── engine.py           # Backtest engine + ParameterOptimizer (slippage, IB fees, next-open fill)
+│   │   ├── data_loader.py      # Stahování a cachování historických dat
+│   │   ├── portfolio.py        # Simulace portfolia (slippage + fee model)
+│   │   ├── metrics.py          # Výpočet metrik (Sharpe, MaxDD, win rate...)
+│   │   └── report.py           # HTML report generátor (CLI)
+│   └── web/                    # Flask /backtest service
+│       ├── app.py              # Routes + blueprint
+│       ├── jobs.py             # In-memory async job store
+│       ├── runner.py           # run_single + run_replay (live vs backtest)
+│       ├── requirements.txt    # Flask + gunicorn závislosti
+│       ├── templates/          # _base, index, result, replay (Jinja)
+│       └── static/             # style.css
 │
 ├── docker/
-│   └── bot/
-│       └── Dockerfile
+│   ├── bot/
+│   │   └── Dockerfile
+│   ├── web/
+│   │   └── Dockerfile          # Flask container (gunicorn)
+│   └── dashboard/
+│       └── nginx.conf          # Reverse proxy /backtest/* → web:8081
 │
 ├── volumes/                    # Runtime data (NEcommitovat)
 │   ├── data/                   # SQLite DB, logy, state
@@ -175,6 +186,16 @@ docker compose build bot && docker compose up -d
 - URL: `http://<server-ip>:8080`
 - Auto-refresh každých 60s (trh otevřený) / 600s (zavřený)
 - Live status a logy přes AJAX polling
+
+### `/backtest` — webový backtester
+
+- URL: `http://<server-ip>:8080/backtest/`
+- Realistický execution model: **slippage**, **IB fee** (max $1, $0.005/share), **fill na Open dalšího baru** (žádný look-ahead bias)
+- Formulář: strategie, symboly, období, parametry strategie (přepíší config.yaml)
+- Async joby s polling statusem — můžeš zavřít browser, job běží v containeru
+- **Live vs Backtest Replay**: jedno tlačítko vezme tvoje skutečné trades z `algobot.db`, spustí backtest na stejných symbolech a období, vypíše divergenci po symbolu
+- JSON API: `POST /backtest/run`, `POST /backtest/replay`, `GET /backtest/job/<id>`, `GET /backtest/result/<id>`
+- Servisováno přes Flask v kontejneru `algobot-web` (port 8081 interně, nginx proxy `/backtest/*`)
 
 ---
 
@@ -347,17 +368,36 @@ CSV musí být v `volumes/data/trade_history.csv`.
 
 ---
 
+## Backtest accuracy model
+
+Backtest engine (`app/backtest/engine.py` + `portfolio.py`) byl 2026-05-25 přepracován pro realistický run, aby čísla odpovídala live obchodování v IB paper:
+
+| Vlastnost | Default | Význam |
+|-----------|---------|--------|
+| `backtest.slippage_pct` | `0.0005` (5 bp) | BUY platí o slippage víc, SELL dostane o slippage míň |
+| `backtest.fee_model` | `ib` | `max($1, $0.005 × qty)` — skutečný IB ceník. `flat` = $1/trade pro zpětnou kompatibilitu |
+| `backtest.use_next_open` | `true` | Signál na Close baru N → fill na Open baru N+1 (žádný look-ahead bias) |
+| `backtest.auto_adjust` | `true` | yfinance dividend-adjusted close. `false` = raw close (lepší pro RSI/MACD signály na dividendových akciích) |
+
+Time Stop má teď stejnou sémantiku v live i backtest: počet NYSE hodinových barů (přes `pandas_market_calendars`).
+
+Validace: replay z live `algobot.db` (Dec 2025 → May 2026, 26 symbolů) vrátil divergenci jen 12 % (live `-$589` vs backtest `-$661`). Detail v `/backtest/replay/<id>`.
+
+---
+
 ## Známé limity a roadmapa
 
 | # | Téma | Popis |
 |---|------|-------|
-| 1 | **Backtest ≠ live u Time Stop** | `_estimate_holding_hours` v `bot.py` počítá držení ve wall-clock hodinách (`datetime.now()`), ale backtest dodává počet hodinových barů. S `time_stop_bars: 240` to v live znamená 240 wall-hours ≈ 10 kalendářních dní, zatímco backtest interpretuje 240 trading barů ≈ 37 trading dnů. Metriky z backtestu (Sharpe, return) nepředpovídají live chování. |
-| 2 | **`requirements.txt` bez pinů** | Build z 2026-05-25 dostal `pandas 3.0.3`, `numpy 2.4.6`, `yfinance 1.4.0`. Další rebuild může dostat něco nekompatibilního. Doporučení: `docker compose exec bot pip freeze > app/requirements.txt`. |
+| 1 | **Survivorship bias** | `get_sp100_tickers()` čte aktuální S&P 100 z Wikipedie. Tickers, kteří vypadli (typicky podvýkonní), v backtestu nejsou — bias směrem nahoru. Řešení: point-in-time historický index list (CRSP nebo placené API). |
+| 2 | **`requirements.txt` bez pinů** | Build z 2026-05-25 dostal `pandas 3.0.3`, `numpy 2.4.6`, `yfinance 1.4.0`, `flask 3.0.3`. Další rebuild může dostat něco nekompatibilního. Doporučení: `docker compose exec bot pip freeze > app/requirements.txt`. |
 | 3 | **`bot.py` má 1600+ řádků** | Single-file design — scheduler, IB klient, strategie, dashboard generátor, persistent state v jednom. Refactor by usnadnil testování. |
 | 4 | **Bez unit testů** | `app/strategy.py` je čistá funkce — perfektní kandidát na `pytest`. Pomohlo by zabránit regresím (např. fill-verification bug, který se objevil 2026-05-25). |
 | 5 | **Pouze MarketOrder** | Otevírací volatilita (9:30 NY) může způsobit horší fill. LimitOrder s pásmem nebo počkat 5-15 min po openu by chovalo se lépe. |
 | 6 | **Bez risk-managed sizingu** | `scan_and_buy` určuje qty mechanicky. Žádný "risk no more than 1% on stop loss" model. |
 | 7 | **`bot.py.bak`** | Starý soubor v repu, viz `app/bot.py.bak`. Pokud není potřeba, smazat. |
+| 8 | **Joby v paměti** | `algobot-web` ukládá historie joů v RAM. Restart kontejneru je smaže. Pro perzistenci: Redis/sqlite. |
+| 9 | **hourly data limit yfinance** | yfinance dává cca 730 dní hourly historie. Pro delší backtesty použij `--interval 1d`. |
 
 ---
 

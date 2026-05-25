@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}AlgoBot Backtest{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/backtest/static/style.css">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a href="/backtest/" class="brand">AlgoBot · Backtest</a>
+      <nav>
+        <a href="/">← Dashboard</a>
+        <a href="/backtest/">/backtest</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    {% block body %}{% endblock %}
+  </main>
+  <footer class="container muted small">
+    AlgoBot Backtester · realistic execution model (slippage, IB fees, next-bar fill)
+  </footer>
+</body>
+</html>

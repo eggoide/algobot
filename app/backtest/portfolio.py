@@ -37,14 +37,37 @@ class Trade:
 class Portfolio:
     """Simulated portfolio with cash management and position tracking."""
 
-    def __init__(self, initial_cash: float, max_positions: int, fee_per_trade: float = 1.0):
+    def __init__(
+        self,
+        initial_cash: float,
+        max_positions: int,
+        fee_per_trade: float = 1.0,
+        slippage_pct: float = 0.0,
+        fee_model: str = "flat",
+    ):
         self.initial_cash = initial_cash
         self.cash = initial_cash
         self.max_positions = max_positions
         self.fee = fee_per_trade
+        self.slippage_pct = float(slippage_pct)
+        self.fee_model = fee_model  # 'flat' or 'ib'
         self.positions: Dict[str, Position] = {}
         self.trades: List[Trade] = []
         self.equity_curve: List[float] = []
+
+    def _compute_fee(self, qty: int) -> float:
+        """Compute trade fee per the configured model. IB: max($1, $0.005 * qty)."""
+        if self.fee_model == "ib":
+            return max(1.0, 0.005 * qty)
+        return self.fee
+
+    def _apply_slippage(self, price: float, side: str) -> float:
+        """Apply slippage: BUY pays more, SELL receives less."""
+        if self.slippage_pct <= 0:
+            return price
+        if side == "BUY":
+            return price * (1.0 + self.slippage_pct)
+        return price * (1.0 - self.slippage_pct)
 
     @property
     def position_size(self) -> float:
@@ -64,23 +87,33 @@ class Portfolio:
 
     def buy(self, symbol: str, price: float, bar_idx: int = 0,
             timestamp: Optional[datetime.datetime] = None, reason: str = "") -> Optional[Trade]:
-        """Open a position. Returns Trade or None if cannot buy."""
+        """Open a position. Price is signal price; slippage is applied internally.
+        Returns Trade or None if cannot buy."""
         if not self.can_buy or symbol in self.positions:
             return None
 
+        fill_price = self._apply_slippage(price, "BUY")
+
+        # Size qty from signal price (matches live bot's behavior — it sizes from current_price)
         qty = int(self.position_size / price)
         if qty <= 0:
             return None
 
-        cost = qty * price + self.fee
+        fee = self._compute_fee(qty)
+        cost = qty * fill_price + fee
         if cost > self.cash:
-            return None
+            # Reduce qty if slippage pushed us over budget
+            qty = int((self.cash - fee) / fill_price) if fill_price > 0 else 0
+            if qty <= 0:
+                return None
+            fee = self._compute_fee(qty)
+            cost = qty * fill_price + fee
 
         self.cash -= cost
         self.positions[symbol] = Position(
             symbol=symbol,
             qty=qty,
-            entry_price=price,
+            entry_price=fill_price,
             entry_bar=bar_idx,
             entry_time=timestamp,
         )
@@ -89,10 +122,10 @@ class Portfolio:
             timestamp=timestamp,
             action="BUY",
             symbol=symbol,
-            price=price,
+            price=fill_price,
             qty=qty,
             pnl=0.0,
-            fee=self.fee,
+            fee=fee,
             reason=reason,
             bar_idx=bar_idx,
         )
@@ -101,24 +134,27 @@ class Portfolio:
 
     def sell(self, symbol: str, price: float, bar_idx: int = 0,
              timestamp: Optional[datetime.datetime] = None, reason: str = "") -> Optional[Trade]:
-        """Close a position. Returns Trade or None if no position."""
+        """Close a position. Price is signal price; slippage is applied internally.
+        Returns Trade or None if no position."""
         pos = self.positions.get(symbol)
         if pos is None:
             return None
 
-        revenue = pos.qty * price - self.fee
+        fill_price = self._apply_slippage(price, "SELL")
+        fee = self._compute_fee(pos.qty)
+        revenue = pos.qty * fill_price - fee
         self.cash += revenue
-        realized_pnl = (price - pos.entry_price) * pos.qty - self.fee
+        realized_pnl = (fill_price - pos.entry_price) * pos.qty - fee
         holding_bars = bar_idx - pos.entry_bar
 
         trade = Trade(
             timestamp=timestamp,
             action="SELL",
             symbol=symbol,
-            price=price,
+            price=fill_price,
             qty=pos.qty,
             pnl=realized_pnl,
-            fee=self.fee,
+            fee=fee,
             reason=reason,
             bar_idx=bar_idx,
             holding_bars=holding_bars,

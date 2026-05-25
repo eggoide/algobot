@@ -41,6 +41,13 @@ runtime:
   sp100_cache_file: sp100_tickers_cache.txt
   sp100_cache_max_age_hours: 24
 
+backtest:
+  # Realistic execution model. Defaults match IB paper trading.
+  slippage_pct: 0.0005          # 5 bp per fill (≈ 0.05% each side)
+  fee_model: ib                 # 'flat' = $fee_usd per trade, 'ib' = max($1, $0.005 × qty)
+  use_next_open: true           # Fill orders at NEXT bar Open instead of signal bar Close (no look-ahead)
+  auto_adjust: true             # yfinance auto_adjust (dividend-adjusted close). False = raw close.
+
 report:
   show_candidates_rsi_below: 60
   candidates_limit: 15

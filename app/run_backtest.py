@@ -74,10 +74,24 @@ def get_strategy_params(cfg: dict, strategy_name: str) -> dict:
     return params
 
 
+def get_backtest_config(cfg: dict, args) -> dict:
+    """Build backtest execution config from yaml + CLI overrides."""
+    bt = cfg.get("backtest", {})
+    capital_cfg = cfg.get("capital", {})
+    return {
+        "slippage_pct": args.slippage if args.slippage is not None else bt.get("slippage_pct", 0.0005),
+        "fee_model": args.fee_model or bt.get("fee_model", "ib"),
+        "fee_per_trade": capital_cfg.get("fee_usd", 1.0),
+        "use_next_open": (not args.no_next_open) if args.no_next_open else bt.get("use_next_open", True),
+        "auto_adjust": bt.get("auto_adjust", True),
+    }
+
+
 def run_single_backtest(args):
     """Run a single backtest."""
     cfg = load_config()
     capital_cfg = cfg.get("capital", {})
+    bt_cfg = get_backtest_config(cfg, args)
 
     initial_capital = args.capital or capital_cfg.get("manual_capital_limit", 10000)
     max_positions = args.max_positions or capital_cfg.get("max_positions", 5)
@@ -100,6 +114,7 @@ def run_single_backtest(args):
         cache_dir=cache_dir,
         force_refresh=args.refresh,
         max_cache_age_hours=args.cache_hours,
+        auto_adjust=bt_cfg["auto_adjust"],
     )
 
     if not data:
@@ -120,8 +135,16 @@ def run_single_backtest(args):
     print(f"Params: {params}")
     print()
 
-    # Run backtest
-    engine = BacktestEngine(strategy, initial_capital, max_positions, fee)
+    # Run backtest (with realistic execution model)
+    engine = BacktestEngine(
+        strategy, initial_capital, max_positions,
+        fee_per_trade=bt_cfg["fee_per_trade"],
+        slippage_pct=bt_cfg["slippage_pct"],
+        fee_model=bt_cfg["fee_model"],
+        use_next_open=bt_cfg["use_next_open"],
+    )
+    print(f"Execution: slippage={bt_cfg['slippage_pct']*100:.3f}%, fee_model={bt_cfg['fee_model']}, "
+          f"next_open={bt_cfg['use_next_open']}")
     results = engine.run(
         data,
         start_date=args.start_date,
@@ -158,7 +181,11 @@ def run_optimization(args):
 
     # Download data
     cache_dir = os.path.join(os.path.expanduser("~"), ".algobot_cache")
-    data = download_bulk(symbols, period=args.period, interval=args.interval, cache_dir=cache_dir)
+    bt_cfg = get_backtest_config(cfg, args)
+    data = download_bulk(
+        symbols, period=args.period, interval=args.interval, cache_dir=cache_dir,
+        auto_adjust=bt_cfg["auto_adjust"],
+    )
 
     if not data:
         print("ERROR: No data")
@@ -183,7 +210,14 @@ def run_optimization(args):
         param_grid["stop_loss"] = [0.05, 0.07, 0.10]
         param_grid["trailing_stop_pct"] = [0.015, 0.02, 0.03]
 
-    optimizer = ParameterOptimizer(strategy_class, base_params, initial_capital, max_positions, fee)
+    bt_cfg = get_backtest_config(cfg, args)
+    optimizer = ParameterOptimizer(
+        strategy_class, base_params, initial_capital, max_positions,
+        fee=bt_cfg["fee_per_trade"],
+        slippage_pct=bt_cfg["slippage_pct"],
+        fee_model=bt_cfg["fee_model"],
+        use_next_open=bt_cfg["use_next_open"],
+    )
     results = optimizer.grid_search(
         data, param_grid,
         optimize_metric=args.optimize_metric,
@@ -236,7 +270,14 @@ def run_walk_forward(args):
         "rsi_limit": [25, 30, 35],
     }
 
-    optimizer = ParameterOptimizer(strategy_class, base_params, initial_capital, max_positions, fee)
+    bt_cfg = get_backtest_config(cfg, args)
+    optimizer = ParameterOptimizer(
+        strategy_class, base_params, initial_capital, max_positions,
+        fee=bt_cfg["fee_per_trade"],
+        slippage_pct=bt_cfg["slippage_pct"],
+        fee_model=bt_cfg["fee_model"],
+        use_next_open=bt_cfg["use_next_open"],
+    )
     results = optimizer.walk_forward(
         data, param_grid,
         train_bars=args.train_bars,
@@ -269,6 +310,14 @@ def main():
     parser.add_argument("--end-date", default=None, help="End date (YYYY-MM-DD)")
     parser.add_argument("--refresh", action="store_true", help="Force refresh cached data")
     parser.add_argument("--cache-hours", type=int, default=72, help="Max cache age in hours")
+
+    # Execution model overrides
+    parser.add_argument("--slippage", type=float, default=None,
+                        help="Slippage per fill in fractions (e.g. 0.0005 = 5 bp). Default from config.")
+    parser.add_argument("--fee-model", choices=["flat", "ib"], default=None,
+                        help="Fee model: flat=$fee_usd per trade, ib=max($1, $0.005×qty). Default from config.")
+    parser.add_argument("--no-next-open", action="store_true",
+                        help="Disable next-bar-open fill (legacy close-fill mode, has look-ahead bias)")
 
     # Optimization
     parser.add_argument("--optimize", action="store_true", help="Run grid search optimization")

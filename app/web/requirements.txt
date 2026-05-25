@@ -1,0 +1,12 @@
+flask==3.0.3
+gunicorn==23.0.0
+pandas
+numpy
+pytz
+yfinance
+PyYAML
+pyarrow
+pandas_market_calendars
+lxml
+html5lib
+requests

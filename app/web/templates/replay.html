@@ -1,0 +1,156 @@
+{% extends "_base.html" %}
+{% block title %}Replay {{ job_id }}{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Live vs Backtest <span class="mono small">{{ job_id }}</span></h1>
+<p class="muted">Backtest běží na stejných symbolech a období jako live obchody z <code>algobot.db</code>. Divergence = realistic execution model vs IB skutečné fills.</p>
+<div id="status-line" class="muted">Načítám…</div>
+
+<div id="content" class="hidden">
+  <section class="card">
+    <h2>Souhrn divergence</h2>
+    <div class="kv" id="kv"></div>
+  </section>
+
+  <section class="card">
+    <h2>Per-symbol srovnání</h2>
+    <table class="trades" id="per-symbol-table">
+      <thead><tr>
+        <th>Symbol</th>
+        <th>Live BUY/SELL</th><th>Live realized</th>
+        <th>BT BUY/SELL</th><th>BT realized</th>
+        <th>Diff (BT – Live)</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Live obchody (z algobot.db)</h2>
+    <table class="trades" id="live-table">
+      <thead><tr>
+        <th>Čas</th><th>Akce</th><th>Symbol</th><th>Qty</th><th>Cena</th>
+        <th>PnL</th><th>Note</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Backtest equity (na stejném okně)</h2>
+    <canvas id="equity-chart" height="120"></canvas>
+  </section>
+
+  <section class="card">
+    <h2>Backtest obchody</h2>
+    <table class="trades" id="bt-table">
+      <thead><tr>
+        <th>Čas</th><th>Akce</th><th>Symbol</th><th>Qty</th><th>Cena</th>
+        <th>PnL</th><th>Bars</th><th>Důvod</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</div>
+
+<script>
+const jobId = "{{ job_id }}";
+
+async function load() {
+  const statusLine = document.getElementById('status-line');
+  while (true) {
+    const r = await fetch('/backtest/job/' + jobId);
+    const j = await r.json();
+    statusLine.textContent = `Status: ${j.status}` + (j.progress ? ` — ${j.progress}` : '');
+    if (j.status === 'done') break;
+    if (j.status === 'error') { statusLine.textContent = 'CHYBA: ' + j.error; return; }
+    await new Promise(res => setTimeout(res, 1500));
+  }
+  const rr = await fetch('/backtest/result/' + jobId);
+  const data = await rr.json();
+  render(data);
+  document.getElementById('content').classList.remove('hidden');
+  statusLine.classList.add('hidden');
+}
+
+function money(n) { return '$' + Number(n).toFixed(2); }
+
+function render(d) {
+  const s = d.summary;
+  const items = [
+    ['Okno', `${d.window.start} → ${d.window.end}`],
+    ['Symbolů', d.window.symbols.length],
+    ['Live realized', money(s.live_realized), s.live_realized >= 0 ? 'win' : 'loss'],
+    ['Backtest realized', money(s.bt_realized), s.bt_realized >= 0 ? 'win' : 'loss'],
+    ['Divergence (BT – Live)', money(s.diff), s.diff >= 0 ? 'win' : 'loss'],
+    ['Live trades', d.live.trade_count],
+    ['BT trades', d.backtest.trades.length],
+  ];
+  document.getElementById('kv').innerHTML = items.map(([k, v, cls]) =>
+    `<div class="kv-row"><span class="k">${k}</span><span class="v ${cls||''}">${v}</span></div>`
+  ).join('');
+
+  // Per-symbol
+  const ps = document.querySelector('#per-symbol-table tbody');
+  ps.innerHTML = d.per_symbol.map(r => `
+    <tr class="${r.diff >= 0 ? 'win' : 'loss'}">
+      <td class="mono">${r.symbol}</td>
+      <td>${r.live_buys}/${r.live_sells}</td>
+      <td>${money(r.live_realized)}</td>
+      <td>${r.bt_buys}/${r.bt_sells}</td>
+      <td>${money(r.bt_realized)}</td>
+      <td><strong>${money(r.diff)}</strong></td>
+    </tr>
+  `).join('');
+
+  // Live trades
+  document.querySelector('#live-table tbody').innerHTML = d.live.trades.map(t => `
+    <tr class="${t.action === 'SELL' ? (t.pnl >= 0 ? 'win' : 'loss') : ''}">
+      <td class="small mono">${t.ts.replace('T',' ').slice(0,16)}</td>
+      <td>${t.action}</td>
+      <td class="mono">${t.symbol}</td>
+      <td>${t.qty}</td>
+      <td>${money(t.price)}</td>
+      <td>${t.action === 'SELL' ? money(t.pnl) : '—'}</td>
+      <td class="small">${t.note || ''}</td>
+    </tr>
+  `).join('');
+
+  // BT trades
+  document.querySelector('#bt-table tbody').innerHTML = d.backtest.trades.map(t => `
+    <tr class="${t.action === 'SELL' ? (t.pnl >= 0 ? 'win' : 'loss') : ''}">
+      <td class="small mono">${t.ts ? t.ts.slice(0,16).replace('T',' ') : ''}</td>
+      <td>${t.action}</td>
+      <td class="mono">${t.symbol}</td>
+      <td>${t.qty}</td>
+      <td>${money(t.price)}</td>
+      <td>${t.action === 'SELL' ? money(t.pnl) : '—'}</td>
+      <td class="small">${t.holding_bars || ''}</td>
+      <td class="small">${t.reason}</td>
+    </tr>
+  `).join('');
+
+  // Equity chart
+  const eq = d.backtest.equity_curve;
+  const labels = eq.map(e => e.ts ? e.ts.slice(0, 16).replace('T', ' ') : String(e.i));
+  const equity = eq.map(e => e.equity);
+  new Chart(document.getElementById('equity-chart'), {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: 'BT Equity', data: equity,
+      borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.15)',
+      tension: 0.05, pointRadius: 0, fill: true,
+    }]},
+    options: { responsive: true, plugins: {legend: {labels: {color:'#cfd6dc'}}},
+      scales: { x: {ticks: {color:'#8b949e', maxTicksLimit: 12}, grid:{color:'#222'}},
+                y: {ticks: {color:'#8b949e'}, grid:{color:'#222'}} }
+    },
+  });
+}
+
+load();
+</script>
+{% endblock %}

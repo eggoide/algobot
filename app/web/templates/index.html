@@ -1,0 +1,187 @@
+{% extends "_base.html" %}
+{% block title %}Backtest – AlgoBot{% endblock %}
+
+{% block body %}
+<h1>Spustit backtest</h1>
+<p class="muted">Realistický execution model: slippage, IB fee (max $1, $0.005/share), fill na <strong>Open</strong> dalšího baru (žádný look-ahead).</p>
+
+<form id="bt-form" class="card">
+  <div class="grid">
+    <label>Strategie
+      <select name="strategy">
+        <option value="enhanced" selected>EnhancedDipBuy</option>
+        <option value="dip_buy">DipBuy (původní)</option>
+      </select>
+    </label>
+
+    <label>Symboly (čárkou oddělené, prázdné = S&P 100)
+      <input type="text" name="symbols" placeholder="AAPL,MSFT,NVDA">
+    </label>
+
+    <label>Období
+      <select name="period">
+        <option>1mo</option><option>3mo</option><option selected>6mo</option>
+        <option>1y</option><option>2y</option><option>5y</option>
+      </select>
+    </label>
+
+    <label>Interval
+      <select name="interval">
+        <option selected>1h</option>
+        <option>1d</option>
+      </select>
+    </label>
+
+    <label>Start date (volitelné)
+      <input type="date" name="start_date">
+    </label>
+
+    <label>End date (volitelné)
+      <input type="date" name="end_date">
+    </label>
+
+    <label>Benchmark
+      <input type="text" name="benchmark" value="SPY">
+    </label>
+
+    <label>Kapitál ($)
+      <input type="number" name="capital" placeholder="10000" step="100">
+    </label>
+
+    <label>Max pozic
+      <input type="number" name="max_positions" placeholder="5" min="1" max="20">
+    </label>
+  </div>
+
+  <details>
+    <summary>Execution model (realističnost)</summary>
+    <div class="grid">
+      <label>Slippage (fractions, 0.0005 = 5 bp)
+        <input type="number" name="slippage_pct" value="0.0005" step="0.0001" min="0">
+      </label>
+      <label>Fee model
+        <select name="fee_model">
+          <option value="ib" selected>IB (max $1, $0.005/share)</option>
+          <option value="flat">Flat ($1/trade)</option>
+        </select>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="use_next_open" checked> Fill na Open dalšího baru (no look-ahead)
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="auto_adjust" checked> auto_adjust = True (dividend-adjusted)
+      </label>
+    </div>
+  </details>
+
+  <details>
+    <summary>Strategy parametry (override config.yaml)</summary>
+    <div class="grid">
+      <label>buy_drop <input type="number" name="buy_drop" step="0.005" placeholder="0.02"></label>
+      <label>sell_gain <input type="number" name="sell_gain" step="0.005" placeholder="0.03"></label>
+      <label>rsi_limit <input type="number" name="rsi_limit" step="1" placeholder="30"></label>
+      <label>stop_loss <input type="number" name="stop_loss" step="0.005" placeholder="0.07"></label>
+      <label>trailing_stop_pct <input type="number" name="trailing_stop_pct" step="0.005" placeholder="0.02"></label>
+      <label>time_stop_bars <input type="number" name="time_stop_bars" step="1" placeholder="240"></label>
+    </div>
+  </details>
+
+  <div class="actions">
+    <button type="submit" class="primary">Spustit backtest</button>
+    <button type="button" id="replay-btn">Live vs Backtest (Replay z DB)</button>
+  </div>
+</form>
+
+<div id="status" class="card hidden">
+  <h3>Job <span id="job-id"></span></h3>
+  <div id="job-state" class="status">…</div>
+  <pre id="job-progress" class="small"></pre>
+  <a id="job-link" class="primary hidden" href="#">Otevřít výsledek →</a>
+</div>
+
+<h2>Nedávné běhy</h2>
+<table class="trades" id="jobs-table">
+  <thead><tr>
+    <th>ID</th><th>Kind</th><th>Status</th><th>Vytvořeno</th><th>Otevřít</th>
+  </tr></thead>
+  <tbody>
+    {% for j in recent %}
+    <tr>
+      <td class="mono">{{ j.id }}</td>
+      <td>{{ j.kind }}</td>
+      <td><span class="badge badge-{{ j.status }}">{{ j.status }}</span></td>
+      <td class="small">{{ j.created_at }}</td>
+      <td>
+        {% if j.kind == 'replay' %}
+          <a href="/backtest/replay/{{ j.id }}">Replay →</a>
+        {% else %}
+          <a href="/backtest/view/{{ j.id }}">Výsledek →</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+const form = document.getElementById('bt-form');
+const statusBox = document.getElementById('status');
+const jobIdEl = document.getElementById('job-id');
+const stateEl = document.getElementById('job-state');
+const progressEl = document.getElementById('job-progress');
+const linkEl = document.getElementById('job-link');
+
+function collectForm() {
+  const data = {};
+  const fd = new FormData(form);
+  for (const [k, v] of fd.entries()) data[k] = v;
+  // Checkbox handling
+  data.use_next_open = form.querySelector('[name=use_next_open]').checked;
+  data.auto_adjust   = form.querySelector('[name=auto_adjust]').checked;
+  return data;
+}
+
+async function startJob(url) {
+  const data = collectForm();
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data),
+  });
+  const j = await resp.json();
+  if (!resp.ok) {
+    alert('Chyba: ' + JSON.stringify(j));
+    return;
+  }
+  statusBox.classList.remove('hidden');
+  jobIdEl.textContent = j.job_id;
+  stateEl.className = 'status running';
+  stateEl.textContent = 'spouštím…';
+  progressEl.textContent = '';
+  linkEl.classList.add('hidden');
+  pollJob(j.job_id, url.includes('replay'));
+}
+
+async function pollJob(jobId, isReplay) {
+  const r = await fetch('/backtest/job/' + jobId);
+  const j = await r.json();
+  stateEl.textContent = j.status;
+  stateEl.className = 'status ' + j.status;
+  if (j.progress) progressEl.textContent = j.progress;
+  if (j.status === 'done') {
+    const path = isReplay ? '/backtest/replay/' : '/backtest/view/';
+    linkEl.href = path + jobId;
+    linkEl.classList.remove('hidden');
+    return;
+  }
+  if (j.status === 'error') {
+    progressEl.textContent = j.error || 'Unknown error';
+    return;
+  }
+  setTimeout(() => pollJob(jobId, isReplay), 1500);
+}
+
+form.addEventListener('submit', e => { e.preventDefault(); startJob('/backtest/run'); });
+document.getElementById('replay-btn').addEventListener('click', () => startJob('/backtest/replay'));
+</script>
+{% endblock %}

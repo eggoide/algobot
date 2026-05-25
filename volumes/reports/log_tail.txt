@@ -1,42 +1,3 @@
-2026-05-25 15:40:04 [INFO] TRADE SELL LOW qty=9 price=214.98 realized=$-41.51 reason=Time Stop (285 bars)
-2026-05-25 15:40:04 [INFO] WMT PnL -0.61% (Cena 120.26, hold 94h)
-2026-05-25 15:40:04 [INFO] COST PnL -0.06% (Cena 1027.94, hold 66h)
-2026-05-25 15:40:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:40:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:40:07 [INFO] NY 09:40:07 | next SELL 09:45:00 | next BUY 10:31:00 | sleep 294s
-2026-05-25 15:40:07 [INFO] Sleep: 00:04:54
-2026-05-25 15:45:01 [INFO] SELL-CYCLE 2026-05-25-09-45 | NY=09:45:01
-2026-05-25 15:45:02 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
-2026-05-25 15:45:02 [INFO] NEE PnL -0.17% (Cena 88.56, hold 167h)
-2026-05-25 15:45:02 [INFO] LOW PnL -2.05% (Cena 214.98, hold 285h) -> Time Stop (285 bars)
-2026-05-25 15:45:03 [INFO] TRADE SELL LOW qty=9 price=214.98 realized=$-41.51 reason=Time Stop (285 bars)
-2026-05-25 15:45:04 [INFO] WMT PnL -0.61% (Cena 120.26, hold 94h)
-2026-05-25 15:45:04 [INFO] COST PnL -0.06% (Cena 1027.94, hold 66h)
-2026-05-25 15:45:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:45:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:45:07 [INFO] NY 09:45:07 | next SELL 09:50:00 | next BUY 10:31:00 | sleep 294s
-2026-05-25 15:45:07 [INFO] Sleep: 00:04:54
-2026-05-25 15:50:01 [INFO] SELL-CYCLE 2026-05-25-09-50 | NY=09:50:01
-2026-05-25 15:50:01 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
-2026-05-25 15:50:02 [INFO] NEE PnL -0.17% (Cena 88.56, hold 167h)
-2026-05-25 15:50:02 [INFO] LOW PnL -2.05% (Cena 214.98, hold 285h) -> Time Stop (285 bars)
-2026-05-25 15:50:03 [INFO] TRADE SELL LOW qty=9 price=214.98 realized=$-41.51 reason=Time Stop (285 bars)
-2026-05-25 15:50:03 [INFO] WMT PnL -0.61% (Cena 120.26, hold 94h)
-2026-05-25 15:50:03 [INFO] COST PnL -0.06% (Cena 1027.94, hold 66h)
-2026-05-25 15:50:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:50:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:50:06 [INFO] NY 09:50:06 | next SELL 09:55:00 | next BUY 10:31:00 | sleep 295s
-2026-05-25 15:50:06 [INFO] Sleep: 00:04:55
-2026-05-25 15:55:01 [INFO] SELL-CYCLE 2026-05-25-09-55 | NY=09:55:01
-2026-05-25 15:55:02 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
-2026-05-25 15:55:03 [INFO] NEE PnL -0.17% (Cena 88.56, hold 167h)
-2026-05-25 15:55:03 [INFO] LOW PnL -2.05% (Cena 214.98, hold 285h) -> Time Stop (285 bars)
-2026-05-25 15:55:04 [INFO] TRADE SELL LOW qty=9 price=214.98 realized=$-41.51 reason=Time Stop (285 bars)
-2026-05-25 15:55:05 [INFO] WMT PnL -0.61% (Cena 120.26, hold 94h)
-2026-05-25 15:55:05 [INFO] COST PnL -0.06% (Cena 1027.94, hold 66h)
-2026-05-25 15:55:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:55:08 [INFO] REPORT aktualizován: /reports/index.html
-2026-05-25 15:55:08 [INFO] NY 09:55:08 | next SELL 10:00:00 | next BUY 10:31:00 | sleep 293s
 2026-05-25 15:55:08 [INFO] Sleep: 00:04:53
 2026-05-25 16:00:01 [INFO] SELL-CYCLE 2026-05-25-10-00 | NY=10:00:01
 2026-05-25 16:00:02 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
@@ -198,3 +159,42 @@
 2026-05-25 17:08:45 [INFO] Dashboard refresh (trh zavřený).
 2026-05-25 17:08:45 [INFO] Trh zavřený. Další open za 22:21:15 | NY 2026-05-25 11:18:45
 2026-05-25 17:08:45 [INFO] Sleep: 00:10:00
+2026-05-25 17:18:47 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 17:18:47 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 17:18:47 [INFO] Trh zavřený. Další open za 22:11:15 | NY 2026-05-25 11:28:47
+2026-05-25 17:18:47 [INFO] Sleep: 00:10:00
+2026-05-25 17:28:49 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 17:28:49 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 17:28:49 [INFO] Trh zavřený. Další open za 22:01:15 | NY 2026-05-25 11:38:49
+2026-05-25 17:28:49 [INFO] Sleep: 00:10:00
+2026-05-25 17:38:50 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 17:38:50 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 17:38:50 [INFO] Trh zavřený. Další open za 21:51:15 | NY 2026-05-25 11:48:50
+2026-05-25 17:38:50 [INFO] Sleep: 00:10:00
+2026-05-25 17:48:52 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 17:48:52 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 17:48:52 [INFO] Trh zavřený. Další open za 21:41:15 | NY 2026-05-25 11:58:52
+2026-05-25 17:48:52 [INFO] Sleep: 00:10:00
+2026-05-25 17:58:54 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 17:58:54 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 17:58:54 [INFO] Trh zavřený. Další open za 21:31:15 | NY 2026-05-25 12:08:54
+2026-05-25 17:58:54 [INFO] Sleep: 00:10:00
+2026-05-25 18:08:55 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 18:08:55 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 18:08:55 [INFO] Trh zavřený. Další open za 21:21:15 | NY 2026-05-25 12:18:55
+2026-05-25 18:08:55 [INFO] Sleep: 00:10:00
+2026-05-25 18:18:57 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 18:18:57 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 18:18:57 [INFO] Trh zavřený. Další open za 21:11:15 | NY 2026-05-25 12:28:57
+2026-05-25 18:18:57 [INFO] Sleep: 00:10:00
+2026-05-25 18:28:02 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-05-25 18:28:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 18:28:06 [INFO] Dashboard inicializován hned po startu.
+2026-05-25 18:28:07 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 18:28:07 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 18:28:07 [INFO] Trh zavřený. Další open za 21:01:53 | NY 2026-05-25 12:38:07
+2026-05-25 18:28:07 [INFO] Sleep: 00:10:00
+2026-05-25 18:38:09 [INFO] REPORT aktualizován: /reports/index.html
+2026-05-25 18:38:09 [INFO] Dashboard refresh (trh zavřený).
+2026-05-25 18:38:09 [INFO] Trh zavřený. Další open za 20:51:53 | NY 2026-05-25 12:48:09
+2026-05-25 18:38:09 [INFO] Sleep: 00:10:00

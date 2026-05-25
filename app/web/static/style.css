@@ -1,0 +1,81 @@
+/* Backtest UI — matches AlgoBot dashboard dark theme */
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel2: #1f242c;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --win: #3fb950;
+  --loss: #f85149;
+  --warn: #d29922;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+.container { max-width: 1280px; margin: 0 auto; padding: 16px 24px; }
+.topbar { background: var(--panel); border-bottom: 1px solid var(--border); }
+.topbar .container { display: flex; align-items: center; gap: 24px; padding: 12px 24px; }
+.brand { font-weight: 600; color: var(--text); text-decoration: none; font-size: 16px; }
+nav a { color: var(--muted); text-decoration: none; margin-left: 16px; }
+nav a:hover { color: var(--text); }
+footer { border-top: 1px solid var(--border); margin-top: 32px; padding: 16px 24px; }
+
+h1 { font-size: 22px; margin: 16px 0; }
+h2 { font-size: 17px; margin: 12px 0 8px; }
+h3 { font-size: 15px; margin: 8px 0; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.mono { font-family: SF Mono, Menlo, Consolas, monospace; }
+.hidden { display: none !important; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+label.checkbox { flex-direction: row; align-items: center; gap: 8px; color: var(--text); font-size: 13px; }
+input, select { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; font: inherit; }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+.filter { margin-bottom: 8px; max-width: 300px; }
+details { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; margin: 12px 0; }
+details summary { cursor: pointer; color: var(--muted); }
+details[open] { padding-bottom: 12px; }
+
+.actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+button, .primary {
+  background: var(--accent); color: white; border: none; border-radius: 6px;
+  padding: 8px 16px; cursor: pointer; font: inherit; text-decoration: none;
+  display: inline-block;
+}
+button:hover, .primary:hover { background: #4f9be8; }
+#replay-btn { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+#replay-btn:hover { background: var(--border); }
+
+.status { padding: 6px 12px; border-radius: 4px; display: inline-block; font-weight: 500; }
+.status.running { background: rgba(210, 153, 34, 0.2); color: var(--warn); border: 1px solid var(--warn); }
+.status.queued { background: rgba(139, 148, 158, 0.2); color: var(--muted); border: 1px solid var(--muted); }
+.status.done { background: rgba(63, 185, 80, 0.2); color: var(--win); border: 1px solid var(--win); }
+.status.error { background: rgba(248, 81, 73, 0.2); color: var(--loss); border: 1px solid var(--loss); }
+
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.kv-row { background: var(--panel2); padding: 6px 10px; border-radius: 5px; border-left: 3px solid var(--border); }
+.kv-row .k { color: var(--muted); font-size: 11px; display: block; text-transform: uppercase; letter-spacing: 0.04em; }
+.kv-row .v { color: var(--text); font-weight: 500; }
+.kv-row .v.win { color: var(--win); }
+.kv-row .v.loss { color: var(--loss); }
+
+table.trades { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.trades th, table.trades td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+table.trades th { color: var(--muted); font-weight: 500; background: var(--panel2); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+table.trades tr.win td { color: var(--win); }
+table.trades tr.loss td { color: var(--loss); }
+table.trades tr.win .mono, table.trades tr.loss .mono { color: inherit; }
+
+.badge { padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+.badge-done { background: rgba(63, 185, 80, 0.2); color: var(--win); }
+.badge-error { background: rgba(248, 81, 73, 0.2); color: var(--loss); }
+.badge-running { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+.badge-queued { background: rgba(139, 148, 158, 0.2); color: var(--muted); }
+
+pre { background: var(--panel2); padding: 12px; border-radius: 5px; overflow-x: auto; color: var(--text); font-size: 12px; }
+canvas { max-width: 100%; }

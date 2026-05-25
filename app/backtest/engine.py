@@ -17,7 +17,13 @@ from backtest.data_loader import slice_data_at_bar
 class BacktestEngine:
     """
     Event-driven backtesting engine.
-    Iterates over bars, checks exits first, then entries (same as live bot).
+
+    Execution model:
+    - Signals are evaluated on the CLOSE of bar N (same data the live bot would see
+      after that bar completes).
+    - Orders fill at the OPEN of bar N+1 (use_next_open=True, default) — no look-ahead.
+    - Slippage and per-share IB fees are applied by Portfolio.
+    - Legacy mode: use_next_open=False fills at signal-bar Close (has look-ahead bias).
     """
 
     def __init__(
@@ -26,12 +32,21 @@ class BacktestEngine:
         initial_capital: float = 10000,
         max_positions: int = 5,
         fee_per_trade: float = 1.0,
+        slippage_pct: float = 0.0,
+        fee_model: str = "flat",
+        use_next_open: bool = True,
     ):
         self.strategy = strategy
         self.initial_capital = initial_capital
         self.max_positions = max_positions
         self.fee = fee_per_trade
-        self.portfolio = Portfolio(initial_capital, max_positions, fee_per_trade)
+        self.slippage_pct = slippage_pct
+        self.fee_model = fee_model
+        self.use_next_open = use_next_open
+        self.portfolio = Portfolio(
+            initial_capital, max_positions, fee_per_trade,
+            slippage_pct=slippage_pct, fee_model=fee_model,
+        )
 
         # Results
         self.log_entries: List[str] = []
@@ -69,12 +84,25 @@ class BacktestEngine:
 
         all_timestamps = sorted(all_timestamps)
 
-        # Filter by date range
+        # Filter by date range — normalize tz so naive user input matches tz-aware data
+        sample_tz = None
+        if all_timestamps:
+            first = all_timestamps[0]
+            sample_tz = getattr(first, "tz", None) or getattr(first, "tzinfo", None)
+
+        def _to_match_tz(ts_str):
+            ts = pd.Timestamp(ts_str)
+            if sample_tz is not None:
+                ts = ts.tz_localize(sample_tz) if ts.tzinfo is None else ts.tz_convert(sample_tz)
+            elif ts.tzinfo is not None:
+                ts = ts.tz_localize(None)
+            return ts
+
         if start_date:
-            start_dt = pd.Timestamp(start_date)
+            start_dt = _to_match_tz(start_date)
             all_timestamps = [t for t in all_timestamps if t >= start_dt]
         if end_date:
-            end_dt = pd.Timestamp(end_date)
+            end_dt = _to_match_tz(end_date)
             all_timestamps = [t for t in all_timestamps if t <= end_dt]
 
         if not all_timestamps:
@@ -98,31 +126,72 @@ class BacktestEngine:
         if benchmark_symbol and benchmark_symbol in data:
             bench_df = data[benchmark_symbol]
 
+        # Pending orders to execute at NEXT bar's Open (no look-ahead)
+        # Each entry: {"action": "BUY"|"SELL", "symbol": ..., "reason": ..., "signal_bar": ...}
+        pending_orders: List[Dict[str, Any]] = []
+
         # Main loop
         for bar_num, timestamp in enumerate(all_timestamps):
-            # Get current prices for all symbols at this timestamp
-            current_prices: Dict[str, float] = {}
+            # Get prices for all symbols at this timestamp (Close for decisions, Open for fills)
+            current_close: Dict[str, float] = {}
+            current_open: Dict[str, float] = {}
             for sym, df in data.items():
                 if timestamp in df.index:
-                    current_prices[sym] = float(df.loc[timestamp, 'Close'])
+                    row = df.loc[timestamp]
+                    current_close[sym] = float(row['Close'])
+                    current_open[sym] = float(row['Open']) if 'Open' in df.columns else float(row['Close'])
 
-            if not current_prices:
+            if not current_close:
                 continue
 
-            # 1. Check exits first
+            # 0. Execute pending orders from previous bar's signals (at THIS bar's Open)
+            if self.use_next_open and pending_orders:
+                still_pending = []
+                for order in pending_orders:
+                    sym = order["symbol"]
+                    fill_price = current_open.get(sym)
+                    if fill_price is None:
+                        # Symbol has no data this bar — defer once more or drop
+                        if order.get("retries", 0) < 1:
+                            order["retries"] = order.get("retries", 0) + 1
+                            still_pending.append(order)
+                        continue
+
+                    ts_str = timestamp.strftime('%Y-%m-%d %H:%M') if hasattr(timestamp, 'strftime') else str(timestamp)
+                    if order["action"] == "SELL":
+                        pos = self.portfolio.positions.get(sym)
+                        if pos is None:
+                            continue
+                        trade = self.portfolio.sell(sym, fill_price, bar_num, timestamp, order["reason"])
+                        if trade:
+                            self._log(
+                                f"SELL {sym} @ ${trade.price:.2f} | PnL ${trade.pnl:+.2f} | "
+                                f"{order['reason']} | held {trade.holding_bars} bars | {ts_str}"
+                            )
+                    elif order["action"] == "BUY":
+                        if sym in self.portfolio.positions or not self.portfolio.can_buy:
+                            continue
+                        trade = self.portfolio.buy(sym, fill_price, bar_num, timestamp, order["reason"])
+                        if trade:
+                            self._log(
+                                f"BUY  {sym} @ ${trade.price:.2f} | qty={trade.qty} | "
+                                f"{order['reason']} | {ts_str}"
+                            )
+                pending_orders = still_pending
+
+            # 1. Evaluate exit signals (against this bar's Close)
             symbols_to_exit = list(self.portfolio.positions.keys())
             for sym in symbols_to_exit:
                 pos = self.portfolio.positions.get(sym)
                 if pos is None:
                     continue
 
-                price = current_prices.get(sym)
+                price = current_close.get(sym)
                 if price is None:
                     continue
 
                 holding_bars = bar_num - pos.entry_bar
 
-                # Get data slice for this symbol up to current bar
                 sym_data = None
                 if sym in data:
                     sym_df = data[sym]
@@ -133,17 +202,26 @@ class BacktestEngine:
                     sym, pos.entry_price, price, holding_bars, sym_data
                 )
                 if exit_signal:
-                    ts_str = timestamp.strftime('%Y-%m-%d %H:%M') if hasattr(timestamp, 'strftime') else str(timestamp)
-                    trade = self.portfolio.sell(sym, price, bar_num, timestamp, exit_signal.reason)
-                    if trade:
-                        self._log(
-                            f"SELL {sym} @ ${price:.2f} | PnL ${trade.pnl:+.2f} | "
-                            f"{exit_signal.reason} | held {trade.holding_bars} bars | {ts_str}"
-                        )
+                    if self.use_next_open:
+                        # Queue for fill at next bar Open
+                        pending_orders.append({
+                            "action": "SELL", "symbol": sym,
+                            "reason": exit_signal.reason, "signal_bar": bar_num,
+                        })
+                    else:
+                        # Legacy: fill at signal-bar Close (has look-ahead)
+                        ts_str = timestamp.strftime('%Y-%m-%d %H:%M') if hasattr(timestamp, 'strftime') else str(timestamp)
+                        trade = self.portfolio.sell(sym, price, bar_num, timestamp, exit_signal.reason)
+                        if trade:
+                            self._log(
+                                f"SELL {sym} @ ${trade.price:.2f} | PnL ${trade.pnl:+.2f} | "
+                                f"{exit_signal.reason} | held {trade.holding_bars} bars | {ts_str}"
+                            )
 
-            # 2. Check entries
-            if self.portfolio.can_buy:
-                # Build data slices up to current bar (prevent look-ahead)
+            # 2. Evaluate entry signals (against this bar's Close)
+            # Reserve slots for queued BUYs so we don't oversubscribe
+            queued_buys = sum(1 for o in pending_orders if o["action"] == "BUY")
+            if self.portfolio.can_buy and (self.portfolio.open_position_count + queued_buys < self.max_positions):
                 data_slice = {}
                 for sym, df in data.items():
                     mask = df.index <= timestamp
@@ -151,32 +229,41 @@ class BacktestEngine:
                     if not sliced.empty:
                         data_slice[sym] = sliced
 
-                existing = list(self.portfolio.positions.keys())
+                existing = list(self.portfolio.positions.keys()) + [o["symbol"] for o in pending_orders if o["action"] == "BUY"]
                 signals = self.strategy.generate_signals(data_slice, existing)
 
+                slots_left = self.max_positions - self.portfolio.open_position_count - queued_buys
                 for signal in signals:
-                    if not self.portfolio.can_buy:
+                    if slots_left <= 0:
                         break
-                    if signal.symbol not in current_prices:
+                    if signal.symbol not in current_close:
                         continue
 
-                    price = current_prices[signal.symbol]
-                    trade = self.portfolio.buy(
-                        signal.symbol, price, bar_num, timestamp, signal.reason
-                    )
-                    if trade:
-                        ts_str = timestamp.strftime('%Y-%m-%d %H:%M') if hasattr(timestamp, 'strftime') else str(timestamp)
-                        self._log(
-                            f"BUY  {signal.symbol} @ ${price:.2f} | qty={trade.qty} | "
-                            f"{signal.reason} | {ts_str}"
+                    if self.use_next_open:
+                        pending_orders.append({
+                            "action": "BUY", "symbol": signal.symbol,
+                            "reason": signal.reason, "signal_bar": bar_num,
+                        })
+                        slots_left -= 1
+                    else:
+                        price = current_close[signal.symbol]
+                        trade = self.portfolio.buy(
+                            signal.symbol, price, bar_num, timestamp, signal.reason
                         )
+                        if trade:
+                            ts_str = timestamp.strftime('%Y-%m-%d %H:%M') if hasattr(timestamp, 'strftime') else str(timestamp)
+                            self._log(
+                                f"BUY  {signal.symbol} @ ${trade.price:.2f} | qty={trade.qty} | "
+                                f"{signal.reason} | {ts_str}"
+                            )
+                            slots_left -= 1
 
-            # 3. Record equity
-            self.portfolio.record_equity(current_prices)
+            # 3. Record equity (mark-to-market at this bar's Close)
+            self.portfolio.record_equity(current_close)
 
             # 4. Benchmark
-            if benchmark_symbol and benchmark_symbol in current_prices:
-                bp = current_prices[benchmark_symbol]
+            if benchmark_symbol and benchmark_symbol in current_close:
+                bp = current_close[benchmark_symbol]
                 if benchmark_start_price is None:
                     benchmark_start_price = bp
                 bench_value = self.initial_capital * (bp / benchmark_start_price)
@@ -229,12 +316,18 @@ class ParameterOptimizer:
         initial_capital: float = 10000,
         max_positions: int = 5,
         fee: float = 1.0,
+        slippage_pct: float = 0.0,
+        fee_model: str = "flat",
+        use_next_open: bool = True,
     ):
         self.strategy_class = strategy_class
         self.base_params = base_params
         self.initial_capital = initial_capital
         self.max_positions = max_positions
         self.fee = fee
+        self.slippage_pct = slippage_pct
+        self.fee_model = fee_model
+        self.use_next_open = use_next_open
 
     def grid_search(
         self,
@@ -269,7 +362,11 @@ class ParameterOptimizer:
             params.update(combo_dict)
 
             strategy = self.strategy_class(params)
-            engine = BacktestEngine(strategy, self.initial_capital, self.max_positions, self.fee)
+            engine = BacktestEngine(
+                strategy, self.initial_capital, self.max_positions, self.fee,
+                slippage_pct=self.slippage_pct, fee_model=self.fee_model,
+                use_next_open=self.use_next_open,
+            )
             result = engine.run(data, start_date, end_date)
 
             entry = {
@@ -340,7 +437,11 @@ class ParameterOptimizer:
             full_params = dict(self.base_params)
             full_params.update(best_params)
             strategy = self.strategy_class(full_params)
-            engine = BacktestEngine(strategy, self.initial_capital, self.max_positions, self.fee)
+            engine = BacktestEngine(
+                strategy, self.initial_capital, self.max_positions, self.fee,
+                slippage_pct=self.slippage_pct, fee_model=self.fee_model,
+                use_next_open=self.use_next_open,
+            )
             result = engine.run(data, str(test_start), str(test_end))
 
             windows.append({
