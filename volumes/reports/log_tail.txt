@@ -1,200 +1,200 @@
-2026-06-04 19:00:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:00:04 [INFO] NY 13:00:04 | next SELL 13:05:00 | next BUY 13:31:00 | sleep 297s
-2026-06-04 19:00:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:05:01 [INFO] SELL-CYCLE 2026-06-04-13-05 | NY=13:05:01
-2026-06-04 19:05:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:05:02 [INFO] NEE PnL -3.38% (Cena 85.71, hold 78h)
-2026-06-04 19:05:02 [INFO] LOW PnL -5.26% (Cena 207.94, hold 97h)
-2026-06-04 19:05:02 [INFO] WMT PnL -2.49% (Cena 118.00, hold 58h)
-2026-06-04 19:05:02 [INFO] GEV PnL -1.06% (Cena 961.01, hold 26h)
-2026-06-04 19:05:03 [INFO] AVGO PnL +2.19% (Cena 415.02, hold 0h)
-2026-06-04 19:05:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:05:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:05:04 [INFO] NY 13:05:04 | next SELL 13:10:00 | next BUY 13:31:00 | sleep 297s
-2026-06-04 19:05:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:10:01 [INFO] SELL-CYCLE 2026-06-04-13-10 | NY=13:10:01
-2026-06-04 19:10:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:10:02 [INFO] NEE PnL -3.45% (Cena 85.64, hold 78h)
-2026-06-04 19:10:02 [INFO] LOW PnL -5.31% (Cena 207.83, hold 97h)
-2026-06-04 19:10:02 [INFO] WMT PnL -2.55% (Cena 117.92, hold 58h)
-2026-06-04 19:10:02 [INFO] GEV PnL -1.06% (Cena 961.00, hold 26h)
-2026-06-04 19:10:03 [INFO] AVGO PnL +2.90% (Cena 417.89, hold 0h)
-2026-06-04 19:10:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:10:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:10:04 [INFO] NY 13:10:04 | next SELL 13:15:00 | next BUY 13:31:00 | sleep 297s
-2026-06-04 19:10:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:15:01 [INFO] SELL-CYCLE 2026-06-04-13-15 | NY=13:15:01
-2026-06-04 19:15:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:15:02 [INFO] NEE PnL -3.41% (Cena 85.68, hold 78h)
-2026-06-04 19:15:02 [INFO] LOW PnL -5.37% (Cena 207.70, hold 97h)
-2026-06-04 19:15:02 [INFO] WMT PnL -2.61% (Cena 117.84, hold 58h)
-2026-06-04 19:15:03 [INFO] GEV PnL -1.02% (Cena 961.41, hold 26h)
-2026-06-04 19:15:03 [INFO] AVGO PnL +2.68% (Cena 417.02, hold 0h)
-2026-06-04 19:15:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:15:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:15:04 [INFO] NY 13:15:04 | next SELL 13:20:00 | next BUY 13:31:00 | sleep 297s
-2026-06-04 19:15:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:20:01 [INFO] SELL-CYCLE 2026-06-04-13-20 | NY=13:20:01
-2026-06-04 19:20:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:20:03 [INFO] NEE PnL -3.42% (Cena 85.67, hold 78h)
-2026-06-04 19:20:03 [INFO] LOW PnL -5.37% (Cena 207.70, hold 97h)
-2026-06-04 19:20:03 [INFO] WMT PnL -2.58% (Cena 117.88, hold 58h)
-2026-06-04 19:20:03 [INFO] GEV PnL -0.97% (Cena 961.86, hold 26h)
-2026-06-04 19:20:04 [INFO] AVGO PnL +3.05% (Cena 418.50, hold 0h) -> Take Profit
-2026-06-04 19:20:04 [INFO] TRADE SELL AVGO qty=4 price=418.35 realized=$47.92 reason=Take Profit [FILLED]
-2026-06-04 19:20:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:20:08 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:20:08 [INFO] NY 13:20:08 | next SELL 13:25:00 | next BUY 13:31:00 | sleep 293s
-2026-06-04 19:20:08 [INFO] Sleep: 00:04:53
-2026-06-04 19:25:01 [INFO] SELL-CYCLE 2026-06-04-13-25 | NY=13:25:01
-2026-06-04 19:25:01 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:25:02 [INFO] NEE PnL -3.47% (Cena 85.63, hold 78h)
-2026-06-04 19:25:02 [INFO] LOW PnL -5.28% (Cena 207.89, hold 97h)
-2026-06-04 19:25:02 [INFO] WMT PnL -2.52% (Cena 117.95, hold 58h)
-2026-06-04 19:25:03 [INFO] GEV PnL -0.83% (Cena 963.26, hold 26h)
-2026-06-04 19:25:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:25:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:25:04 [INFO] NY 13:25:04 | next SELL 13:30:00 | next BUY 13:31:00 | sleep 297s
-2026-06-04 19:25:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:30:01 [INFO] SELL-CYCLE 2026-06-04-13-30 | NY=13:30:01
-2026-06-04 19:30:01 [INFO] SELL-CHECK: pozic 4 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:30:02 [INFO] NEE PnL -3.47% (Cena 85.63, hold 78h)
-2026-06-04 19:30:02 [INFO] LOW PnL -5.38% (Cena 207.67, hold 97h)
-2026-06-04 19:30:02 [INFO] WMT PnL -2.59% (Cena 117.87, hold 58h)
-2026-06-04 19:30:03 [INFO] GEV PnL -0.72% (Cena 964.34, hold 26h)
-2026-06-04 19:30:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:30:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:30:04 [INFO] NY 13:30:04 | next SELL 13:35:00 | next BUY 13:31:00 | sleep 57s
-2026-06-04 19:30:04 [INFO] Sleep: 00:00:57
-2026-06-04 19:31:01 [INFO] BUY-CYCLE 2026-06-04-13 | NY=13:31:01 | MODE DAILY
-2026-06-04 19:31:01 [INFO] BUY-SCAN: stahuji data pro 101 tickerů (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:31:26 [INFO] BUY HON | Enhanced RSI=25.1 drop=-2.61% score=0.64 | qty=9
-2026-06-04 19:31:26 [INFO] TRADE BUY HON qty=9 price=217.52 fee=$1.00 note=Enhanced: Enhanced RSI=25.1 drop=-2.61% score=0.64
-2026-06-04 19:31:30 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:31:32 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:31:32 [INFO] NY 13:31:32 | next SELL 13:35:00 | next BUY 14:31:00 | sleep 209s
-2026-06-04 19:31:32 [INFO] Sleep: 00:03:29
-2026-06-04 19:35:01 [INFO] SELL-CYCLE 2026-06-04-13-35 | NY=13:35:01
-2026-06-04 19:35:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:35:02 [INFO] NEE PnL -3.51% (Cena 85.59, hold 78h)
-2026-06-04 19:35:02 [INFO] LOW PnL -5.32% (Cena 207.80, hold 97h)
-2026-06-04 19:35:02 [INFO] WMT PnL -2.65% (Cena 117.80, hold 58h)
-2026-06-04 19:35:03 [INFO] GEV PnL -0.59% (Cena 965.58, hold 26h)
-2026-06-04 19:35:03 [INFO] HON PnL -0.20% (Cena 217.32, hold 0h)
-2026-06-04 19:35:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:35:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:35:04 [INFO] NY 13:35:04 | next SELL 13:40:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 19:35:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:40:01 [INFO] SELL-CYCLE 2026-06-04-13-40 | NY=13:40:01
-2026-06-04 19:40:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:40:02 [INFO] NEE PnL -3.52% (Cena 85.58, hold 78h)
-2026-06-04 19:40:02 [INFO] LOW PnL -5.42% (Cena 207.59, hold 97h)
-2026-06-04 19:40:02 [INFO] WMT PnL -2.58% (Cena 117.89, hold 58h)
-2026-06-04 19:40:03 [INFO] GEV PnL -0.42% (Cena 967.16, hold 26h)
-2026-06-04 19:40:03 [INFO] HON PnL +0.89% (Cena 219.71, hold 0h)
-2026-06-04 19:40:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:40:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:40:04 [INFO] NY 13:40:04 | next SELL 13:45:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 19:40:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:45:01 [INFO] SELL-CYCLE 2026-06-04-13-45 | NY=13:45:01
-2026-06-04 19:45:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:45:02 [INFO] NEE PnL -3.67% (Cena 85.45, hold 78h)
-2026-06-04 19:45:02 [INFO] LOW PnL -5.44% (Cena 207.54, hold 97h)
-2026-06-04 19:45:02 [INFO] WMT PnL -2.48% (Cena 118.00, hold 58h)
-2026-06-04 19:45:03 [INFO] GEV PnL -0.30% (Cena 968.38, hold 26h)
-2026-06-04 19:45:03 [INFO] HON PnL +0.68% (Cena 219.24, hold 0h)
-2026-06-04 19:45:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:45:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:45:04 [INFO] NY 13:45:04 | next SELL 13:50:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 19:45:04 [INFO] Sleep: 00:04:57
-2026-06-04 19:50:00 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-04 19:50:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:50:04 [INFO] Dashboard inicializován hned po startu.
-2026-06-04 19:50:04 [INFO] SELL-CYCLE 2026-06-04-13-50 | NY=13:50:04
-2026-06-04 19:50:05 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:50:05 [INFO] NEE PnL -3.70% (Cena 85.42, hold 78h)
-2026-06-04 19:50:06 [INFO] LOW PnL -5.47% (Cena 207.48, hold 97h)
-2026-06-04 19:50:06 [INFO] WMT PnL -2.38% (Cena 118.12, hold 58h)
-2026-06-04 19:50:06 [INFO] HON PnL +0.72% (Cena 219.32, hold 0h)
-2026-06-04 19:50:07 [INFO] GEV PnL -0.46% (Cena 966.86, hold 26h)
-2026-06-04 19:50:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:50:08 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:50:08 [INFO] NY 13:50:08 | next SELL 13:55:00 | next BUY 14:31:00 | sleep 293s
-2026-06-04 19:50:08 [INFO] Sleep: 00:04:53
-2026-06-04 19:55:01 [INFO] SELL-CYCLE 2026-06-04-13-55 | NY=13:55:01
-2026-06-04 19:55:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 19:55:02 [INFO] NEE PnL -3.79% (Cena 85.34, hold 78h)
-2026-06-04 19:55:02 [INFO] LOW PnL -5.57% (Cena 207.26, hold 97h)
-2026-06-04 19:55:02 [INFO] WMT PnL -2.49% (Cena 117.99, hold 58h)
-2026-06-04 19:55:03 [INFO] HON PnL +0.15% (Cena 218.09, hold 0h)
-2026-06-04 19:55:03 [INFO] GEV PnL -0.44% (Cena 967.02, hold 26h)
-2026-06-04 19:55:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:55:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 19:55:04 [INFO] NY 13:55:04 | next SELL 14:00:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 19:55:04 [INFO] Sleep: 00:04:57
-2026-06-04 20:00:01 [INFO] SELL-CYCLE 2026-06-04-14-00 | NY=14:00:01
-2026-06-04 20:00:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:00:02 [INFO] NEE PnL -3.80% (Cena 85.33, hold 78h)
-2026-06-04 20:00:02 [INFO] LOW PnL -5.57% (Cena 207.26, hold 97h)
-2026-06-04 20:00:03 [INFO] WMT PnL -2.56% (Cena 117.91, hold 58h)
-2026-06-04 20:00:03 [INFO] HON PnL -0.23% (Cena 217.25, hold 0h)
-2026-06-04 20:00:03 [INFO] GEV PnL -0.50% (Cena 966.38, hold 26h)
-2026-06-04 20:00:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:00:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:00:05 [INFO] NY 14:00:05 | next SELL 14:05:00 | next BUY 14:31:00 | sleep 296s
-2026-06-04 20:00:05 [INFO] Sleep: 00:04:56
-2026-06-04 20:05:01 [INFO] SELL-CYCLE 2026-06-04-14-05 | NY=14:05:01
-2026-06-04 20:05:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:05:01 [INFO] NEE PnL -3.72% (Cena 85.41, hold 78h)
-2026-06-04 20:05:02 [INFO] LOW PnL -5.54% (Cena 207.32, hold 97h)
-2026-06-04 20:05:02 [INFO] WMT PnL -2.72% (Cena 117.71, hold 58h)
-2026-06-04 20:05:02 [INFO] HON PnL -0.07% (Cena 217.60, hold 0h)
-2026-06-04 20:05:02 [INFO] GEV PnL -0.61% (Cena 965.38, hold 26h)
-2026-06-04 20:05:02 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:05:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:05:04 [INFO] NY 14:05:04 | next SELL 14:10:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 20:05:04 [INFO] Sleep: 00:04:57
-2026-06-04 20:10:01 [INFO] SELL-CYCLE 2026-06-04-14-10 | NY=14:10:01
-2026-06-04 20:10:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:10:02 [INFO] NEE PnL -3.70% (Cena 85.42, hold 78h)
-2026-06-04 20:10:02 [INFO] LOW PnL -5.61% (Cena 207.17, hold 97h)
-2026-06-04 20:10:02 [INFO] WMT PnL -2.92% (Cena 117.47, hold 58h)
-2026-06-04 20:10:02 [INFO] HON PnL -0.00% (Cena 217.76, hold 0h)
-2026-06-04 20:10:03 [INFO] GEV PnL -0.59% (Cena 965.53, hold 26h)
-2026-06-04 20:10:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:10:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:10:04 [INFO] NY 14:10:04 | next SELL 14:15:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 20:10:04 [INFO] Sleep: 00:04:57
-2026-06-04 20:15:01 [INFO] SELL-CYCLE 2026-06-04-14-15 | NY=14:15:01
-2026-06-04 20:15:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:15:02 [INFO] NEE PnL -3.77% (Cena 85.36, hold 78h)
-2026-06-04 20:15:02 [INFO] LOW PnL -5.66% (Cena 207.06, hold 97h)
-2026-06-04 20:15:02 [INFO] WMT PnL -3.00% (Cena 117.38, hold 58h)
-2026-06-04 20:15:03 [INFO] HON PnL +0.27% (Cena 218.36, hold 0h)
-2026-06-04 20:15:03 [INFO] GEV PnL -0.78% (Cena 963.68, hold 26h)
-2026-06-04 20:15:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:15:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:15:04 [INFO] NY 14:15:04 | next SELL 14:20:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 20:15:04 [INFO] Sleep: 00:04:57
-2026-06-04 20:20:01 [INFO] SELL-CYCLE 2026-06-04-14-20 | NY=14:20:01
-2026-06-04 20:20:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:20:02 [INFO] NEE PnL -3.75% (Cena 85.38, hold 78h)
-2026-06-04 20:20:02 [INFO] LOW PnL -5.62% (Cena 207.15, hold 97h)
-2026-06-04 20:20:02 [INFO] WMT PnL -2.81% (Cena 117.60, hold 58h)
-2026-06-04 20:20:03 [INFO] HON PnL +0.35% (Cena 218.51, hold 0h)
-2026-06-04 20:20:03 [INFO] GEV PnL -0.96% (Cena 961.99, hold 26h)
-2026-06-04 20:20:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:20:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:20:04 [INFO] NY 14:20:04 | next SELL 14:25:00 | next BUY 14:31:00 | sleep 297s
-2026-06-04 20:20:04 [INFO] Sleep: 00:04:57
-2026-06-04 20:25:01 [INFO] SELL-CYCLE 2026-06-04-14-25 | NY=14:25:01
-2026-06-04 20:25:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:25:02 [INFO] NEE PnL -3.84% (Cena 85.30, hold 78h)
-2026-06-04 20:25:02 [INFO] LOW PnL -5.58% (Cena 207.24, hold 97h)
-2026-06-04 20:25:03 [INFO] WMT PnL -2.87% (Cena 117.53, hold 58h)
-2026-06-04 20:25:03 [INFO] HON PnL +0.43% (Cena 218.69, hold 0h)
-2026-06-04 20:25:03 [INFO] GEV PnL -0.89% (Cena 962.65, hold 26h)
-2026-06-04 20:25:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:25:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:25:05 [INFO] NY 14:25:05 | next SELL 14:30:00 | next BUY 14:31:00 | sleep 296s
-2026-06-04 20:25:05 [INFO] Sleep: 00:04:56
+2026-06-04 20:31:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:31:05 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:31:05 [INFO] NY 14:31:05 | next SELL 14:35:00 | next BUY 15:31:00 | sleep 236s
+2026-06-04 20:31:05 [INFO] Sleep: 00:03:56
+2026-06-04 20:35:01 [INFO] SELL-CYCLE 2026-06-04-14-35 | NY=14:35:01
+2026-06-04 20:35:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 20:35:02 [INFO] NEE PnL -3.84% (Cena 85.30, hold 78h)
+2026-06-04 20:35:02 [INFO] LOW PnL -5.52% (Cena 207.35, hold 97h)
+2026-06-04 20:35:02 [INFO] WMT PnL -2.92% (Cena 117.47, hold 58h)
+2026-06-04 20:35:02 [INFO] HON PnL +0.30% (Cena 218.41, hold 0h)
+2026-06-04 20:35:03 [INFO] GEV PnL -0.83% (Cena 963.26, hold 26h)
+2026-06-04 20:35:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:35:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:35:04 [INFO] NY 14:35:04 | next SELL 14:40:00 | next BUY 15:31:00 | sleep 297s
+2026-06-04 20:35:04 [INFO] Sleep: 00:04:57
+2026-06-04 20:40:01 [INFO] SELL-CYCLE 2026-06-04-14-40 | NY=14:40:01
+2026-06-04 20:40:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 20:40:02 [INFO] NEE PnL -3.90% (Cena 85.25, hold 78h)
+2026-06-04 20:40:03 [INFO] LOW PnL -5.41% (Cena 207.62, hold 97h)
+2026-06-04 20:40:03 [INFO] WMT PnL -2.75% (Cena 117.67, hold 58h)
+2026-06-04 20:40:04 [INFO] HON PnL +0.32% (Cena 218.46, hold 0h)
+2026-06-04 20:40:04 [INFO] GEV PnL -0.88% (Cena 962.75, hold 26h)
+2026-06-04 20:40:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:40:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:40:06 [INFO] NY 14:40:06 | next SELL 14:45:00 | next BUY 15:31:00 | sleep 295s
+2026-06-04 20:40:06 [INFO] Sleep: 00:04:55
+2026-06-04 20:44:02 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-06-04 20:44:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:44:09 [INFO] Dashboard inicializován hned po startu.
+2026-06-04 20:44:10 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:44:11 [INFO] NY 14:44:11 | next SELL 14:45:00 | next BUY 15:31:00 | sleep 50s
+2026-06-04 20:44:11 [INFO] Sleep: 00:00:50
+2026-06-04 20:45:01 [INFO] SELL-CYCLE 2026-06-04-14-45 | NY=14:45:01
+2026-06-04 20:45:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 20:45:02 [INFO] NEE PnL -3.81% (Cena 85.33, hold 78h)
+2026-06-04 20:45:02 [INFO] LOW PnL -5.35% (Cena 207.73, hold 97h)
+2026-06-04 20:45:02 [INFO] WMT PnL -2.81% (Cena 117.61, hold 58h)
+2026-06-04 20:45:02 [INFO] HON PnL +0.28% (Cena 218.37, hold 0h)
+2026-06-04 20:45:03 [INFO] GEV PnL -0.83% (Cena 963.17, hold 26h)
+2026-06-04 20:45:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:45:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:45:04 [INFO] NY 14:45:04 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 297s
+2026-06-04 20:45:04 [INFO] Sleep: 00:04:57
+2026-06-04 20:45:14 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-06-04 20:45:18 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:45:20 [INFO] Dashboard inicializován hned po startu.
+2026-06-04 20:45:22 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:45:22 [INFO] NY 14:45:22 | next SELL 14:50:00 | next BUY 15:31:00 | sleep 279s
+2026-06-04 20:45:22 [INFO] Sleep: 00:04:39
+2026-06-04 20:50:02 [INFO] SELL-CYCLE 2026-06-04-14-50 | NY=14:50:01
+2026-06-04 20:50:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 20:50:03 [INFO] NEE PnL -3.68% (Cena 85.44, hold 78h)
+2026-06-04 20:50:03 [INFO] LOW PnL -5.43% (Cena 207.57, hold 97h)
+2026-06-04 20:50:03 [INFO] WMT PnL -2.96% (Cena 117.42, hold 58h)
+2026-06-04 20:50:04 [INFO] HON PnL +0.30% (Cena 218.43, hold 0h)
+2026-06-04 20:50:04 [INFO] GEV PnL -0.97% (Cena 961.88, hold 26h)
+2026-06-04 20:50:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:50:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:50:06 [INFO] NY 14:50:06 | next SELL 14:55:00 | next BUY 15:31:00 | sleep 295s
+2026-06-04 20:50:06 [INFO] Sleep: 00:04:55
+2026-06-04 20:55:01 [INFO] SELL-CYCLE 2026-06-04-14-55 | NY=14:55:01
+2026-06-04 20:55:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 20:55:02 [INFO] NEE PnL -3.66% (Cena 85.46, hold 78h)
+2026-06-04 20:55:03 [INFO] LOW PnL -5.41% (Cena 207.60, hold 97h)
+2026-06-04 20:55:03 [INFO] WMT PnL -2.87% (Cena 117.53, hold 58h)
+2026-06-04 20:55:03 [INFO] HON PnL +0.33% (Cena 218.49, hold 0h)
+2026-06-04 20:55:03 [INFO] GEV PnL -0.99% (Cena 961.71, hold 26h)
+2026-06-04 20:55:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:55:05 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 20:55:05 [INFO] NY 14:55:05 | next SELL 15:00:00 | next BUY 15:31:00 | sleep 296s
+2026-06-04 20:55:05 [INFO] Sleep: 00:04:56
+2026-06-04 21:00:01 [INFO] SELL-CYCLE 2026-06-04-15-00 | NY=15:00:01
+2026-06-04 21:00:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:00:02 [INFO] NEE PnL -3.65% (Cena 85.47, hold 78h)
+2026-06-04 21:00:03 [INFO] LOW PnL -5.44% (Cena 207.54, hold 97h)
+2026-06-04 21:00:03 [INFO] WMT PnL -2.71% (Cena 117.72, hold 58h)
+2026-06-04 21:00:03 [INFO] HON PnL +0.35% (Cena 218.52, hold 0h)
+2026-06-04 21:00:03 [INFO] GEV PnL -0.95% (Cena 962.09, hold 26h)
+2026-06-04 21:00:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:00:07 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:00:08 [INFO] NY 15:00:08 | next SELL 15:05:00 | next BUY 15:31:00 | sleep 293s
+2026-06-04 21:00:08 [INFO] Sleep: 00:04:53
+2026-06-04 21:05:01 [INFO] SELL-CYCLE 2026-06-04-15-05 | NY=15:05:01
+2026-06-04 21:05:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:05:02 [INFO] NEE PnL -3.50% (Cena 85.60, hold 78h)
+2026-06-04 21:05:02 [INFO] LOW PnL -5.37% (Cena 207.69, hold 97h)
+2026-06-04 21:05:02 [INFO] WMT PnL -2.82% (Cena 117.60, hold 58h)
+2026-06-04 21:05:02 [INFO] HON PnL +0.19% (Cena 218.16, hold 0h)
+2026-06-04 21:05:03 [INFO] GEV PnL -0.72% (Cena 964.31, hold 26h)
+2026-06-04 21:05:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:05:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:05:04 [INFO] NY 15:05:04 | next SELL 15:10:00 | next BUY 15:31:00 | sleep 297s
+2026-06-04 21:05:04 [INFO] Sleep: 00:04:57
+2026-06-04 21:10:01 [INFO] SELL-CYCLE 2026-06-04-15-10 | NY=15:10:01
+2026-06-04 21:10:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:10:02 [INFO] NEE PnL -3.43% (Cena 85.66, hold 78h)
+2026-06-04 21:10:02 [INFO] LOW PnL -5.27% (Cena 207.91, hold 97h)
+2026-06-04 21:10:03 [INFO] WMT PnL -2.84% (Cena 117.57, hold 58h)
+2026-06-04 21:10:03 [INFO] HON PnL +0.12% (Cena 218.03, hold 0h)
+2026-06-04 21:10:03 [INFO] GEV PnL -0.54% (Cena 966.04, hold 26h)
+2026-06-04 21:10:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:10:05 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:10:07 [INFO] NY 15:10:07 | next SELL 15:15:00 | next BUY 15:31:00 | sleep 294s
+2026-06-04 21:10:07 [INFO] Sleep: 00:04:54
+2026-06-04 21:15:01 [INFO] SELL-CYCLE 2026-06-04-15-15 | NY=15:15:01
+2026-06-04 21:15:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:15:02 [INFO] NEE PnL -3.39% (Cena 85.69, hold 78h)
+2026-06-04 21:15:02 [INFO] LOW PnL -5.26% (Cena 207.95, hold 97h)
+2026-06-04 21:15:02 [INFO] WMT PnL -2.75% (Cena 117.68, hold 58h)
+2026-06-04 21:15:02 [INFO] HON PnL +0.16% (Cena 218.11, hold 0h)
+2026-06-04 21:15:03 [INFO] GEV PnL -0.65% (Cena 964.95, hold 26h)
+2026-06-04 21:15:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:15:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:15:04 [INFO] NY 15:15:04 | next SELL 15:20:00 | next BUY 15:31:00 | sleep 297s
+2026-06-04 21:15:04 [INFO] Sleep: 00:04:57
+2026-06-04 21:20:01 [INFO] SELL-CYCLE 2026-06-04-15-20 | NY=15:20:01
+2026-06-04 21:20:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:20:02 [INFO] NEE PnL -3.44% (Cena 85.65, hold 78h)
+2026-06-04 21:20:03 [INFO] LOW PnL -5.20% (Cena 208.06, hold 97h)
+2026-06-04 21:20:03 [INFO] WMT PnL -2.68% (Cena 117.76, hold 58h)
+2026-06-04 21:20:03 [INFO] HON PnL +0.28% (Cena 218.38, hold 0h)
+2026-06-04 21:20:03 [INFO] GEV PnL -0.52% (Cena 966.18, hold 26h)
+2026-06-04 21:20:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:20:05 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:20:07 [INFO] NY 15:20:07 | next SELL 15:25:00 | next BUY 15:31:00 | sleep 294s
+2026-06-04 21:20:07 [INFO] Sleep: 00:04:54
+2026-06-04 21:25:01 [INFO] SELL-CYCLE 2026-06-04-15-25 | NY=15:25:01
+2026-06-04 21:25:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:25:02 [INFO] NEE PnL -3.37% (Cena 85.71, hold 78h)
+2026-06-04 21:25:02 [INFO] LOW PnL -5.26% (Cena 207.93, hold 97h)
+2026-06-04 21:25:03 [INFO] WMT PnL -2.84% (Cena 117.57, hold 58h)
+2026-06-04 21:25:03 [INFO] HON PnL +0.18% (Cena 218.15, hold 0h)
+2026-06-04 21:25:03 [INFO] GEV PnL -0.41% (Cena 967.33, hold 26h)
+2026-06-04 21:25:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:25:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:25:05 [INFO] NY 15:25:05 | next SELL 15:30:00 | next BUY 15:31:00 | sleep 296s
+2026-06-04 21:25:05 [INFO] Sleep: 00:04:56
+2026-06-04 21:30:01 [INFO] SELL-CYCLE 2026-06-04-15-30 | NY=15:30:01
+2026-06-04 21:30:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:30:02 [INFO] NEE PnL -3.42% (Cena 85.67, hold 78h)
+2026-06-04 21:30:02 [INFO] LOW PnL -5.33% (Cena 207.79, hold 97h)
+2026-06-04 21:30:02 [INFO] WMT PnL -2.90% (Cena 117.49, hold 58h)
+2026-06-04 21:30:03 [INFO] HON PnL +0.02% (Cena 217.82, hold 0h)
+2026-06-04 21:30:03 [INFO] GEV PnL -0.27% (Cena 968.64, hold 26h)
+2026-06-04 21:30:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:30:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:30:05 [INFO] NY 15:30:05 | next SELL 15:35:00 | next BUY 15:31:00 | sleep 56s
+2026-06-04 21:30:05 [INFO] Sleep: 00:00:56
+2026-06-04 21:31:01 [INFO] BUY-CYCLE 2026-06-04-15 | NY=15:31:01 | MODE DAILY
+2026-06-04 21:31:01 [INFO] BUY-SCAN: portfolio plné (5/5)
+2026-06-04 21:31:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:31:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:31:06 [INFO] NY 15:31:06 | next SELL 15:35:00 | next BUY 10:31:00 | sleep 235s
+2026-06-04 21:31:06 [INFO] Sleep: 00:03:55
+2026-06-04 21:35:01 [INFO] SELL-CYCLE 2026-06-04-15-35 | NY=15:35:01
+2026-06-04 21:35:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:35:02 [INFO] NEE PnL -3.50% (Cena 85.60, hold 78h)
+2026-06-04 21:35:03 [INFO] LOW PnL -5.24% (Cena 207.98, hold 97h)
+2026-06-04 21:35:03 [INFO] WMT PnL -2.86% (Cena 117.54, hold 58h)
+2026-06-04 21:35:03 [INFO] HON PnL -0.04% (Cena 217.67, hold 0h)
+2026-06-04 21:35:03 [INFO] GEV PnL -0.37% (Cena 967.64, hold 26h)
+2026-06-04 21:35:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:35:05 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:35:05 [INFO] NY 15:35:05 | next SELL 15:40:00 | next BUY 10:31:00 | sleep 296s
+2026-06-04 21:35:05 [INFO] Sleep: 00:04:56
+2026-06-04 21:40:01 [INFO] SELL-CYCLE 2026-06-04-15-40 | NY=15:40:01
+2026-06-04 21:40:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:40:02 [INFO] NEE PnL -3.55% (Cena 85.56, hold 78h)
+2026-06-04 21:40:02 [INFO] LOW PnL -5.20% (Cena 208.06, hold 97h)
+2026-06-04 21:40:02 [INFO] WMT PnL -2.94% (Cena 117.44, hold 58h)
+2026-06-04 21:40:02 [INFO] HON PnL +0.02% (Cena 217.79, hold 0h)
+2026-06-04 21:40:03 [INFO] GEV PnL -0.46% (Cena 966.86, hold 26h)
+2026-06-04 21:40:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:40:04 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:40:04 [INFO] NY 15:40:04 | next SELL 15:45:00 | next BUY 10:31:00 | sleep 297s
+2026-06-04 21:40:04 [INFO] Sleep: 00:04:57
+2026-06-04 21:45:01 [INFO] SELL-CYCLE 2026-06-04-15-45 | NY=15:45:01
+2026-06-04 21:45:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:45:02 [INFO] NEE PnL -3.64% (Cena 85.47, hold 78h)
+2026-06-04 21:45:02 [INFO] LOW PnL -5.19% (Cena 208.10, hold 97h)
+2026-06-04 21:45:03 [INFO] WMT PnL -2.84% (Cena 117.56, hold 58h)
+2026-06-04 21:45:03 [INFO] HON PnL +0.04% (Cena 217.84, hold 0h)
+2026-06-04 21:45:03 [INFO] GEV PnL -0.81% (Cena 963.39, hold 26h)
+2026-06-04 21:45:03 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:45:06 [INFO] REPORT aktualizován: /reports/index.html
+2026-06-04 21:45:06 [INFO] NY 15:45:06 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 295s
+2026-06-04 21:45:06 [INFO] Sleep: 00:04:55
+2026-06-04 21:49:19 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-06-04 21:49:25 [INFO] Dashboard inicializován hned po startu.
+2026-06-04 21:49:27 [INFO] NY 15:49:27 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 34s
+2026-06-04 21:49:27 [INFO] Sleep: 00:00:34
+2026-06-04 21:50:01 [INFO] SELL-CYCLE 2026-06-04-15-50 | NY=15:50:01
+2026-06-04 21:50:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-04 21:50:02 [INFO] NEE PnL -3.52% (Cena 85.58, hold 78h)
+2026-06-04 21:50:02 [INFO] LOW PnL -5.09% (Cena 208.32, hold 97h)
+2026-06-04 21:50:03 [INFO] WMT PnL -2.95% (Cena 117.43, hold 58h)
+2026-06-04 21:50:03 [INFO] HON PnL -0.07% (Cena 217.61, hold 0h)
+2026-06-04 21:50:03 [INFO] GEV PnL -0.94% (Cena 962.14, hold 26h)
+2026-06-04 21:50:05 [INFO] NY 15:50:05 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 296s
+2026-06-04 21:50:05 [INFO] Sleep: 00:04:56

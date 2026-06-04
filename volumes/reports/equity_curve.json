@@ -1,0 +1,420 @@
+{
+  "ts": "2026-06-04T21:50:05",
+  "base_capital": 10000.0,
+  "max_drawdown_pct": 1.182,
+  "points": [
+    {
+      "t": "2026-01-02T17:31:00",
+      "equity": 9999.0,
+      "cumulative_pnl": -1.0,
+      "drawdown_pct": -0.01,
+      "roi_pct": -0.01
+    },
+    {
+      "t": "2026-01-02T21:31:00",
+      "equity": 9998.0,
+      "cumulative_pnl": -2.0,
+      "drawdown_pct": -0.02,
+      "roi_pct": -0.02
+    },
+    {
+      "t": "2026-01-05T16:31:00",
+      "equity": 10057.08,
+      "cumulative_pnl": 57.08,
+      "drawdown_pct": 0.0,
+      "roi_pct": 0.571
+    },
+    {
+      "t": "2026-01-05T16:31:00",
+      "equity": 10056.08,
+      "cumulative_pnl": 56.08,
+      "drawdown_pct": -0.01,
+      "roi_pct": 0.561
+    },
+    {
+      "t": "2026-01-05T18:31:00",
+      "equity": 10055.08,
+      "cumulative_pnl": 55.08,
+      "drawdown_pct": -0.02,
+      "roi_pct": 0.551
+    },
+    {
+      "t": "2026-01-06T19:31:00",
+      "equity": 10111.88,
+      "cumulative_pnl": 111.88,
+      "drawdown_pct": 0.0,
+      "roi_pct": 1.119
+    },
+    {
+      "t": "2026-01-06T19:31:00",
+      "equity": 10110.88,
+      "cumulative_pnl": 110.88,
+      "drawdown_pct": -0.01,
+      "roi_pct": 1.109
+    },
+    {
+      "t": "2026-01-07T16:45:00",
+      "equity": 10168.1,
+      "cumulative_pnl": 168.1,
+      "drawdown_pct": 0.0,
+      "roi_pct": 1.681
+    },
+    {
+      "t": "2026-01-07T18:31:00",
+      "equity": 10167.1,
+      "cumulative_pnl": 167.1,
+      "drawdown_pct": -0.01,
+      "roi_pct": 1.671
+    },
+    {
+      "t": "2026-01-08T19:00:00",
+      "equity": 10226.66,
+      "cumulative_pnl": 226.66,
+      "drawdown_pct": 0.0,
+      "roi_pct": 2.267
+    },
+    {
+      "t": "2026-01-08T19:31:00",
+      "equity": 10225.66,
+      "cumulative_pnl": 225.66,
+      "drawdown_pct": -0.01,
+      "roi_pct": 2.257
+    },
+    {
+      "t": "2026-01-09T21:15:00",
+      "equity": 10283.86,
+      "cumulative_pnl": 283.86,
+      "drawdown_pct": 0.0,
+      "roi_pct": 2.839
+    },
+    {
+      "t": "2026-01-13T16:31:00",
+      "equity": 10405.79,
+      "cumulative_pnl": 405.79,
+      "drawdown_pct": 0.0,
+      "roi_pct": 4.058
+    },
+    {
+      "t": "2026-01-27T21:31:00",
+      "equity": 10404.79,
+      "cumulative_pnl": 404.79,
+      "drawdown_pct": -0.01,
+      "roi_pct": 4.048
+    },
+    {
+      "t": "2026-01-28T17:31:00",
+      "equity": 10493.89,
+      "cumulative_pnl": 493.89,
+      "drawdown_pct": 0.0,
+      "roi_pct": 4.939
+    },
+    {
+      "t": "2026-02-11T17:40:00",
+      "equity": 10553.11,
+      "cumulative_pnl": 553.11,
+      "drawdown_pct": 0.0,
+      "roi_pct": 5.531
+    },
+    {
+      "t": "2026-05-06T16:31:00",
+      "equity": 10552.11,
+      "cumulative_pnl": 552.11,
+      "drawdown_pct": -0.009,
+      "roi_pct": 5.521
+    },
+    {
+      "t": "2026-05-06T17:31:00",
+      "equity": 10551.11,
+      "cumulative_pnl": 551.11,
+      "drawdown_pct": -0.019,
+      "roi_pct": 5.511
+    },
+    {
+      "t": "2026-05-06T20:31:00",
+      "equity": 10550.11,
+      "cumulative_pnl": 550.11,
+      "drawdown_pct": -0.028,
+      "roi_pct": 5.501
+    },
+    {
+      "t": "2026-05-07T15:45:00",
+      "equity": 10621.31,
+      "cumulative_pnl": 621.31,
+      "drawdown_pct": 0.0,
+      "roi_pct": 6.213
+    },
+    {
+      "t": "2026-05-07T16:31:00",
+      "equity": 10620.31,
+      "cumulative_pnl": 620.31,
+      "drawdown_pct": -0.009,
+      "roi_pct": 6.203
+    },
+    {
+      "t": "2026-05-07T20:31:00",
+      "equity": 10619.31,
+      "cumulative_pnl": 619.31,
+      "drawdown_pct": -0.019,
+      "roi_pct": 6.193
+    },
+    {
+      "t": "2026-05-08T17:31:00",
+      "equity": 10618.31,
+      "cumulative_pnl": 618.31,
+      "drawdown_pct": -0.028,
+      "roi_pct": 6.183
+    },
+    {
+      "t": "2026-05-11T16:35:00",
+      "equity": 10552.7,
+      "cumulative_pnl": 552.7,
+      "drawdown_pct": -0.646,
+      "roi_pct": 5.527
+    },
+    {
+      "t": "2026-05-11T17:31:00",
+      "equity": 10551.7,
+      "cumulative_pnl": 551.7,
+      "drawdown_pct": -0.655,
+      "roi_pct": 5.517
+    },
+    {
+      "t": "2026-05-11T20:35:00",
+      "equity": 10574.14,
+      "cumulative_pnl": 574.14,
+      "drawdown_pct": -0.444,
+      "roi_pct": 5.741
+    },
+    {
+      "t": "2026-05-11T21:31:00",
+      "equity": 10573.14,
+      "cumulative_pnl": 573.14,
+      "drawdown_pct": -0.454,
+      "roi_pct": 5.731
+    },
+    {
+      "t": "2026-05-12T15:36:00",
+      "equity": 10640.66,
+      "cumulative_pnl": 640.66,
+      "drawdown_pct": 0.0,
+      "roi_pct": 6.407
+    },
+    {
+      "t": "2026-05-12T16:31:00",
+      "equity": 10639.66,
+      "cumulative_pnl": 639.66,
+      "drawdown_pct": -0.009,
+      "roi_pct": 6.397
+    },
+    {
+      "t": "2026-05-12T18:40:00",
+      "equity": 10690.74,
+      "cumulative_pnl": 690.74,
+      "drawdown_pct": 0.0,
+      "roi_pct": 6.907
+    },
+    {
+      "t": "2026-05-12T19:31:00",
+      "equity": 10689.74,
+      "cumulative_pnl": 689.74,
+      "drawdown_pct": -0.009,
+      "roi_pct": 6.897
+    },
+    {
+      "t": "2026-05-12T20:25:00",
+      "equity": 10749.63,
+      "cumulative_pnl": 749.63,
+      "drawdown_pct": 0.0,
+      "roi_pct": 7.496
+    },
+    {
+      "t": "2026-05-12T20:35:00",
+      "equity": 10772.77,
+      "cumulative_pnl": 772.77,
+      "drawdown_pct": 0.0,
+      "roi_pct": 7.728
+    },
+    {
+      "t": "2026-05-12T21:31:00",
+      "equity": 10771.77,
+      "cumulative_pnl": 771.77,
+      "drawdown_pct": -0.009,
+      "roi_pct": 7.718
+    },
+    {
+      "t": "2026-05-13T16:31:00",
+      "equity": 10770.77,
+      "cumulative_pnl": 770.77,
+      "drawdown_pct": -0.019,
+      "roi_pct": 7.708
+    },
+    {
+      "t": "2026-05-13T17:35:00",
+      "equity": 10700.39,
+      "cumulative_pnl": 700.39,
+      "drawdown_pct": -0.672,
+      "roi_pct": 7.004
+    },
+    {
+      "t": "2026-05-13T18:31:00",
+      "equity": 10699.39,
+      "cumulative_pnl": 699.39,
+      "drawdown_pct": -0.681,
+      "roi_pct": 6.994
+    },
+    {
+      "t": "2026-05-14T17:55:00",
+      "equity": 10757.78,
+      "cumulative_pnl": 757.78,
+      "drawdown_pct": -0.139,
+      "roi_pct": 7.578
+    },
+    {
+      "t": "2026-05-15T16:31:00",
+      "equity": 10756.78,
+      "cumulative_pnl": 756.78,
+      "drawdown_pct": -0.148,
+      "roi_pct": 7.568
+    },
+    {
+      "t": "2026-05-15T19:25:00",
+      "equity": 10815.34,
+      "cumulative_pnl": 815.34,
+      "drawdown_pct": 0.0,
+      "roi_pct": 8.153
+    },
+    {
+      "t": "2026-05-15T19:31:00",
+      "equity": 10814.34,
+      "cumulative_pnl": 814.34,
+      "drawdown_pct": -0.009,
+      "roi_pct": 8.143
+    },
+    {
+      "t": "2026-05-18T16:00:00",
+      "equity": 10893.02,
+      "cumulative_pnl": 893.02,
+      "drawdown_pct": 0.0,
+      "roi_pct": 8.93
+    },
+    {
+      "t": "2026-05-18T16:31:00",
+      "equity": 10892.02,
+      "cumulative_pnl": 892.02,
+      "drawdown_pct": -0.009,
+      "roi_pct": 8.92
+    },
+    {
+      "t": "2026-05-20T15:55:00",
+      "equity": 10951.97,
+      "cumulative_pnl": 951.97,
+      "drawdown_pct": 0.0,
+      "roi_pct": 9.52
+    },
+    {
+      "t": "2026-05-21T15:45:00",
+      "equity": 10824.57,
+      "cumulative_pnl": 824.57,
+      "drawdown_pct": -1.163,
+      "roi_pct": 8.246
+    },
+    {
+      "t": "2026-05-21T16:31:00",
+      "equity": 10823.57,
+      "cumulative_pnl": 823.57,
+      "drawdown_pct": -1.172,
+      "roi_pct": 8.236
+    },
+    {
+      "t": "2026-05-21T17:31:00",
+      "equity": 10822.57,
+      "cumulative_pnl": 822.57,
+      "drawdown_pct": -1.182,
+      "roi_pct": 8.226
+    },
+    {
+      "t": "2026-05-22T16:35:00",
+      "equity": 10870.97,
+      "cumulative_pnl": 870.97,
+      "drawdown_pct": -0.74,
+      "roi_pct": 8.71
+    },
+    {
+      "t": "2026-05-22T19:15:00",
+      "equity": 10926.09,
+      "cumulative_pnl": 926.09,
+      "drawdown_pct": -0.236,
+      "roi_pct": 9.261
+    },
+    {
+      "t": "2026-05-22T21:31:00",
+      "equity": 10925.09,
+      "cumulative_pnl": 925.09,
+      "drawdown_pct": -0.245,
+      "roi_pct": 9.251
+    },
+    {
+      "t": "2026-05-26T16:31:00",
+      "equity": 10924.09,
+      "cumulative_pnl": 924.09,
+      "drawdown_pct": -0.255,
+      "roi_pct": 9.241
+    },
+    {
+      "t": "2026-05-29T15:50:00",
+      "equity": 10847.09,
+      "cumulative_pnl": 847.09,
+      "drawdown_pct": -0.958,
+      "roi_pct": 8.471
+    },
+    {
+      "t": "2026-05-29T16:31:00",
+      "equity": 10846.09,
+      "cumulative_pnl": 846.09,
+      "drawdown_pct": -0.967,
+      "roi_pct": 8.461
+    },
+    {
+      "t": "2026-05-29T16:35:00",
+      "equity": 10906.55,
+      "cumulative_pnl": 906.55,
+      "drawdown_pct": -0.415,
+      "roi_pct": 9.066
+    },
+    {
+      "t": "2026-05-29T17:31:00",
+      "equity": 10905.55,
+      "cumulative_pnl": 905.55,
+      "drawdown_pct": -0.424,
+      "roi_pct": 9.056
+    },
+    {
+      "t": "2026-06-04T15:36:00",
+      "equity": 10967.63,
+      "cumulative_pnl": 967.63,
+      "drawdown_pct": 0.0,
+      "roi_pct": 9.676
+    },
+    {
+      "t": "2026-06-04T16:31:00",
+      "equity": 10966.63,
+      "cumulative_pnl": 966.63,
+      "drawdown_pct": -0.009,
+      "roi_pct": 9.666
+    },
+    {
+      "t": "2026-06-04T19:20:00",
+      "equity": 11014.55,
+      "cumulative_pnl": 1014.55,
+      "drawdown_pct": 0.0,
+      "roi_pct": 10.146
+    },
+    {
+      "t": "2026-06-04T19:31:00",
+      "equity": 11013.55,
+      "cumulative_pnl": 1013.55,
+      "drawdown_pct": -0.009,
+      "roi_pct": 10.136
+    }
+  ]
+}

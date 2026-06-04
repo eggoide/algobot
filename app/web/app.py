@@ -183,5 +183,44 @@ def root_health():
     return jsonify({"ok": True})
 
 
+# ─────────────────────────────────────────────────────────
+# Dashboard v2 control API
+# Writes to /data/control.json which bot.py reads at start of each BUY cycle.
+# Mounted at /v2/api/control via nginx proxy.
+# ─────────────────────────────────────────────────────────
+CONTROL_FILE = os.environ.get("CONTROL_FILE", "/data/control.json")
+
+
+def _read_control() -> Dict[str, Any]:
+    try:
+        with open(CONTROL_FILE, "r", encoding="utf-8") as f:
+            return json.load(f) or {}
+    except Exception:
+        return {}
+
+
+def _write_control(payload: Dict[str, Any]) -> None:
+    os.makedirs(os.path.dirname(CONTROL_FILE), exist_ok=True)
+    tmp = CONTROL_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+    os.replace(tmp, CONTROL_FILE)
+
+
+@app.route("/v2/api/control", methods=["GET", "POST"])
+def v2_control():
+    if request.method == "GET":
+        return jsonify(_read_control())
+
+    body = request.get_json(silent=True) or {}
+    cur = _read_control()
+    if "paused" in body:
+        cur["paused"] = bool(body["paused"])
+    cur["updated_at"] = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+    cur["updated_by"] = "dashboard_v2"
+    _write_control(cur)
+    return jsonify({"ok": True, "control": cur})
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=False)
