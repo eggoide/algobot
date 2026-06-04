@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgoBot - Review pred prechodem na real trading</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1116;
+    --panel: #161b22;
+    --panel-2: #1c232c;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --text-bright: #f0f6fc;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #e0823d;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0; padding: 0;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  nav.sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px 18px;
+    position: sticky; top: 0;
+    height: 100vh; overflow-y: auto;
+  }
+  nav.sidebar h3 {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    margin: 18px 0 8px 8px;
+    font-weight: 600;
+  }
+  nav.sidebar .brand {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: block;
+    padding: 0 8px;
+  }
+  nav.sidebar .brand-sub {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding: 0 8px;
+    margin-bottom: 16px;
+  }
+  nav.sidebar ol { list-style: none; padding: 0; margin: 0; }
+  nav.sidebar ol li a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: background 0.15s, color 0.15s;
+  }
+  nav.sidebar ol li a:hover { background: var(--panel-2); color: var(--text-bright); }
+  nav.sidebar ol.sub li a { padding-left: 22px; font-size: 0.82rem; }
+  main { padding: 40px 56px 80px; max-width: 1100px; }
+  h1 { font-size: 2.1rem; margin: 0 0 8px; color: var(--text-bright); font-weight: 700; }
+  .subtitle { color: var(--text-dim); margin-bottom: 30px; font-size: 0.95rem; }
+  h2 {
+    font-size: 1.55rem;
+    margin: 50px 0 16px;
+    color: var(--text-bright);
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.15rem; margin: 28px 0 10px; color: var(--text-bright); font-weight: 600; }
+  h4 {
+    font-size: 0.98rem;
+    margin: 18px 0 8px;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { padding-left: 22px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: rgba(110,118,129,0.18);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 0.86em;
+    color: #e6edf3;
+  }
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    font-size: 0.83rem;
+    line-height: 1.5;
+    font-family: 'Menlo', 'Consolas', monospace;
+  }
+  pre code { background: none; padding: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  strong { color: var(--text-bright); font-weight: 600; }
+  em { color: var(--text); font-style: italic; }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .pill.red { color: var(--red); background: rgba(248,81,73,0.12); border-color: rgba(248,81,73,0.4); }
+  .pill.yellow { color: var(--yellow); background: rgba(210,153,34,0.12); border-color: rgba(210,153,34,0.4); }
+  .pill.green { color: var(--green); background: rgba(35,134,54,0.12); border-color: rgba(35,134,54,0.4); }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .card.critical { border-left: 4px solid var(--red); }
+  .card.warn { border-left: 4px solid var(--yellow); }
+  .card.info { border-left: 4px solid var(--accent); }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .card-head h3 { margin: 0; }
+  .card-tag { font-size: 0.75rem; color: var(--text-dim); font-family: 'Menlo', monospace; }
+  .verdict {
+    background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(63,185,80,0.05));
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 30px 0;
+  }
+  .verdict h3 { margin-top: 0; color: var(--accent); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 0.9rem;
+  }
+  th {
+    text-align: left;
+    color: var(--text-dim);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+  td {
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .center { text-align: center; }
+  .nowrap { white-space: nowrap; }
+  .impact-no { color: var(--green); font-weight: 600; }
+  .impact-some { color: var(--yellow); font-weight: 600; }
+  .impact-yes { color: var(--orange); font-weight: 600; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 24px 0 30px;
+  }
+  .summary-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .summary-card .count {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .summary-card .label {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .summary-card.red .count { color: var(--red); }
+  .summary-card.yellow .count { color: var(--yellow); }
+  .summary-card.green .count { color: var(--green); }
+  .summary-card.blue .count { color: var(--accent); }
+  .summary-card .desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+  .glossary dt { font-weight: 600; color: var(--text-bright); margin-top: 14px; font-size: 0.95rem; }
+  .glossary dd { margin: 4px 0 0; color: var(--text); font-size: 0.9rem; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    main { padding: 30px 22px 60px; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    table { font-size: 0.82rem; }
+    th, td { padding: 8px 6px; }
+  }
+  footer {
+    margin-top: 80px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar">
+  <span class="brand">AlgoBot Review</span>
+  <div class="brand-sub">pred prechodem na real trading</div>
+  <h3>Obsah</h3>
+  <ol>
+    <li><a href="#summary">1. Souhrn</a></li>
+    <li><a href="#glossary">2. Slovnik pojmu</a></li>
+    <li><a href="#impact">3. Vliv na strategii</a></li>
+    <li><a href="#blockers">4. Blokatory</a></li>
+    <li><a href="#improvements">5. Vylepseni</a></li>
+    <li><a href="#cosmetic">6. Kosmetika</a></li>
+    <li><a href="#dashboard">7. Dashboard</a></li>
+    <li><a href="#roadmap">8. Poradi praci</a></li>
+    <li><a href="#conclusion">9. Zaver</a></li>
+  </ol>
+  <h3>Blokatory</h3>
+  <ol class="sub">
+    <li><a href="#B1">B1 - BUY fill verification</a></li>
+    <li><a href="#B2">B2 - Daily kill-switch</a></li>
+    <li><a href="#B3">B3 - Limit orders</a></li>
+    <li><a href="#B4">B4 - Live market data</a></li>
+    <li><a href="#B5">B5 - PAPER/LIVE guard</a></li>
+    <li><a href="#B6">B6 - State persistence</a></li>
+    <li><a href="#B7">B7 - Cash check edge</a></li>
+    <li><a href="#B8">B8 - accountSummary stale</a></li>
+  </ol>
+  <h3>Vylepseni</h3>
+  <ol class="sub">
+    <li><a href="#V1">V1 - Risk-based sizing</a></li>
+    <li><a href="#V2">V2 - DB schema</a></li>
+    <li><a href="#V3">V3 - Unit testy</a></li>
+    <li><a href="#V4">V4 - requirements pinning</a></li>
+    <li><a href="#V5">V5 - Refactor bot.py</a></li>
+    <li><a href="#V6">V6 - Smazat .bak</a></li>
+    <li><a href="#V7">V7 - Survivorship bias</a></li>
+    <li><a href="#V8">V8 - Heartbeat</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h1>AlgoBot &mdash; Review p&#345;ed p&#345;echodem na real trading</h1>
+<div class="subtitle">Datum: 2026-06-04 &middot; Stav: paper trading, ~10k USD, strategie <code>EnhancedDipBuyStrategy</code></div>
+
+<div class="verdict">
+  <h3>Verdikt</h3>
+  <p>P&#345;ed p&#345;epnut&iacute;m na live &uacute;&#269;et je t&#345;eba opravit minim&aacute;ln&#283; <strong>6 polo&#382;ek z kategorie Blok&aacute;tory</strong>. Drtiv&aacute; v&#283;t&#353;ina n&aacute;vrh&#367; <strong>nem&#283;n&iacute; logiku strategie</strong> &mdash; t&yacute;kaj&iacute; se bezpe&#269;nosti, korektnosti exekuce a sledov&aacute;n&iacute; rizika.</p>
+  <p style="margin-bottom:0;">Strategie sama je vcelku v po&#345;&aacute;dku. Probl&eacute;m je vrstva pod n&iacute; &mdash; execution, state, safety.</p>
+</div>
+
+<h2 id="summary">1. Souhrn jedn&iacute;m pohledem</h2>
+
+<div class="summary-grid">
+  <div class="summary-card red">
+    <div class="count">8</div>
+    <div class="label">Blok&aacute;tory</div>
+    <div class="desc">P&#345;i zapnut&iacute; live &uacute;&#269;tu re&aacute;ln&#283; hroz&iacute; ztr&aacute;ta pen&#283;z nad r&aacute;mec o&#269;ek&aacute;van&eacute; volatility.</div>
+  </div>
+  <div class="summary-card yellow">
+    <div class="count">8</div>
+    <div class="label">Vylep&#353;en&iacute;</div>
+    <div class="desc">Bot pojede, ale chyb&iacute; mu obrana proti edge-cases a sledov&aacute;n&iacute; kvality exekuce.</div>
+  </div>
+  <div class="summary-card green">
+    <div class="count">4</div>
+    <div class="label">Kosmetika</div>
+    <div class="desc">Quality of life, &uacute;dr&#382;ba&#345;ina.</div>
+  </div>
+  <div class="summary-card blue">
+    <div class="count">1</div>
+    <div class="label">Dashboard</div>
+    <div class="desc">Funk&#269;n&iacute;, ale architektura z roku ~2005 (full-page reload). N&aacute;vrh modern&iacute; varianty.</div>
+  </div>
+</div>
+
+<p><strong>Kl&iacute;&#269;ov&yacute; vzkaz:</strong> zhruba 80 % oprav &#345;e&#353;&iacute; to, jak se <em>prov&aacute;d&iacute;</em> obchody (execution layer), ne to, <em>jak&eacute;</em> obchody bot d&#283;l&aacute; (strategy layer). Stejnou strategii s <code>buy_drop=2 %</code>, <code>sell_gain=3 %</code>, RSI&lt;35 atd. bude&#353; m&iacute;t i po implementaci v&#353;ech bod&#367; &mdash; jen pob&#283;&#382;&iacute; bezpe&#269;n&#283;ji a uvid&iacute;&#353; lep&#353;&iacute; data.</p>
+
+<h2 id="glossary">2. Slovn&iacute;k pojm&#367;</h2>
+<p>Pojmy, kter&eacute; se v reportu opakuj&iacute;. Pokud n&#283;co zn&aacute;&#353;, p&#345;esko&#269;.</p>
+
+<dl class="glossary">
+  <dt>Fill / Fill price</dt>
+  <dd>Kdy&#382; po&#353;le&#353; p&#345;&iacute;kaz "kup 10 ks AAPL", obchod se <em>nemus&iacute;</em> okam&#382;it&#283; st&aacute;t. Jakmile se trade skute&#269;n&#283; provede (a za jakou cenu), &#345;&iacute;k&aacute; se tomu <em>fill</em>. Cena, kterou jsi <em>cht&#283;l</em>, &ne; cena, za kterou jsi <em>koupil</em>.</dd>
+
+  <dt>Slippage (skluz)</dt>
+  <dd>Rozd&iacute;l mezi cenou, kterou jsi vid&#283;l p&#345;i rozhodnut&iacute;, a skute&#269;nou fill cenou. M&#283;&#345;&iacute; se v "basis points" (bps): 1 bp = 0.01 %. Slippage 50 bps = 0.5 % hor&#353;&iacute; cena.</dd>
+
+  <dt>MarketOrder vs LimitOrder</dt>
+  <dd><strong>Market</strong> = "kup za jakoukoli aktu&aacute;ln&iacute; cenu, hned". Garantuje fill, negarantuje cenu. V klidu je rozd&iacute;l mizi&yacute;, p&#345;i otev&iacute;r&aacute;n&iacute; burzy nebo p&#345;i newsce m&#367;&#382;e b&yacute;t brut&aacute;ln&iacute;.<br>
+  <strong>Limit</strong> = "kup max. za X". Garantuje cenu, negarantuje fill. Pokud trh prolet&iacute; p&aacute;smem, nedostane&#353; nic.</dd>
+
+  <dt>Bid / Ask / Mid</dt>
+  <dd><strong>Bid</strong> = nejvy&#353;&#353;&iacute; cena, za kterou n&#283;kdo <em>kupuje</em> (= za co m&#367;&#382;e&#353; prodat). <strong>Ask</strong> = nejni&#382;&#353;&iacute; cena, za kterou n&#283;kdo <em>prod&aacute;v&aacute;</em> (= za co m&#367;&#382;e&#353; koupit). <strong>Mid</strong> = (bid+ask)/2.</dd>
+
+  <dt>Spread</dt>
+  <dd><code>ask &minus; bid</code>. &#268;&iacute;m v&#283;t&#353;&iacute; spread, t&iacute;m dra&#382;&#353;&iacute; market order.</dd>
+
+  <dt>Drawdown (DD)</dt>
+  <dd>Pokles equity od nejvy&#353;&#353;&iacute;ho bodu. "Max drawdown &minus;4.7 %" znamen&aacute;, &#382;e v n&#283;jak&eacute;m okam&#382;iku byla equity 4.7 % pod p&#345;edchoz&iacute;m maximem. Kl&iacute;&#269;ov&aacute; risk metrika.</dd>
+
+  <dt>Sharpe ratio</dt>
+  <dd>Pom&#283;r zisku k volatilit&#283;. Vy&#353;&#353;&iacute; = lep&#353;&iacute;. Sharpe 1.5 je dobr&yacute; retail strategy benchmark.</dd>
+
+  <dt>Equity</dt>
+  <dd>Celkov&aacute; hodnota &uacute;&#269;tu = cash + tr&#382;n&iacute; hodnota pozic.</dd>
+
+  <dt>Stop loss / Take profit / Trailing stop</dt>
+  <dd><strong>Stop loss</strong> = vystup, kdy&#382; cena spadne o X % od entry.<br>
+  <strong>Take profit</strong> = vystup, kdy&#382; cena vyroste o X % od entry.<br>
+  <strong>Trailing stop</strong> = dr&#382; <em>high water mark (HWM)</em> = nejvy&#353;&#353;&iacute; cenu po entry; vystup, kdy&#382; cena spadne o X % z HWM. Chr&aacute;n&iacute; zisk.</dd>
+
+  <dt>Time stop</dt>
+  <dd>Vystup, pokud pozice dr&#382;&iacute; d&eacute;le ne&#382; N bar&#367;, bez ohledu na PnL. Br&aacute;n&iacute; mrtv&yacute;m pozic&iacute;m vlekl&yacute;m m&#283;s&iacute;ce.</dd>
+
+  <dt>Position sizing</dt>
+  <dd>Jak velkou pozici v USD otev&#345;&iacute;t. Aktu&aacute;ln&#283;: <code>kapit&aacute;l / max_pozic / cena</code> (rovnom&#283;rn&eacute;). <em>Risk-based sizing</em> po&#269;&iacute;t&aacute; s volatilitou symbolu.</dd>
+
+  <dt>ATR (Average True Range)</dt>
+  <dd>Pr&#367;m&#283;rn&yacute; denn&iacute; rozsah cenov&eacute;ho pohybu, v USD nebo v %. Volatiln&iacute; akcie (PLTR ATR ~5 %) vs klidn&eacute; (KO ATR ~1 %). Slou&#382;&iacute; k risk sizing.</dd>
+
+  <dt>Survivorship bias</dt>
+  <dd>Backtest na "dne&#353;n&iacute;m" SP100 historicky favorit v&iacute;t&#283;ze (firmy, co spadly z indexu, v seznamu nejsou). Re&aacute;ln&eacute; backtesty maj&iacute; point-in-time index slo&#382;en&iacute;.</dd>
+
+  <dt>Reconciliation</dt>
+  <dd>Porovn&aacute;n&iacute; stavu v DB bota vs stavu na &uacute;&#269;tu (IB). P&#345;i restartu/crashi se mohou rozej&iacute;t.</dd>
+
+  <dt>Phantom trade</dt>
+  <dd>Bot si mysl&iacute;, &#382;e prodal/koupil, ale na burze se nic nestalo (nebo naopak). Phantom SELL bug byl v algobotu lon&iacute; opraven.</dd>
+
+  <dt>Cooldown</dt>
+  <dd>&#268;asov&aacute; pauza po ne&uacute;sp&#283;&#353;n&eacute;m pokusu o obchod, aby se hned nepokou&#353;el znovu.</dd>
+
+  <dt>Kill-switch / Circuit breaker</dt>
+  <dd>Automatick&yacute; mechanismus: p&#345;i p&#345;ekro&#269;en&iacute; rizikov&eacute; prahy bot pozastav&iacute; otev&iacute;r&aacute;n&iacute; nov&yacute;ch pozic.</dd>
+
+  <dt>Heartbeat / Dead-man switch</dt>
+  <dd>Pravideln&yacute; sign&aacute;l "&#382;iju". Kdy&#382; p&#345;estane chodit, extern&iacute; watchdog restartuje proces nebo alertuje.</dd>
+</dl>
+
+<h2 id="impact">3. Vliv zm&#283;n na strategii samotnou</h2>
+<p><strong>Kr&aacute;tk&aacute; odpov&#283;&#271;:</strong> V&#283;t&#353;ina ne. P&aacute;r ano.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>Zm&#283;na</th><th class="center">M&#283;n&iacute; strategii?</th><th>Vysv&#283;tlen&iacute;</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>BUY fill verification</td><td class="center impact-no">Ne</td><td>Pouze oprav&iacute;, jakou cenu si DB zapamatuje.</td></tr>
+    <tr><td>2</td><td>Daily kill-switch</td><td class="center impact-some">&#268;&aacute;ste&#269;n&#283;</td><td>P&#345;id&aacute;v&aacute; <strong>novou glob&aacute;ln&iacute; exit podm&iacute;nku</strong> (pauza). Logika v&yacute;b&#283;ru kandid&aacute;t&#367; z&#367;st&aacute;v&aacute;.</td></tr>
+    <tr><td>3</td><td>LimitOrder m&iacute;sto MarketOrder</td><td class="center impact-some">M&iacute;rn&#283;</td><td>N&#283;kter&eacute; obchody se <em>nefillnou</em>. Ovlivn&iacute; statistiku, ne logiku.</td></tr>
+    <tr><td>4</td><td>Live market data</td><td class="center impact-some">M&iacute;rn&#283;</td><td>Bot uvid&iacute; ceny <em>d&#345;&iacute;v</em>. RSI/MACD na &#269;erstv&#283;j&#353;&iacute;ch datech &rarr; jin&yacute; timing.</td></tr>
+    <tr><td>5</td><td>PAPER/LIVE guard</td><td class="center impact-no">Ne</td><td>Jen safety check p&#345;i startu.</td></tr>
+    <tr><td>6</td><td>State persistence</td><td class="center impact-no">Ne</td><td>Aktu&aacute;ln&#283; se trailing stop po restartu chov&aacute; &#353;patn&#283;. Oprava obnov&iacute; zam&yacute;&#353;len&eacute; chov&aacute;n&iacute;.</td></tr>
+    <tr><td>7</td><td>Cash check edge case</td><td class="center impact-no">Ne</td><td>Drobnost.</td></tr>
+    <tr><td>8</td><td>accountSummary refresh</td><td class="center impact-no">Ne</td><td>Korektnost &#269;ten&iacute; dat.</td></tr>
+    <tr><td>9</td><td>Risk-based position sizing (ATR)</td><td class="center impact-yes"><strong>Ano</strong></td><td>Zm&#283;n&iacute; <em>velikost</em> pozic. Vliv na Sharpe, max DD, total return. <strong>Vy&#382;aduje nov&yacute; backtest.</strong></td></tr>
+    <tr><td>10</td><td>DB schema roz&#353;&iacute;&#345;en&iacute;</td><td class="center impact-no">Ne</td><td>Audit/anal&yacute;za.</td></tr>
+    <tr><td>11</td><td>Unit testy</td><td class="center impact-no">Ne</td><td>&mdash;</td></tr>
+    <tr><td>12</td><td>requirements.txt piny</td><td class="center impact-no">Ne</td><td>&mdash;</td></tr>
+    <tr><td>13</td><td>Refactor bot.py</td><td class="center impact-no">Ne</td><td>&mdash;</td></tr>
+    <tr><td>14</td><td>Smazat bot.py.bak</td><td class="center impact-no">Ne</td><td>&mdash;</td></tr>
+    <tr><td>15</td><td>Survivorship bias fix</td><td class="center impact-yes"><strong>Ano (backtest)</strong></td><td>M&#283;n&iacute; <em>backtest metriky</em>, ne live. Po oprav&#283; budou realisti&#269;t&#283;j&#353;&iacute;.</td></tr>
+    <tr><td>16</td><td>Heartbeat / watchdog</td><td class="center impact-no">Ne</td><td>Infrastructure.</td></tr>
+    <tr><td>&mdash;</td><td>Dashboard rework</td><td class="center impact-no">Ne</td><td>Jen pohled na data.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Z&aacute;v&#283;r:</strong> Z 16 bod&#367; jen <strong>3</strong> re&aacute;ln&#283; m&#283;n&iacute; strategick&yacute; sign&aacute;l nebo metriky (#2, #9, #15) a dal&#353;&iacute; 2 maj&iacute; m&iacute;rn&yacute; side effect (#3, #4). V&#353;e ostatn&iacute; &#345;e&#353;&iacute; execution, safety a observability.</p>
+
+<h2 id="blockers">4. Blok&aacute;tory pro live trading</h2>
+
+<div class="card critical" id="B1">
+  <div class="card-head">
+    <h3>B1. BUY se ukl&aacute;d&aacute; do DB bez ov&#283;&#345;en&iacute;, &#382;e order skute&#269;n&#283; prob&#283;hl</h3>
+    <span class="card-tag">bot.py:1366&ndash;1374</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p>SELL strana po lo&#328;sk&eacute; oprav&#283; duplicate SELL bugu <strong>&#269;ek&aacute; a&#382; 8 sekund</strong> na <code>trade.orderStatus.status == 'Filled'</code>, ov&#283;&#345;uje filled_qty a avg_fill_price, a do DB zap&iacute;&#353;e jen p&#345;i &uacute;sp&#283;&#353;n&eacute;m fillu. BUY tento pattern <strong>nem&aacute;</strong>:</p>
+<pre><code>ib.placeOrder(contract, order)               # posl&aacute;n&iacute; orderu
+log_trade(conn, 'BUY', ib_sym, top.price, ...)  # IHNED ulo&#382;en&iacute; do DB s yfinance cenou</code></pre>
+  <h4>D&#367;sledek pro live</h4>
+  <ul>
+    <li>yfinance cena (<code>top.price</code>) je zpo&#382;d&#283;n&aacute; o 15+ min, re&aacute;ln&yacute; fill bude jinde</li>
+    <li>Pokud order <em>v&#367;bec neprob&#283;hne</em> (halted symbol, margin issue, gateway disconnect), v DB je phantom BUY pozice</li>
+    <li><code>_estimate_holding_hours</code> pak po&#269;&iacute;t&aacute; time stop od neexistuj&iacute;c&iacute;ho entry, <code>pnl</code> v dashboardu je v&#367;&#269;i &#353;patn&eacute; <code>avgCost</code></li>
+    <li>P&#345;i restartu bota m&#367;&#382;e prob&#283;hnout duplicitn&iacute; BUY ve stejn&eacute;m <code>buy_cycle_id_hour</code></li>
+  </ul>
+  <h4>Fix</h4>
+  <p>Zkop&iacute;rovat fill-verification pattern z <code>manage_positions_sell_only</code> (cca 20 &#345;&aacute;dk&#367;): &#269;ekat na status, pou&#382;&iacute;t skute&#269;n&yacute; <code>avgFillPrice</code>/<code>filled</code>, zapsat jen p&#345;i Filled, cooldown.</p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card critical" id="B2">
+  <div class="card-head">
+    <h3>B2. &#381;&aacute;dn&yacute; daily kill-switch</h3>
+    <span class="card-tag">chyb&iacute;</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p>Flash crash sc&eacute;n&aacute;&#345; &mdash; VIX vyst&#345;el&iacute;, 5 otev&#345;en&yacute;ch pozic, v&#353;echny naraz&iacute; na stop loss 7 %. P&#345;i kapit&aacute;lu 10 000 USD a position size 2 000 USD:</p>
+<pre><code>5 &times; (&minus;7 % &times; 2000) = &minus;700 USD = &minus;7 % equity v jednom dni</code></pre>
+  <p>Plus slippage, plus n&aacute;sleduj&iacute;c&iacute; den bot <strong>otev&iacute;r&aacute; dal&#353;&iacute; pozice</strong>, proto&#382;e nem&aacute; pon&#283;t&iacute;, &#382;e "u&#382; je v&#353;em zle". Re&aacute;ln&aacute; ztr&aacute;ta v takov&eacute;m sc&eacute;n&aacute;&#345;i b&#283;&#382;n&#283; atakuje &minus;15 % za t&yacute;den.</p>
+  <h4>Fix</h4>
+  <p>V <code>main_loop</code>, p&#345;ed vol&aacute;n&iacute;m <code>scan_and_buy</code>:</p>
+  <ul>
+    <li>spo&#269;&iacute;tat <code>daily_realized_pnl_pct</code> z DB</li>
+    <li>pokud <code>&lt; -DAILY_MAX_LOSS_PCT</code> (config, nap&#345;. 3 %) &rarr; skip BUY do p&#367;lnoci NY</li>
+    <li>voliteln&#283; VIX gate: <code>^VIX &gt; 35</code> &rarr; no new BUY</li>
+    <li>Telegram alert p&#345;i triggeru</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill yellow">p&#345;id&aacute;v&aacute; glob&aacute;ln&iacute; omezen&iacute; (pauza)</span>, neovliv&#328;uje v&yacute;b&#283;r sign&aacute;lu. <strong>Backtest p&#345;ed nasazen&iacute;m doporu&#269;en.</strong></p>
+</div>
+
+<div class="card critical" id="B3">
+  <div class="card-head">
+    <h3>B3. V&#353;e jsou MarketOrders, prvn&iacute; SELL v 9:35 NY</h3>
+    <span class="card-tag">bot.py:1200, 1368</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p>9:30&ndash;9:45 NY je nejhor&#353;&iacute; execution okno dne. Spready jsou &#353;irok&eacute; (&#269;asto 30&ndash;80 bps na SP100 stocks v prvn&iacute;ch minut&aacute;ch), opening auction p&#345;etla&#269;uje cenu. Market order v tomto okn&#283; = typicky 20&ndash;50 bps hor&#353;&iacute; ne&#382; close cena, kterou backtest pou&#382;&iacute;v&aacute;.</p>
+  <h4>Konkr&eacute;tn&iacute; dopad</h4>
+  <p>EnhancedDipBuy m&aacute; <code>sell_gain: 3 %</code>. Kdy&#382; z 3 % zisku zaplat&iacute;&#353; 0.4 % slippage p&#345;i exit + 0.4 % p&#345;i entry, <strong>&#269;ist&yacute; zisk je 2.2 %</strong> m&iacute;sto 3.0 %. To je <strong>&minus;27 % v Sharpe ratiu</strong>.</p>
+  <h4>Fix</h4>
+  <ul>
+    <li>LimitOrder s p&aacute;smem &plusmn;0.3 % od mid price</li>
+    <li>Pokud nefillne do X sekund, p&#345;ev&eacute;st na market jako fallback</li>
+    <li>Nebo prost&#283;: posunout prvn&iacute; SELL cyklus na 9:45+ (jednodu&#353;&#353;&iacute;)</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill yellow">m&iacute;rn&yacute;</span>. LimitOrder m&#367;&#382;e ob&#269;as nefillnout. Backtest engine to u&#382; zhruba modeluje.</p>
+</div>
+
+<div class="card critical" id="B4">
+  <div class="card-head">
+    <h3>B4. Bot rozhoduje na 15+ min zpo&#382;d&#283;n&yacute;ch datech</h3>
+    <span class="card-tag">bot.py:1438</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p><code>ib.reqMarketDataType(3)</code> = DELAYED. <code>get_current_price</code> m&aacute; fallback na yfinance (taky delayed). Stop loss reaguje na cenu starou 15 minut. Pokud akcie spadne b&#283;hem 15 minut o 5 %, bot to <strong>v&#367;bec neuvid&iacute;</strong>. Re&aacute;ln&aacute; ztr&aacute;ta p&#345;i stop loss 7 % m&#367;&#382;e b&yacute;t klidn&#283; 10&ndash;12 %.</p>
+  <h4>Fix pro live</h4>
+  <ol>
+    <li>P&#345;edplatit IB market data subscription (~10 USD/m&#283;s)</li>
+    <li>V k&oacute;du: <code>ib.reqMarketDataType(1)</code> (LIVE) m&iacute;sto 3</li>
+    <li>Feature flag <code>MARKET_DATA_TYPE</code> v <code>.env</code>, aby paper jel delayed (zdarma) a live LIVE</li>
+    <li><code>get_current_price</code> up&#345;ednostnit IB live tick p&#345;ed yfinance</li>
+  </ol>
+  <p><strong>Vliv na strategii:</strong> <span class="pill yellow">m&iacute;rn&yacute;</span>. Po p&#345;epnut&iacute; uvid&iacute;&#353; d&#345;&iacute;v&#283;j&#353;&iacute; triggery stop/take profit.</p>
+</div>
+
+<div class="card critical" id="B5">
+  <div class="card-head">
+    <h3>B5. Nikdo nekontroluje, zda jsi opravdu na PAPER vs LIVE &uacute;&#269;tu</h3>
+    <span class="card-tag">chyb&iacute;</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p><code>TRADING_MODE=paper</code> jde do ib-gateway containeru. Pokud n&#283;kdy p&#345;ekleptne&#353; <code>.env</code> na port 4001 a restartuje&#353;, bot ti&#353;e za&#269;ne obchodovat na live &uacute;&#269;tu <strong>bez varov&aacute;n&iacute;</strong>.</p>
+  <p>IB &uacute;&#269;et m&aacute; prefix: <code>DU*</code> &rarr; paper, <code>U*</code> &rarr; live.</p>
+  <h4>Fix</h4>
+<pre><code>acc_ids = ib.managedAccounts()
+expected_mode = os.getenv("TRADING_MODE", "paper").lower()
+is_live_account = acc_ids[0].startswith("U")
+if (expected_mode == "live") != is_live_account:
+    log(f"ABORT: TRADING_MODE={expected_mode} ale &uacute;&#269;et je {acc_ids[0]}", "CRITICAL")
+    sys.exit(1)</code></pre>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card critical" id="B6">
+  <div class="card-head">
+    <h3>B6. State po crashi/restartu se ztr&aacute;c&iacute;</h3>
+    <span class="card-tag">strategy.py:166, bot.py:71</span>
+  </div>
+  <h4>Probl&eacute;my</h4>
+  <ol>
+    <li><strong>Trailing stop reset.</strong> <code>_high_water_marks</code> je in-memory dict. Pozice s HWM +5 % se po restartu chov&aacute; jako &#269;erstv&#283; otev&#345;en&aacute; &mdash; bot za&#269;ne sledovat HWM od aktu&aacute;ln&iacute; ceny. Trailing stop pak nest&#345;el&iacute; d&#345;&iacute;v ne&#382; je pot&#345;eba.</li>
+    <li><strong>Cooldown reset.</strong> Pokud byl SELL ve flight a bot havaroval, <code>_recent_sell_attempts</code> se vypr&aacute;zdn&iacute; &rarr; nov&yacute; SELL pokus m&#367;&#382;e prob&#283;hnout, mezit&iacute;m se dofillne p&#367;vodn&iacute; &rarr; potenci&aacute;ln&iacute; dvojit&aacute; pozice.</li>
+    <li><strong>Position-DB mismatch.</strong> Pokud IB m&aacute; pozici a DB ne (nap&#345;. po ru&#269;n&iacute;m z&aacute;sahu), <code>_estimate_holding_hours</code> vr&aacute;t&iacute; 0 &rarr; <strong>time stop se nikdy nest&#345;el&iacute;</strong>.</li>
+  </ol>
+  <h4>Fix</h4>
+  <ul>
+    <li>Persistovat <code>_high_water_marks</code> a <code>_recent_sell_attempts</code> do <code>STATE_FILE</code></li>
+    <li>Reconciliation routine p&#345;i startu: porovnat <code>ib.positions()</code> vs DB, log mismatch, optionally auto-rekonstruovat BUY z&aacute;znam</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span>. Naopak obnov&iacute; zam&yacute;&#353;len&eacute; chov&aacute;n&iacute; trailing stopu.</p>
+</div>
+
+<div class="card critical" id="B7">
+  <div class="card-head">
+    <h3>B7. Cash check m&aacute; edge-case chybu</h3>
+    <span class="card-tag">bot.py:1362</span>
+  </div>
+<pre><code>if account_cash &lt;= est_cost:
+    log("BUY-SCAN: SKIP nedostatek hotovosti", "WARNING")</code></pre>
+  <p>M&aacute; b&yacute;t <code>&lt;</code>. P&#345;i p&#345;esn&eacute; rovnosti odm&iacute;tne validn&iacute; obchod. Drobnost, ale sign&aacute;l nedbalosti.</p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card critical" id="B8">
+  <div class="card-head">
+    <h3>B8. <code>accountSummary()</code> m&#367;&#382;e vr&aacute;tit stale data</h3>
+    <span class="card-tag">bot.py:574&ndash;583</span>
+  </div>
+  <h4>Probl&eacute;m</h4>
+  <p><code>ib_insync</code> je event-driven. <code>ib.accountSummary()</code> vr&aacute;t&iacute; cache. Hned po SELL fillu cash je&#353;t&#283; nemus&iacute; b&yacute;t refreshnut&yacute;, tak&#382;e n&aacute;sleduj&iacute;c&iacute; BUY cyklus pracuje se starou hodnotou.</p>
+  <h4>Fix</h4>
+  <p><code>ib.reqAccountUpdates(True); ib.sleep(1.0)</code> p&#345;ed &#269;ten&iacute;m.</p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<h2 id="improvements">5. Siln&#283; doporu&#269;en&aacute; vylep&#353;en&iacute;</h2>
+
+<div class="card warn" id="V1">
+  <h3>V1. Risk-based position sizing (vyu&#382;&iacute;t ATR)</h3>
+  <p><strong>Sou&#269;asn&#283;:</strong> <code>qty = (capital / max_positions) / price</code>. Volatiln&iacute; PLTR (ATR ~5 %) i klidn&aacute; WMT (ATR ~1 %) dostanou stejnou USD pozici &rarr; <strong>riziko je 5&times; rozd&iacute;ln&eacute;</strong>.</p>
+  <p><strong>Fix:</strong> sizing podle "riskuj max X % kapit&aacute;lu na trade":</p>
+<pre><code>risk_per_trade_usd = capital &times; 0.01      # 1 % na trade
+qty = risk_per_trade_usd / (atr_pct &times; price)</code></pre>
+  <p>Volatiln&iacute; symbol = men&#353;&iacute; pozice, klidn&yacute; = v&#283;t&#353;&iacute;. P&#345;i stop lossu ob&#283; ztrat&iacute; ~stejn&yacute; USD.</p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill yellow">ANO, m&#283;n&iacute; distribuci v&yacute;nos&#367;.</span> Sharpe pravd&#283;podobn&#283; vzroste, max DD klesne, total return mo&#382;n&aacute; taky klesne. Vy&#382;aduje <strong>nov&yacute; backtest</strong>.</p>
+</div>
+
+<div class="card warn" id="V2">
+  <h3>V2. DB schema &mdash; p&#345;idat fill metadata</h3>
+  <p>Sou&#269;asn&eacute; schema m&aacute; jen <code>ts, action, symbol, price, qty, pnl, note</code>. Pro live audit chyb&iacute;:</p>
+  <ul>
+    <li><code>ib_order_id INTEGER</code> &mdash; sp&aacute;rov&aacute;n&iacute; DB &#345;&aacute;dku s IB orderem</li>
+    <li><code>requested_price REAL</code> &mdash; cena, za kterou jsi <em>cht&#283;l</em> obchod (rozd&iacute;l od <code>price</code> = slippage)</li>
+    <li><code>commission REAL</code> &mdash; skute&#269;n&aacute; komise z IB</li>
+    <li><code>status TEXT</code> &mdash; Filled / PartiallyFilled / Cancelled</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card warn" id="V3">
+  <h3>V3. Unit testy pro <code>strategy.py</code> a <code>indicators.py</code></h3>
+  <p>Memory z 2026-05-25: phantom SELL bug existoval roky nepozorov&aacute;n. Test by ho odhalil. C&iacute;lov&eacute; oblasti:</p>
+  <ul>
+    <li><code>EnhancedDipBuyStrategy.should_exit</code> &mdash; v&#353;echny exit v&#283;tve (TP, SL, trailing, time)</li>
+    <li><code>EnhancedDipBuyStrategy.generate_signals</code> &mdash; RSI/MACD/BB scoring</li>
+    <li><code>indicators.rsi_wilder</code> proti zn&aacute;m&eacute; referenci</li>
+    <li><code>_estimate_holding_hours</code> &mdash; NYSE schedule edge cases</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card warn" id="V4">
+  <h3>V4. <code>requirements.txt</code> bez pin&#367;</h3>
+  <p>Build z <code>pandas</code>, <code>yfinance</code>, <code>ib_insync</code> bez verz&iacute;. Per memory: yfinance 0.2.50 &rarr; 1.2.0 byla nucen&aacute; oprava. P&#345;&iacute;&#353;t&iacute; rebuild m&#367;&#382;e dostat breaking change.</p>
+  <p><strong>Fix:</strong> <code>docker compose exec bot pip freeze &gt; app/requirements.txt</code></p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card warn" id="V5">
+  <h3>V5. Refactor <code>bot.py</code> (1676 &#345;&aacute;dk&#367;)</h3>
+  <p>Single file kombinuje: scheduler, IB klient, exit logiku, BUY scan, dashboard gener&aacute;tor, status writer, state. Pro live trading je obt&iacute;&#382;n&eacute; code review.</p>
+  <p><strong>N&aacute;vrh struktury:</strong></p>
+<pre><code>app/
+  bot.py              # entrypoint, main_loop, &lt;300 &#345;&aacute;dk&#367;
+  scheduler.py        # in_sell_window, next_run_time, cycle_ids
+  ib_client.py        # connect, account, positions, place order helpers
+  position_manager.py # manage_positions_sell_only (SELL logic)
+  buy_scanner.py      # scan_and_buy
+  dashboard_writer.py # write_status, write_html
+  state.py            # load_state, save_state + HWM/cooldown perzistence</code></pre>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<div class="card warn" id="V6">
+  <h3>V6. Smazat <code>app/bot.py.bak</code></h3>
+  <p>Leftover. Verze u&#382; je v gitu.</p>
+</div>
+
+<div class="card warn" id="V7">
+  <h3>V7. Survivorship bias v backtestu</h3>
+  <p>SP100 dnes &ne; SP100 v 2025. Backtest 6 m&#283;s&iacute;c&#367; nazp&aacute;t pou&#382;&iacute;v&aacute; sou&#269;asn&yacute; seznam &rarr; systematicky favorit "v&iacute;t&#283;z&#367;". Re&aacute;ln&aacute; &#269;&iacute;sla budou skromn&#283;j&#353;&iacute;.</p>
+  <p><strong>&#344;e&#353;en&iacute; (varianty):</strong></p>
+  <ul>
+    <li>Pou&#382;&iacute;t historick&yacute; point-in-time SP100. Pracn&eacute;.</li>
+    <li>Pou&#382;&iacute;t fixn&iacute; seznam blue-chip akci&iacute;. Pragmatick&yacute; kompromis.</li>
+    <li>Akceptovat bias a explicitn&#283; ho dokumentovat</li>
+  </ul>
+  <p><strong>Vliv na strategii:</strong> <span class="pill yellow">ANO, ale jen na backtest metriky.</span> Live b&#283;h nen&iacute; ovlivn&#283;n.</p>
+</div>
+
+<div class="card warn" id="V8">
+  <h3>V8. Heartbeat / dead-man switch</h3>
+  <p>Kdy&#382; bot zmrzne (Python deadlock, IB gateway nereaguje ale TCP up), &#382;&aacute;dn&yacute; external watchdog to nepozn&aacute;. Nakonec p&#345;ijde manu&aacute;ln&iacute; restart.</p>
+  <p><strong>N&aacute;vrh:</strong> bot u&#382; p&iacute;&#353;e <code>status.json</code> ka&#382;d&yacute; cyklus. Extern&iacute; job ka&#382;d&yacute;ch 60 s zkontroluje mtime &mdash; pokud &gt; 10 min, Telegram alert + <code>docker compose restart bot</code>.</p>
+  <p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span></p>
+</div>
+
+<h2 id="cosmetic">6. Kosmetika</h2>
+
+<div class="card info">
+  <h3>K1. Telegram bez retry</h3>
+  <p><code>bot.py:196</code> &mdash; <code>requests.get(..., timeout=5)</code> bez retry. P&#345;i TG API v&yacute;padku alert miz&iacute;. <code>HTTPAdapter(max_retries=3)</code> to vy&#345;e&#353;&iacute;.</p>
+</div>
+
+<div class="card info">
+  <h3>K2. Hardcoded version string</h3>
+  <p><code>bot.py:418</code> &mdash; <code>"version": "2026-01-09"</code> ve status.json. V&aacute;zat na git SHA.</p>
+</div>
+
+<div class="card info">
+  <h3>K3. SP100 cache v <code>/app/</code> (neperzistentn&iacute;)</h3>
+  <p>P&#345;i rebuildu se ztrat&iacute;. M&#283;l by b&yacute;t v <code>/data/</code> (perzistentn&iacute; volume).</p>
+</div>
+
+<div class="card info">
+  <h3>K4. &#381;&aacute;dn&eacute; PnL aggregations v DB</h3>
+  <p>View by pomohlo, ale pro &lt;10 000 trades je to overkill.</p>
+</div>
+
+<h2 id="dashboard">7. Dashboard &mdash; modernizace</h2>
+
+<h3>Co je &#353;patn&#283; dnes</h3>
+
+<p>Dashboard m&aacute; dv&#283; architektonick&eacute; vrstvy:</p>
+<ol>
+  <li><strong>Statick&yacute; HTML generovan&yacute; z <code>bot.py:605&ndash;1014</code></strong> ka&#382;d&yacute; cyklus. 400 &#345;&aacute;dk&#367; f-stringu se vyrenderuje do <code>index.html</code>. Browser pou&#382;&iacute;v&aacute; <code>&lt;meta http-equiv="refresh" content="60"&gt;</code> &rarr; <strong>full page reload ka&#382;dou minutu</strong>. Reload ma&#382;e scroll, kolapsuje pozice, re-mountuje Chart.js (blik&aacute;n&iacute;).</li>
+  <li><strong>Polled JSON</strong> (<code>status.json</code>, <code>log_tail.txt</code>) &mdash; modern&#283;j&#353;&iacute;, ale jen pro 2 boxy.</li>
+</ol>
+
+<p>Konkr&eacute;tn&iacute; UX bolesti:</p>
+<ul>
+  <li>&#381;&aacute;dn&aacute; interaktivita (nelze kliknout na symbol pro detail / graf)</li>
+  <li>Watchlist se&#345;azen&yacute; podle RSI bez Enhanced Score</li>
+  <li>"V&yacute;voj zisku" je 100px mini chart, ne&#269;iteln&yacute;, &#382;&aacute;dn&yacute; zoom/hover</li>
+  <li>Mobile UX: 14px font, 4-sloupcov&yacute; grid &rarr; na 360px obrazovce ne&#269;iteln&eacute;</li>
+  <li>&#381;&aacute;dn&aacute; indikace strategy state (kde HWM, kolik bars zb&yacute;v&aacute; do Time Stop)</li>
+  <li>&#381;&aacute;dn&yacute; risk panel (denn&iacute; drawdown, kill-switch stav)</li>
+  <li>&#381;&aacute;dn&yacute; drawdown chart</li>
+</ul>
+
+<h3>Doporu&#269;en&aacute; architektura</h3>
+
+<p><strong>P&#345;esta&#328;me generovat HTML z Pythonu.</strong> M&iacute;sto toho:</p>
+<ul>
+  <li>Bot p&iacute;&#353;e <strong>JSON snapshots</strong> ka&#382;d&yacute; cyklus: <code>status.json</code>, <code>portfolio.json</code>, <code>trades.json</code>, <code>candidates.json</code>, <code>equity_curve.json</code></li>
+  <li>Frontend = <strong>jeden statick&yacute; <code>index.html</code> + JS</strong>, kter&yacute; polluje JSONy</li>
+  <li>&#381;&aacute;dn&yacute; backend pro frontend &mdash; nginx serv&iacute;ruje statiku</li>
+</ul>
+
+<p><strong>V&yacute;hody:</strong></p>
+<ul>
+  <li>&#381;&aacute;dn&yacute; flicker, partial updates</li>
+  <li><code>bot.py</code> shrinkuje o ~400 &#345;&aacute;dk&#367;</li>
+  <li>Dashboard se m&#283;n&iacute; &uacute;pravou statick&eacute;ho HTML/JS, bez restartu bota</li>
+  <li>Mobile-friendly UI je snadn&eacute;</li>
+</ul>
+
+<h3>N&aacute;vrh UI sekc&iacute;</h3>
+
+<h4>Risk Cockpit (naho&#345;e)</h4>
+<ul>
+  <li><strong>Equity</strong> + dnes %</li>
+  <li><strong>Daily realized PnL</strong> + progress bar k denn&iacute;mu limitu</li>
+  <li><strong>Open PnL</strong> (live)</li>
+  <li><strong>Worst position drawdown</strong></li>
+  <li><strong>Trading status</strong> badge: OK / Warning / HALTED</li>
+</ul>
+
+<h4>Position cards (m&iacute;sto tabulky)</h4>
+<p>Ka&#382;d&aacute; pozice = karta s:</p>
+<ul>
+  <li>Symbol, qty, USD value</li>
+  <li>Avg cost &rarr; market price &rarr; P/L %</li>
+  <li>Mini sparkline 1h</li>
+  <li>Distance do exit trigger&#367; (Stop Loss / Trailing HWM / Time Stop progress)</li>
+  <li>Klik &rarr; modal s entry note, indik&aacute;tory, exit projekce</li>
+</ul>
+
+<h4>Equity &amp; Drawdown chart</h4>
+<ul>
+  <li>Plotly nebo lightweight-charts.js m&iacute;sto Chart.js (interaktivn&iacute; zoom, crosshair)</li>
+  <li>3 toggle: 7d / 30d / All</li>
+  <li>Druh&aacute; osa: drawdown z peak</li>
+  <li>Annotace BUY/SELL markery</li>
+</ul>
+
+<h4>Watchlist (rework)</h4>
+<ul>
+  <li>M&iacute;sto jen RSI: <strong>Enhanced Score</strong> (0&ndash;1) s color badge</li>
+  <li>Sloupce: Symbol, Score, RSI, MACD hist, BB %, drop</li>
+  <li>"Why not bought" tooltip &mdash; kter&yacute; filtr nepro&#353;el</li>
+</ul>
+
+<h4>Strategy panel</h4>
+<ul>
+  <li>Aktivn&iacute; strategie + current params</li>
+  <li>Last BUY/SELL cycle ID + outcome</li>
+  <li>Cooldown stav</li>
+  <li>Tla&#269;&iacute;tko "Pause trading" &mdash; zap&iacute;&#353;e boolean do <code>state.json</code></li>
+</ul>
+
+<h3>Tech stack &mdash; 3 varianty</h3>
+
+<table>
+  <thead>
+    <tr><th>Varianta</th><th>&#268;as</th><th>Stack</th><th>Kdy zvolit</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A) Minim&aacute;ln&iacute;</strong></td>
+      <td class="nowrap">~1 den</td>
+      <td>htmx + Pico.css + Plotly p&#345;es CDN</td>
+      <td>Rychl&eacute; vylep&#353;en&iacute;, nem&aacute;&#353; &#269;as na frontend</td>
+    </tr>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>B) St&#345;edn&#283;</strong> &#9733;</td>
+      <td class="nowrap">3&ndash;5 dn&iacute;</td>
+      <td>Preact (10 kB) + Tailwind via CDN + lightweight-charts.js</td>
+      <td><strong>Sweet spot pro algobot scope</strong></td>
+    </tr>
+    <tr>
+      <td><strong>C) Pln&eacute;</strong></td>
+      <td class="nowrap">1&ndash;2 t&yacute;dny</td>
+      <td>Svelte/Vue + Vite + TradingView lightweight-charts</td>
+      <td>Dlouhodob&#283; udr&#382;ovateln&yacute; produkt</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Doporu&#269;en&iacute;: B.</strong> Komponenty, &#382;&aacute;dn&yacute; build step (CDN), modern&#283;j&#353;&iacute; chart lib, mobile-friendly.</p>
+<p><strong>Vliv na strategii:</strong> <span class="pill green">&#382;&aacute;dn&yacute;</span> &mdash; jen jin&yacute; pohled na stejn&aacute; data.</p>
+
+<h2 id="roadmap">8. Doporu&#269;en&eacute; po&#345;ad&iacute; prac&iacute;</h2>
+
+<table>
+  <thead>
+    <tr><th class="center">Po&#345;ad&iacute;</th><th>Bod</th><th>D&#367;vod priority</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="center">1</td><td><a href="#B1"><strong>B1</strong></a> &mdash; BUY fill verification</td><td>Nejjednodu&#353;&#353;&iacute; fix, nejv&#283;t&#353;&iacute; zdroj datov&eacute; korupce</td></tr>
+    <tr><td class="center">2</td><td><a href="#B5"><strong>B5</strong></a> &mdash; PAPER/LIVE guard</td><td>10 &#345;&aacute;dk&#367; k&oacute;du, ochrana proti lidsk&eacute; chyb&#283;</td></tr>
+    <tr><td class="center">3</td><td><a href="#B2"><strong>B2</strong></a> &mdash; Daily kill-switch</td><td>Br&aacute;n&iacute; katastrofick&eacute;mu dni</td></tr>
+    <tr><td class="center">4</td><td><a href="#B4"><strong>B4</strong></a> &mdash; Live market data + IB subscription</td><td>P&#345;edplatit u IB, switch <code>reqMarketDataType(1)</code></td></tr>
+    <tr><td class="center">5</td><td><a href="#B3"><strong>B3</strong></a> &mdash; LimitOrder + 9:45 SELL window</td><td>Bez tohohle slippage sebere ~25 % Sharpe</td></tr>
+    <tr><td class="center">6</td><td><a href="#B6"><strong>B6</strong></a> &mdash; State perzistence + reconciliation</td><td>Cleanup p&#345;ed prvn&iacute;m crashi v live</td></tr>
+    <tr><td class="center">7</td><td><a href="#B7">B7, B8</a> &mdash; drobn&eacute; fixy</td><td>Cleanup</td></tr>
+    <tr><td class="center">8</td><td><a href="#V1"><strong>V1</strong></a> &mdash; Risk-based sizing + backtest</td><td><strong>Vy&#382;aduje nov&yacute; backtest</strong> p&#345;ed nasazen&iacute;m</td></tr>
+    <tr><td class="center">9</td><td><a href="#V2">V2</a> &mdash; DB schema roz&#353;&iacute;&#345;en&iacute;</td><td>Aby &#353;el auditovat live</td></tr>
+    <tr><td class="center">10</td><td>V3, V4, V6 &mdash; testy, piny, smazat .bak</td><td>Hygiena</td></tr>
+    <tr><td class="center">11</td><td><a href="#V8">V8</a> &mdash; Heartbeat / watchdog</td><td>M&#367;&#382;e&#353; po&#269;kat, ale ne moc dlouho</td></tr>
+    <tr><td class="center">12</td><td><a href="#dashboard">Dashboard rework</a> (varianta B)</td><td>Paraleln&#283;, neblokuje live</td></tr>
+    <tr><td class="center">13</td><td><a href="#V5">V5</a> &mdash; refactor <code>bot.py</code></td><td>Po dashboardu</td></tr>
+    <tr><td class="center">14</td><td><a href="#V7">V7</a> &mdash; survivorship bias</td><td>Kdy&#382; bude&#353; m&iacute;t &#269;as na poctiv&yacute; backtest framework</td></tr>
+  </tbody>
+</table>
+
+<h2 id="conclusion">9. Z&aacute;v&#283;r</h2>
+
+<div class="verdict">
+  <p><strong>Strategie sama o sob&#283; je vcelku v po&#345;&aacute;dku</strong> &mdash; <code>EnhancedDipBuyStrategy</code> m&aacute; rozumn&yacute; mix indik&aacute;tor&#367;, time stop p&#345;id&aacute;v&aacute; robustnost, a posledn&iacute; backtest ukazuje slu&#353;n&eacute; +8.35 % / Sharpe 1.49 za 6 m&#283;s&iacute;c&#367; (s v&#283;dom&iacute;m survivorship biasu).</p>
+
+  <p><strong>Probl&eacute;m je vrstva pod n&iacute;</strong> &mdash; execution, state, safety. V&#283;t&#353;ina bod&#367; v reportu &#345;e&#353;&iacute; pr&aacute;v&#283; tohle. Pokud se ze 16 bod&#367; ud&#283;laj&iacute; jen <strong>B1, B2, B5</strong> (~1 den pr&aacute;ce), bot bude bezpe&#269;n&#283;j&#353;&iacute; o &#345;&aacute;dy v&iacute;c, ale d&#283;l&aacute; po&#345;&aacute;d to sam&eacute; jako dnes.</p>
+
+  <p>Pokud chce&#353; j&iacute;t d&aacute;l a optimalizovat v&yacute;nos vs riziko, <strong>V1 (risk-based sizing)</strong> je jedin&aacute; polo&#382;ka, kter&aacute; re&aacute;ln&#283; m&#283;n&iacute; strategy chov&aacute;n&iacute; a stoj&iacute; za to ji backtestovat.</p>
+
+  <p style="margin-bottom:0;">Dashboard je &#269;ist&#283; UI v&#283;c &mdash; nem&aacute; vliv na to, jak bot obchoduje, ale v&yacute;znamn&#283; m&#283;n&iacute; to, jak rychle uvid&iacute;&#353;, &#382;e n&#283;co nefunguje.</p>
+</div>
+
+<footer>
+  AlgoBot Review &middot; 2026-06-04 &middot; Generated for paper&rarr;live trading audit
+</footer>
+
+</main>
+</div>
+</body>
+</html>
