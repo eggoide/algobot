@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import subprocess
 import sys
 import time
 from collections import deque
@@ -46,6 +47,8 @@ REPORT_CFG = CFG.get("report", {})
 IB_IP = os.getenv("IB_HOST", "127.0.0.1")
 IB_PORT = int(os.getenv("IB_PORT", "4002"))
 CLIENT_ID = int(os.getenv("CLIENT_ID", "2"))
+# Expected trading mode: env > inferred from IB_PORT (4001=live / 4002=paper)
+TRADING_MODE = os.getenv("TRADING_MODE", "live" if IB_PORT == 4001 else "paper").lower()
 
 DB_PATH = os.getenv("DB_PATH", "/data/algobot.db")
 STATE_FILE = os.getenv("STATE_FILE", "/data/bot_state.json")
@@ -57,6 +60,22 @@ TG_CHAT_ID = os.getenv("TG_CHAT_ID", "")
 LOG_FILE = os.getenv("LOG_FILE", "/data/bot.log")                # persistent log in data volume
 STATUS_FILE = os.getenv("STATUS_FILE", "/reports/status.json")   # for dashboard
 LOG_TAIL_FILE = os.getenv("LOG_TAIL_FILE", "/reports/log_tail.txt")
+
+def _resolve_git_sha() -> str:
+    sha = os.getenv("GIT_SHA", "").strip()
+    if sha:
+        return sha[:12]
+    try:
+        out = subprocess.check_output(
+            ["git", "rev-parse", "--short=12", "HEAD"],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            stderr=subprocess.DEVNULL,
+        )
+        return out.decode("utf-8").strip()
+    except Exception:
+        return "unknown"
+
+GIT_SHA = _resolve_git_sha()
 
 # --- Dashboard v2 snapshots (polling JSONs)
 PORTFOLIO_JSON = os.getenv("PORTFOLIO_JSON", "/reports/portfolio.json")
@@ -77,6 +96,10 @@ FEE = float(CAPITAL.get("fee_usd", 1.0))
 SELL_COOLDOWN_SEC = 30 * 60
 _recent_sell_attempts: Dict[str, float] = {}
 
+# Anti-duplicate BUY: cooldown per symbol after any buy attempt (filled or not)
+BUY_COOLDOWN_SEC = 60 * 60
+_recent_buy_attempts: Dict[str, float] = {}
+
 DIP_MODE = str(STRAT.get("dip_mode", "DAILY")).upper()
 BUY_DROP = float(STRAT.get("buy_drop", 0.02))
 SELL_GAIN = float(STRAT.get("sell_gain", 0.03))
@@ -93,6 +116,9 @@ SMA_PERIOD = int(STRAT.get("sma_period", 200))
 NYC_TZ = pytz.timezone(str(RUNTIME.get("timezone", "US/Eastern")))
 SP100_CACHE_FILE = str(RUNTIME.get("sp100_cache_file", "sp100_tickers_cache.txt"))
 SP100_CACHE_MAX_AGE_HOURS = int(RUNTIME.get("sp100_cache_max_age_hours", 24))
+# V7 mitigation: "sp100_live" (current — survivorship-biased), "fixed" (blue-chip list)
+UNIVERSE_MODE = str(RUNTIME.get("universe_mode", "sp100_live")).lower()
+FIXED_UNIVERSE = list(RUNTIME.get("fixed_universe") or [])
 
 SHOW_CANDIDATES_RSI_BELOW = float(REPORT_CFG.get("show_candidates_rsi_below", 60))
 CANDIDATES_LIMIT = int(REPORT_CFG.get("candidates_limit", 15))
@@ -194,90 +220,59 @@ def log(msg: str, level: str = "INFO") -> None:
 # =========================================================
 # TELEGRAM
 # =========================================================
+def _build_tg_session() -> requests.Session:
+    s = requests.Session()
+    try:
+        from requests.adapters import HTTPAdapter
+        try:
+            from urllib3.util.retry import Retry
+        except ImportError:
+            from requests.packages.urllib3.util.retry import Retry  # type: ignore
+        retry = Retry(
+            total=3, connect=3, read=3, backoff_factor=0.5,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=("GET", "POST"),
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        s.mount("https://", adapter)
+        s.mount("http://", adapter)
+    except Exception:
+        pass
+    return s
+
+_TG_SESSION = _build_tg_session()
+
 def send_telegram_msg(message: str) -> None:
     if not TG_TOKEN or not TG_CHAT_ID:
         return
     try:
         url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
         params = {"chat_id": TG_CHAT_ID, "text": message}
-        requests.get(url, params=params, timeout=5)
+        _TG_SESSION.get(url, params=params, timeout=5)
     except Exception as e:
         log(f"TG CHYBA: {e}", "ERROR")
 
 # =========================================================
 # TIME MANAGEMENT
 # =========================================================
-def get_ny_time() -> datetime.datetime:
-    return datetime.datetime.now(NYC_TZ)
+from scheduler import (
+    get_ny_time,
+    is_market_open,
+    seconds_until_market_open,
+    seconds_until,
+    fmt_hms,
+    in_sell_window,
+    in_buy_window,
+    sell_cycle_id_5min,
+    buy_cycle_id_hour,
+    next_5min_boundary,
+    next_buy_run_time,
+    next_sell_run_time,
+    set_timezone as _set_scheduler_timezone,
+)
 
-def _nyse_schedule(start_day, end_day):
-    """Return NYSE schedule (open/close per day) or None if calendar unavailable."""
-    if _NYSE_CAL is None:
-        return None
-    try:
-        return _NYSE_CAL.schedule(start_date=start_day, end_date=end_day)
-    except Exception:
-        return None
-
-def is_market_open() -> bool:
-    ny_now = get_ny_time()
-
-    # Fast weekend reject (regardless of calendar availability)
-    if ny_now.weekday() > 4:
-        return False
-
-    sched = _nyse_schedule(ny_now.date(), ny_now.date())
-    if sched is not None and not sched.empty:
-        # Use actual NYSE open/close (handles holidays + early closes 1pm dny)
-        market_open = sched.iloc[0]["market_open"].tz_convert(NYC_TZ).to_pydatetime()
-        market_close = sched.iloc[0]["market_close"].tz_convert(NYC_TZ).to_pydatetime()
-        return market_open <= ny_now <= market_close
-    if sched is not None and sched.empty:
-        # Holiday — NYSE má prázdný rozvrh pro tento den
-        return False
-
-    # Fallback (calendar import failed): původní weekday + 9:30–16:00 logika
-    market_open = ny_now.replace(hour=9, minute=30, second=0, microsecond=0)
-    market_close = ny_now.replace(hour=16, minute=0, second=0, microsecond=0)
-    return market_open <= ny_now <= market_close
-
-def seconds_until_market_open() -> int:
-    ny_now = get_ny_time()
-
-    # Use NYSE calendar if available — handles holidays correctly
-    if _NYSE_CAL is not None:
-        try:
-            end = (ny_now + datetime.timedelta(days=14)).date()
-            sched = _NYSE_CAL.schedule(start_date=ny_now.date(), end_date=end)
-            for _, row in sched.iterrows():
-                m_open = row["market_open"].tz_convert(NYC_TZ).to_pydatetime()
-                if m_open > ny_now:
-                    return max(60, int((m_open - ny_now).total_seconds()))
-        except Exception:
-            pass
-
-    # Fallback (calendar failed): weekday-only logic
-    today_open = ny_now.replace(hour=9, minute=30, second=0, microsecond=0)
-    if ny_now < today_open and ny_now.weekday() <= 4:
-        return max(60, int((today_open - ny_now).total_seconds()))
-
-    next_day = ny_now + datetime.timedelta(days=1)
-    while next_day.weekday() > 4:
-        next_day += datetime.timedelta(days=1)
-
-    next_open = next_day.replace(hour=9, minute=30, second=0, microsecond=0)
-    return max(60, int((next_open - ny_now).total_seconds()))
-
-def seconds_until(dt_target: datetime.datetime) -> int:
-    now = get_ny_time()
-    return max(1, int((dt_target - now).total_seconds()))
-
-def fmt_hms(seconds: int) -> str:
-    seconds = int(max(0, seconds))
-    h = seconds // 3600
-    m = (seconds % 3600) // 60
-    s = seconds % 60
-    return f"{h:02d}:{m:02d}:{s:02d}"
+# Keep scheduler module timezone aligned with the bot config.
+_set_scheduler_timezone(str(RUNTIME.get("timezone", "US/Eastern")))
 
 def countdown_sleep(seconds: int, prefix: str) -> None:
     seconds = int(max(0, seconds))
@@ -297,85 +292,6 @@ def countdown_sleep(seconds: int, prefix: str) -> None:
     time.sleep(seconds)
 
 # =========================================================
-# SCHEDULING
-# =========================================================
-def in_sell_window(now_ny: datetime.datetime) -> bool:
-    start = now_ny.replace(hour=9, minute=35, second=0, microsecond=0)
-    end = now_ny.replace(hour=15, minute=55, second=59, microsecond=999999)
-    return start <= now_ny <= end
-
-def in_buy_window(now_ny: datetime.datetime) -> bool:
-    if not (10 <= now_ny.hour <= 15):
-        return False
-    return (31 <= now_ny.minute <= 33)
-
-def sell_cycle_id_5min(now_ny: datetime.datetime) -> str:
-    bucket_min = (now_ny.minute // 5) * 5
-    return f"{now_ny.strftime('%Y-%m-%d')}-{now_ny.hour:02d}-{bucket_min:02d}"
-
-def buy_cycle_id_hour(now_ny: datetime.datetime) -> str:
-    return f"{now_ny.strftime('%Y-%m-%d')}-{now_ny.hour:02d}"
-
-def next_5min_boundary(now_ny: datetime.datetime) -> datetime.datetime:
-    base = now_ny.replace(second=0, microsecond=0)
-    add = 5 - (base.minute % 5)
-    if add == 5 and now_ny.second == 0 and now_ny.microsecond == 0:
-        add = 0
-    target = base + datetime.timedelta(minutes=add)
-    if target <= now_ny:
-        target = target + datetime.timedelta(minutes=5)
-    return target
-
-def next_buy_run_time(now_ny: datetime.datetime) -> datetime.datetime:
-    if now_ny.weekday() > 4:
-        d = now_ny + datetime.timedelta(days=1)
-        while d.weekday() > 4:
-            d += datetime.timedelta(days=1)
-        return d.replace(hour=10, minute=31, second=0, microsecond=0)
-
-    if now_ny.hour < 10:
-        return now_ny.replace(hour=10, minute=31, second=0, microsecond=0)
-
-    if 10 <= now_ny.hour <= 15:
-        run = now_ny.replace(minute=31, second=0, microsecond=0)
-        if now_ny < run:
-            return run
-        if now_ny.hour < 15:
-            return (now_ny + datetime.timedelta(hours=1)).replace(minute=31, second=0, microsecond=0)
-
-    d = now_ny + datetime.timedelta(days=1)
-    while d.weekday() > 4:
-        d += datetime.timedelta(days=1)
-    return d.replace(hour=10, minute=31, second=0, microsecond=0)
-
-def next_sell_run_time(now_ny: datetime.datetime) -> datetime.datetime:
-    if now_ny.weekday() > 4:
-        d = now_ny + datetime.timedelta(days=1)
-        while d.weekday() > 4:
-            d += datetime.timedelta(days=1)
-        return d.replace(hour=9, minute=35, second=0, microsecond=0)
-
-    start = now_ny.replace(hour=9, minute=35, second=0, microsecond=0)
-    end = now_ny.replace(hour=15, minute=55, second=0, microsecond=0)
-
-    if now_ny < start:
-        return start
-
-    if now_ny > end:
-        d = now_ny + datetime.timedelta(days=1)
-        while d.weekday() > 4:
-            d += datetime.timedelta(days=1)
-        return d.replace(hour=9, minute=35, second=0, microsecond=0)
-
-    nxt = next_5min_boundary(now_ny)
-    if nxt > end:
-        d = now_ny + datetime.timedelta(days=1)
-        while d.weekday() > 4:
-            d += datetime.timedelta(days=1)
-        return d.replace(hour=9, minute=35, second=0, microsecond=0)
-    return nxt
-
-# =========================================================
 # STATE
 # =========================================================
 def load_state() -> dict:
@@ -388,10 +304,80 @@ def load_state() -> dict:
 def save_state(state: dict) -> None:
     try:
         state["saved_at"] = datetime.datetime.now().isoformat()
+        # Persist runtime caches so restart preserves trailing stop + cooldowns
+        try:
+            if hasattr(STRATEGY, "_high_water_marks"):
+                state["high_water_marks"] = {
+                    k: float(v) for k, v in STRATEGY._high_water_marks.items()
+                }
+        except Exception:
+            pass
+        try:
+            state["recent_sell_attempts"] = {k: float(v) for k, v in _recent_sell_attempts.items()}
+            state["recent_buy_attempts"] = {k: float(v) for k, v in _recent_buy_attempts.items()}
+        except Exception:
+            pass
         with open(STATE_FILE, "w", encoding="utf-8") as f:
             json.dump(state, f)
     except Exception as e:
         log(f"STATE save error: {e}", "ERROR")
+
+def restore_runtime_state(state: dict) -> None:
+    """Re-hydrate in-memory caches from persisted state. Skip stale cooldowns."""
+    now = time.time()
+    try:
+        hwm = state.get("high_water_marks") or {}
+        if hwm and hasattr(STRATEGY, "_high_water_marks"):
+            STRATEGY._high_water_marks.update({k: float(v) for k, v in hwm.items()})
+            log(f"STATE restore: high_water_marks ({len(hwm)} symbols)")
+    except Exception as e:
+        log(f"STATE restore HWM error: {e}", "ERROR")
+    for src_key, dst, ttl, label in (
+        ("recent_sell_attempts", _recent_sell_attempts, SELL_COOLDOWN_SEC, "SELL"),
+        ("recent_buy_attempts",  _recent_buy_attempts,  BUY_COOLDOWN_SEC,  "BUY"),
+    ):
+        try:
+            src = state.get(src_key) or {}
+            kept = 0
+            for sym, ts in src.items():
+                ts_f = float(ts)
+                if now - ts_f < ttl:
+                    dst[sym] = ts_f
+                    kept += 1
+            if kept:
+                log(f"STATE restore: {label} cooldowns ({kept} active)")
+        except Exception as e:
+            log(f"STATE restore {label} cooldown error: {e}", "ERROR")
+
+def reconcile_positions(ib: IB, conn) -> None:
+    """Log mismatches between IB live positions and DB BUY history."""
+    try:
+        ib_syms = {p.contract.symbol for p in ib.positions()}
+    except Exception as e:
+        log(f"reconcile_positions: IB positions read failed: {e}", "ERROR")
+        return
+    db_syms = set()
+    try:
+        rows = conn.execute(
+            "SELECT symbol, SUM(CASE WHEN action='BUY' THEN qty ELSE -qty END) AS net "
+            "FROM trades GROUP BY symbol HAVING net > 0"
+        ).fetchall()
+        db_syms = {r["symbol"] for r in rows}
+    except Exception as e:
+        log(f"reconcile_positions: DB read failed: {e}", "ERROR")
+        return
+    only_ib = ib_syms - db_syms
+    only_db = db_syms - ib_syms
+    if only_ib:
+        log(f"RECONCILE: pozice v IB bez DB BUY záznamu: {sorted(only_ib)}", "WARNING")
+        try:
+            send_telegram_msg(f"WARN: reconcile — IB má pozice bez DB: {', '.join(sorted(only_ib))}")
+        except Exception:
+            pass
+    if only_db:
+        log(f"RECONCILE: DB má open BUY bez IB pozice: {sorted(only_db)}", "WARNING")
+    if not only_ib and not only_db:
+        log(f"RECONCILE OK: {len(ib_syms)} pozic IB = DB")
 
 # =========================================================
 # LIVE STATUS FILE (for dashboard)
@@ -422,7 +408,7 @@ def write_status(
         "positions_count": positions_count,
         "last_action": last_action,
         "last_error": _last_error,
-        "version": "2026-01-09",
+        "version": GIT_SHA,
     }
     try:
         _ensure_parent_dir(STATUS_FILE)
@@ -659,13 +645,17 @@ def write_strategy_state_json(conn) -> None:
         daily_pnl = 0.0
         daily_count = 0
 
-    # cooldowns from _recent_sell_attempts: keep only ones still active
+    # cooldowns from _recent_sell_attempts + _recent_buy_attempts: keep only active
     now = time.time()
     cooldowns = []
     for sym, ts in list(_recent_sell_attempts.items()):
         rem = SELL_COOLDOWN_SEC - (now - ts)
         if rem > 0:
-            cooldowns.append({"symbol": sym, "remaining_sec": int(rem)})
+            cooldowns.append({"symbol": sym, "side": "SELL", "remaining_sec": int(rem)})
+    for sym, ts in list(_recent_buy_attempts.items()):
+        rem = BUY_COOLDOWN_SEC - (now - ts)
+        if rem > 0:
+            cooldowns.append({"symbol": sym, "side": "BUY", "remaining_sec": int(rem)})
 
     # last cycle ids from state file
     try:
@@ -743,6 +733,9 @@ def _write_cached_sp100(tickers):
 
 def get_sp100_tickers():
     fallback_list = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'NVDA', 'META', 'JPM', 'WMT', 'PG', 'XOM']
+
+    if UNIVERSE_MODE == "fixed" and FIXED_UNIVERSE:
+        return list(FIXED_UNIVERSE)
 
     cached = _read_cached_sp100()
     if cached:
@@ -861,10 +854,49 @@ def get_current_price(symbol: str, ib_contract=None, ib_obj: IB = None):
 # =========================================================
 # ACCOUNT
 # =========================================================
+def verify_account_mode(ib: IB) -> None:
+    """Abort if TRADING_MODE env doesn't match IB account prefix (DU* paper / U* live)."""
+    try:
+        accs = list(ib.managedAccounts() or [])
+    except Exception as e:
+        log(f"verify_account_mode: managedAccounts failed: {e}", "ERROR")
+        return
+    if not accs:
+        log("verify_account_mode: žádný managed account vrácen z IB", "ERROR")
+        return
+    acc = accs[0]
+    is_live_account = not acc.startswith("D")  # DU* paper, U* live
+    expected_live = (TRADING_MODE == "live")
+    if expected_live != is_live_account:
+        msg = (
+            f"ABORT: TRADING_MODE={TRADING_MODE} ale účet je {acc} "
+            f"({'LIVE' if is_live_account else 'PAPER'}) — mismatch, ukončuji bota."
+        )
+        log(msg, "CRITICAL")
+        try:
+            send_telegram_msg(msg)
+        except Exception:
+            pass
+        try:
+            ib.disconnect()
+        except Exception:
+            pass
+        sys.exit(1)
+    log(f"Account mode OK: {acc} ({'LIVE' if is_live_account else 'PAPER'}) vs TRADING_MODE={TRADING_MODE}")
+
 def read_account_summary(ib: IB):
     cash = 0.0
     equity = 0.0
     try:
+        # B8: ib_insync auto-subscribes on connect(), so accountSummary() already
+        # returns the most recent snapshot the gateway pushed. Just let the event
+        # loop drain any pending updates before we read — no extra subscribe call,
+        # because reqAccountUpdates(True) and reqAccountSummary(timeout=0) have
+        # both been observed to deadlock the loop here.
+        try:
+            ib.sleep(0.2)
+        except Exception:
+            pass
         summary = ib.accountSummary()
         for v in summary:
             if v.tag == 'TotalCashValue':
@@ -889,8 +921,29 @@ def dump_positions(ib: IB, header: str):
 # =========================================================
 # DB log
 # =========================================================
-def log_trade(conn, action, symbol, price, qty, pnl=0.0, note=""):
-    insert_trade(conn, action, symbol, price, qty, pnl, note)
+def log_trade(conn, action, symbol, price, qty, pnl=0.0, note="",
+              ib_order_id=None, requested_price=None, commission=None, status=None):
+    insert_trade(
+        conn, action, symbol, price, qty, pnl, note,
+        ib_order_id=ib_order_id,
+        requested_price=requested_price,
+        commission=commission,
+        status=status,
+    )
+
+def _ib_commission(trade) -> Optional[float]:
+    """Sum commissions across all fills of an IB Trade, if available."""
+    try:
+        total = 0.0
+        any_fee = False
+        for f in (trade.fills or []):
+            cr = getattr(f, "commissionReport", None)
+            if cr and cr.commission:
+                total += float(cr.commission)
+                any_fee = True
+        return total if any_fee else None
+    except Exception:
+        return None
 
 
 # =========================================================
@@ -908,6 +961,7 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
         try:
             ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
             ib.reqMarketDataType(3)  # delayed
+            verify_account_mode(ib)
         except Exception as e:
             write_status(
                 market_open=market_open,
@@ -1085,9 +1139,17 @@ def manage_positions_sell_only(conn, ib: IB):
                 fill_price = curr_price
 
             if status == 'Filled' and filled_qty > 0:
-                realized = (fill_price - pos.avgCost) * filled_qty - FEE
+                ib_comm = _ib_commission(trade)
+                fee_used = ib_comm if ib_comm is not None else FEE
+                realized = (fill_price - pos.avgCost) * filled_qty - fee_used
                 log(f"TRADE SELL {contract.symbol} qty={filled_qty} price={fill_price:.2f} realized=${realized:.2f} reason={reason} [FILLED]")
-                log_trade(conn, 'SELL', contract.symbol, fill_price, filled_qty, float(realized), reason)
+                log_trade(
+                    conn, 'SELL', contract.symbol, fill_price, filled_qty, float(realized), reason,
+                    ib_order_id=getattr(trade.order, "orderId", None),
+                    requested_price=float(curr_price),
+                    commission=float(fee_used),
+                    status=status,
+                )
                 send_telegram_msg(f"SELL {contract.symbol} ({reason}) PnL ${realized:.2f}")
                 positions_changed = True
             else:
@@ -1227,6 +1289,13 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log(f"BUY-SCAN: SKIP {ib_sym} už v portfoliu nebo v openOrders", "WARNING")
             return False, candidates_report
 
+        # Cooldown: po posledním (i neúspěšném) BUY pokusu nezkoušej ten samý symbol
+        last_buy_attempt = _recent_buy_attempts.get(ib_sym, 0.0)
+        if time.time() - last_buy_attempt < BUY_COOLDOWN_SEC:
+            remaining = int(BUY_COOLDOWN_SEC - (time.time() - last_buy_attempt))
+            log(f"BUY-SCAN: SKIP {ib_sym} — cooldown {remaining//60} min po předchozím pokusu", "WARNING")
+            return False, candidates_report
+
         qty = int((position_size_usd / top.price) // 1)
         est_cost = qty * top.price
 
@@ -1234,20 +1303,57 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log("BUY-SCAN: SKIP qty=0", "WARNING")
             return False, candidates_report
 
-        if account_cash <= est_cost:
+        if account_cash < est_cost:
             log(f"BUY-SCAN: SKIP nedostatek hotovosti (cash ${account_cash:.0f} < est ${est_cost:.0f})", "WARNING")
             return False, candidates_report
 
         log(f"BUY {ib_sym} | {top.reason} | qty={qty}")
         contract = Stock(ib_sym, 'SMART', 'USD')
         order = MarketOrder('BUY', qty, tif='DAY')
-        ib.placeOrder(contract, order)
+        trade = ib.placeOrder(contract, order)
+        _recent_buy_attempts[ib_sym] = time.time()
+
+        # Čekej na fill nebo terminální stav (až 8 s) — stejný vzor jako SELL
+        deadline = time.time() + 8.0
+        while time.time() < deadline:
+            ib.sleep(0.5)
+            st = trade.orderStatus.status
+            if st in ('Filled', 'Cancelled', 'Inactive', 'ApiCancelled'):
+                break
+
+        status = trade.orderStatus.status
+        filled_qty = int(trade.orderStatus.filled or 0)
+        fill_price = float(trade.orderStatus.avgFillPrice or 0.0)
 
         note_text = f"Enhanced: {top.reason}"
-        log(f"TRADE BUY {ib_sym} qty={qty} price={float(top.price):.2f} fee=${FEE:.2f} note={note_text}")
-        log_trade(conn, 'BUY', ib_sym, float(top.price), int(qty), -FEE, note_text)
-        send_telegram_msg(f"BUY {ib_sym} ({note_text})")
-        positions_changed = True
+
+        ib_order_id = getattr(trade.order, "orderId", None)
+        ib_comm = _ib_commission(trade)
+        fee_used = ib_comm if ib_comm is not None else FEE
+
+        if status == 'Filled' and filled_qty > 0 and fill_price > 0:
+            log(f"TRADE BUY {ib_sym} qty={filled_qty} price={fill_price:.2f} fee=${fee_used:.2f} note={note_text} [FILLED]")
+            log_trade(
+                conn, 'BUY', ib_sym, fill_price, filled_qty, -float(fee_used), note_text,
+                ib_order_id=ib_order_id, requested_price=float(top.price),
+                commission=float(fee_used), status=status,
+            )
+            send_telegram_msg(f"BUY {ib_sym} ({note_text}) @ ${fill_price:.2f}")
+            positions_changed = True
+        elif filled_qty > 0 and fill_price > 0:
+            # Partial fill: ulož to, co IB skutečně naplnilo
+            log(f"TRADE BUY {ib_sym} PARTIAL qty={filled_qty}/{qty} price={fill_price:.2f} status={status} note={note_text}", "WARNING")
+            log_trade(
+                conn, 'BUY', ib_sym, fill_price, filled_qty, -float(fee_used), f"PARTIAL {note_text}",
+                ib_order_id=ib_order_id, requested_price=float(top.price),
+                commission=float(fee_used), status=status or "PartiallyFilled",
+            )
+            send_telegram_msg(f"BUY {ib_sym} PARTIAL {filled_qty}/{qty} @ ${fill_price:.2f}")
+            positions_changed = True
+        else:
+            # Order NEPROŠEL → žádný DB zápis, žádný BUY telegram alert.
+            log(f"{ib_sym} BUY nepotvrzen (status={status}, filled={filled_qty}) — bez DB zápisu, cooldown {BUY_COOLDOWN_SEC//60} min", "ERROR")
+            send_telegram_msg(f"WARN: BUY {ib_sym} nepotvrzen ({status}) — ručně zkontroluj IB")
 
         return positions_changed, candidates_report
 
@@ -1264,6 +1370,11 @@ def main_loop():
     conn = db_connect(DB_PATH)
 
     _load_existing_tail()
+
+    try:
+        restore_runtime_state(load_state())
+    except Exception as e:
+        log(f"STATE restore failed: {e}", "ERROR")
 
     log("STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)")
     send_telegram_msg("AlgoBot start")
@@ -1294,6 +1405,16 @@ def main_loop():
         try:
             refresh_dashboard(conn, ib, last_action="STARTUP_REFRESH")
             log("Dashboard inicializován hned po startu.")
+            # refresh_dashboard already connected IB; do reconciliation here so
+            # the main loop's "if not ib.isConnected()" branch (where dump+reconcile
+            # live) doesn't get skipped on startup.
+            if ib.isConnected() and not did_startup_dump:
+                dump_positions(ib, "STARTUP")
+                try:
+                    reconcile_positions(ib, conn)
+                except Exception as e:
+                    log(f"reconcile_positions error: {e}", "ERROR")
+                did_startup_dump = True
         except Exception as e:
             log(f"Dashboard init error: {e}", "ERROR")
             try:
@@ -1312,12 +1433,17 @@ def main_loop():
                         ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
                         ib.reqMarketDataType(3)
                         log(f"IB připojeno (MarketDataType: 3-Delayed). NY={now_ny.strftime('%H:%M:%S')}")
+                        verify_account_mode(ib)
                         if alert_sent:
                             send_telegram_msg("IB Gateway připojena")
                             alert_sent = False
 
                         if not did_startup_dump:
                             dump_positions(ib, "STARTUP")
+                            try:
+                                reconcile_positions(ib, conn)
+                            except Exception as e:
+                                log(f"reconcile_positions error: {e}", "ERROR")
                             did_startup_dump = True
 
                     except Exception as e:

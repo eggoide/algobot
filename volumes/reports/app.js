@@ -494,7 +494,8 @@ function renderStrategy(strat) {
     const span = document.createElement("span");
     span.className = "cd-pill";
     const mins = Math.ceil((cd.remaining_sec || 0) / 60);
-    span.textContent = `${cd.symbol} · ${mins}m`;
+    const sideLbl = cd.side ? `${cd.side} ` : "";
+    span.textContent = `${sideLbl}${cd.symbol} · ${mins}m`;
     cdHost.appendChild(span);
   }
 

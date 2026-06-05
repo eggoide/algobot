@@ -10,16 +10,20 @@ Projekt využívá **IB Gateway**, **Python (ib_insync)**, **SQLite** pro perzis
 - Paper trading přes **IB Gateway**
 - **Enhanced strategie** s RSI, MACD, Bollinger Bands, trailing stop, time stop
 - Backtesting framework s optimalizací parametrů a walk-forward analýzou
-- Perzistentní historie obchodů v **SQLite**
-- HTML dashboard s PnL, portfoliem a historií
+- Perzistentní historie obchodů v **SQLite** (včetně IB order ID, requested price, skutečné commission, fill status)
+- HTML dashboard s PnL, portfoliem a historií + Pause Trading toggle
 - Oddělené kontejnery:
   - IB Gateway
   - Trading bot
   - Dashboard (nginx)
-- Odolné vůči restartům (state + dedupe SELL cooldown)
+  - Flask backtest service (`algobot-web`)
+  - Heartbeat watchdog (Telegram alert pokud bot přestane updatovat `status.json`)
+- Odolné vůči restartům — perzistovaný state (high-water marks, BUY/SELL cooldowns) + reconciliation IB pozic vs DB při startu
+- **PAPER/LIVE account guard** — abort při mismatchi `TRADING_MODE` env vs IB account prefix (DU* paper / U* live)
 - **NYSE kalendář svátků** přes `pandas_market_calendars` (Memorial Day, Thanksgiving, ranní zavření atd.)
-- **Wait-for-fill** ověření obchodů přes IB (do DB se zapisuje až po reálném fillu)
-- Telegram notifikace
+- **Wait-for-fill** ověření BUY i SELL obchodů přes IB (do DB se zapisuje až po reálném fillu; partial fill se ukládá s reálnou qty)
+- Telegram notifikace s retry (`HTTPAdapter` max_retries=3)
+- Unit testy (`tests/`, pytest) pro `indicators.py` a `strategy.py`
 - Připravené na dlouhodobý běh (server / VPS)
 
 ---
@@ -46,18 +50,17 @@ Dashboard   Backtester
 ```
 algobot/
 ├── app/
-│   ├── bot.py                  # Hlavní bot loop + dashboard generátor
-│   ├── db.py                   # SQLite schema a helpery
+│   ├── bot.py                  # Hlavní bot loop, IB orchestrace, dashboard generátor
+│   ├── scheduler.py            # Pure NYSE schedule + cycle id helpers (extrahováno z bot.py)
+│   ├── db.py                   # SQLite schema + idempotentní migrace + daily_pnl view
 │   ├── indicators.py           # Technické indikátory (RSI, MACD, BB, ATR, SMA, EMA)
 │   ├── strategy.py             # Abstrakce strategií (DipBuy + EnhancedDipBuy)
-│   ├── config.yaml             # Konfigurace strategie a parametrů
+│   ├── config.yaml             # Konfigurace strategie + runtime (universe_mode, fixed_universe...)
 │   ├── run_backtest.py         # CLI pro backtesting
-│   ├── requirements.txt        # Python závislosti (bot)
+│   ├── requirements.txt        # Python závislosti (bot, pinned)
 │   ├── wait_for_port.py        # Startup helper (čeká na IB Gateway)
 │   ├── import_csv_to_sqlite.py # Import CSV do SQLite
-│   ├── sp100_tickers_cache.txt # Cache S&P 100 tickerů
 │   ├── backtest/               # Backtesting framework
-│   │   ├── __init__.py
 │   │   ├── engine.py           # Backtest engine + ParameterOptimizer (slippage, IB fees, next-open fill)
 │   │   ├── data_loader.py      # Stahování a cachování historických dat
 │   │   ├── portfolio.py        # Simulace portfolia (slippage + fee model)
@@ -71,19 +74,23 @@ algobot/
 │       ├── templates/          # _base, index, result, replay (Jinja)
 │       └── static/             # style.css
 │
+├── tests/                      # pytest unit testy (V3)
+│   ├── conftest.py             # pridává app/ do sys.path
+│   ├── test_indicators.py      # RSI, MACD, BB, ATR sanity checks
+│   ├── test_strategy.py        # should_exit větve (TP, SL, trailing, time stop)
+│   └── README.md
+│
 ├── docker/
-│   ├── bot/
-│   │   └── Dockerfile
-│   ├── web/
-│   │   └── Dockerfile          # Flask container (gunicorn)
-│   └── dashboard/
-│       └── nginx.conf          # Reverse proxy /backtest/* → web:8081
+│   ├── bot/Dockerfile
+│   ├── web/Dockerfile          # Flask container (gunicorn)
+│   ├── dashboard/nginx.conf    # Reverse proxy /backtest/* + /v2/api/* → web:8081
+│   └── heartbeat/heartbeat.sh  # Watchdog: hlídá mtime status.json + Telegram alert
 │
 ├── volumes/                    # Runtime data (NEcommitovat)
-│   ├── data/                   # SQLite DB, logy, state
-│   └── reports/                # HTML dashboard, status.json
+│   ├── data/                   # SQLite DB, logy, state, SP100 cache
+│   └── reports/                # HTML dashboard, status.json, snapshot JSONy
 │
-├── compose.yml
+├── compose.yml                 # 5 služeb: ib-gateway, bot, web, dashboard, heartbeat
 ├── .env.example
 ├── .gitignore
 ├── .dockerignore
@@ -106,7 +113,7 @@ Soubor `.env` **nikdy necommituj** – obsahuje citlivé údaje (IB credentials,
 
 ### config.yaml
 
-Hlavní konfigurace strategie v `app/config.yaml`:
+Hlavní konfigurace strategie v `app/config.yaml`. Klíčové sekce: `capital`, `strategy`, `runtime` (timezone, universe), `backtest`, `report`. Příklad strategy bloku:
 
 ```yaml
 capital:
@@ -137,6 +144,19 @@ strategy:
   use_volume_filter: false      # Volume filtr (volitelný)
   use_sma_filter: false         # SMA 200 filtr (volitelný)
 ```
+
+`runtime.universe_mode` (V7) volí mezi `sp100_live` (Wikipedia scrape, survivorship-biased) a `fixed` (pevný blue-chip seznam ze `runtime.fixed_universe`). Default `sp100_live`.
+
+---
+
+## Testy
+
+```bash
+pip install pytest
+python3 -m pytest tests/ -q
+```
+
+`tests/conftest.py` přidává `app/` do `sys.path`, takže testy běží bez instalace. 17 testů pro `indicators` a `strategy`.
 
 ---
 
@@ -387,17 +407,44 @@ Validace: replay z live `algobot.db` (Dec 2025 → May 2026, 26 symbolů) vráti
 
 ## Známé limity a roadmapa
 
+### Zbývající body před přechodem na live (2026-06-05)
+
+| # | Téma | Popis | Stav |
+|---|------|-------|------|
+| **B2** | **Daily kill-switch** | Gate v `main_loop` před `scan_and_buy`: `daily_realized_pnl_pct < -X %` → no BUY do půlnoci NY. Volitelně VIX gate. Brání katastrofickému dni při flash crashi. | TODO (doporučený další krok, vyžaduje backtest) |
+| **B3** | **LimitOrder + posun SELL na 9:45** | Aktuálně všechno MarketOrder; první SELL v 9:35 NY chytá nejhorší execution. Buď LimitOrder ±0.3 % mid + fallback, nebo prostě posunout první SELL na 9:45. | TODO |
+| **B4** | **Live market data** | `reqMarketDataType(3)` = DELAYED 15+ min. Stop loss reaguje na cenu starou ¼ hod. Pro live: předplatit IB market data sub (~10 USD/mě), přepnout na LIVE. Feature flag `MARKET_DATA_TYPE` v `.env`. | TODO (vyžaduje IB subscription) |
+| **V1** | **Risk-based position sizing přes ATR** | Aktuálně stejná USD pozice pro PLTR (ATR 5 %) i WMT (ATR 1 %) → 5× rozdílné riziko. Fix: `qty = (capital × 0.01) / (atr_pct × price)`. Mění distribuci výnosů, **vyžaduje nový backtest**. | TODO |
+| **V5** | **Plný refactor `bot.py`** | `bot.py` má ~1650 řádků. `scheduler.py` už vyextrahován; zbývá rozdělit na `ib_client.py`, `position_manager.py`, `buy_scanner.py`, `dashboard_writer.py`, `state.py`. Cíl: `bot.py` < 300 řádků. Hygiena, neblokuje live. | částečně |
+| **bug** | **HWM seeding v `should_exit`** | Unit testy odhalily, že `_high_water_marks` se v `EnhancedDipBuyStrategy.should_exit` nikdy implicitně neseeduje (default == `current_price` → `>` vždy False). Trailing stop funguje jen pokud HWM nasype externí caller nebo state restore. Fix: `>=` v should_exit, nebo explicit seed v `scan_and_buy` po BUY fillu. | TODO |
+
+### Hotovo v sezení 2026-06-05
+
+| # | Téma | Detail |
+|---|------|--------|
+| **B1** | BUY fill verification | `placeOrder` → wait 8s na terminal status → do DB jen reálná `avgFillPrice` + `filled_qty`; partial fill se ukládá; cooldown 60 min v `_recent_buy_attempts`; WARN telegram při nefillu |
+| **B5** | PAPER/LIVE guard | `verify_account_mode(ib)` po každém connect → abort při DU* (paper) vs U* (live) mismatchi vůči `TRADING_MODE` env |
+| **B6** | State perzistence + reconciliation | `save_state` automaticky ukládá `high_water_marks` + `recent_sell_attempts` + `recent_buy_attempts`; `restore_runtime_state` re-hydratuje při startu (expirované cooldowny filtruje); `reconcile_positions` po startup dumpu loguje IB-vs-DB mismatch (+ Telegram WARN) |
+| **B7** | Cash check `<=` → `<` | 1 znak, drobnost |
+| **B8** | `accountSummary` staleness | `ib.sleep(0.2)` před `accountSummary()`; ib_insync auto-subscribuje při `connect()`, takže fresh-fetch trik není potřeba (původní `reqAccountUpdates(True)` deadlockoval event loop) |
+| **V2** | DB schema fill metadata | `trades` má 4 nové sloupce (`ib_order_id`, `requested_price`, `commission`, `status`); idempotentní migrace pro staré DB |
+| **V3** | Unit testy | `tests/` adresář, pytest, 17 testů (RSI/MACD/BB/ATR + should_exit větve) |
+| **V4** | Pinned requirements | `yfinance==1.2.0` hard pin (memory: 0.2.50 broken); ostatní soft `>=X.Y,<X+1.0` |
+| **V6** | Smazáno `app/bot.py.bak` | |
+| **V7** | Survivorship bias mitigation | `runtime.universe_mode: sp100_live\|fixed` v `config.yaml`; `fixed_universe` seznam 30 long-term blue-chips. Default zůstává `sp100_live`. |
+| **V8** | Heartbeat watchdog | `docker/heartbeat/heartbeat.sh` + service v compose.yml; hlídá mtime `status.json > 600s`, Telegram alert rate-limited na 1800s |
+| **K1** | Telegram retry | `requests.Session` + `HTTPAdapter(max_retries=3)` pro Telegram API |
+| **K2** | Version → git SHA | `status.json.version` čte git SHA (fallback `unknown`); `GIT_SHA` env var lze předat v compose pro container |
+| **K3** | SP100 cache | `sp100_tickers_cache.txt` → `/data/sp100_tickers_cache.txt` (perzistentní volume) |
+| **K4** | `daily_pnl` view | `CREATE VIEW daily_pnl AS SELECT date(ts), SUM(pnl), COUNT(*), buys, sells FROM trades GROUP BY date(ts)` |
+
+### Trvalé limity (nezávislé na roadmapě)
+
 | # | Téma | Popis |
 |---|------|-------|
-| 1 | **Survivorship bias** | `get_sp100_tickers()` čte aktuální S&P 100 z Wikipedie. Tickers, kteří vypadli (typicky podvýkonní), v backtestu nejsou — bias směrem nahoru. Řešení: point-in-time historický index list (CRSP nebo placené API). |
-| 2 | **`requirements.txt` bez pinů** | Build z 2026-05-25 dostal `pandas 3.0.3`, `numpy 2.4.6`, `yfinance 1.4.0`, `flask 3.0.3`. Další rebuild může dostat něco nekompatibilního. Doporučení: `docker compose exec bot pip freeze > app/requirements.txt`. |
-| 3 | **`bot.py` má 1600+ řádků** | Single-file design — scheduler, IB klient, strategie, dashboard generátor, persistent state v jednom. Refactor by usnadnil testování. |
-| 4 | **Bez unit testů** | `app/strategy.py` je čistá funkce — perfektní kandidát na `pytest`. Pomohlo by zabránit regresím (např. fill-verification bug, který se objevil 2026-05-25). |
-| 5 | **Pouze MarketOrder** | Otevírací volatilita (9:30 NY) může způsobit horší fill. LimitOrder s pásmem nebo počkat 5-15 min po openu by chovalo se lépe. |
-| 6 | **Bez risk-managed sizingu** | `scan_and_buy` určuje qty mechanicky. Žádný "risk no more than 1% on stop loss" model. |
-| 7 | **`bot.py.bak`** | Starý soubor v repu, viz `app/bot.py.bak`. Pokud není potřeba, smazat. |
-| 8 | **Joby v paměti** | `algobot-web` ukládá historie joů v RAM. Restart kontejneru je smaže. Pro perzistenci: Redis/sqlite. |
-| 9 | **hourly data limit yfinance** | yfinance dává cca 730 dní hourly historie. Pro delší backtesty použij `--interval 1d`. |
+| 1 | **Survivorship bias v backtestu** | I s `universe_mode: fixed` (V7) je fixní seznam jen pragmatický kompromis. Pro skutečně bias-free backtest je potřeba point-in-time historický index list (CRSP nebo placené API). |
+| 2 | **Joby v paměti** | `algobot-web` ukládá historie joů v RAM. Restart kontejneru je smaže. Pro perzistenci: Redis/sqlite. |
+| 3 | **hourly data limit yfinance** | yfinance dává cca 730 dní hourly historie. Pro delší backtesty použij `--interval 1d`. |
 
 ---
 

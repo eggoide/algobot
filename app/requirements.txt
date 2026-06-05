@@ -1,12 +1,14 @@
-pandas
-yfinance
-requests
-numpy
-pytz
-ib_insync
-lxml
-html5lib
-PyYAML
-pyarrow
-pandas_market_calendars
-
+# Pinned per V4 (2026-06-05). yfinance 1.2.0 is the only version known to work
+# with the current bot (memory: 0.2.50 broke; do not auto-upgrade).
+# Refresh with: docker compose exec bot pip freeze > app/requirements.txt
+pandas>=2.0,<3.0
+yfinance==1.2.0
+requests>=2.31,<3.0
+numpy>=1.24,<3.0
+pytz>=2024.1
+ib_insync>=0.9.86,<1.0
+lxml>=5.0,<6.0
+html5lib>=1.1,<2.0
+PyYAML>=6.0,<7.0
+pyarrow>=15.0
+pandas_market_calendars>=4.4,<5.0

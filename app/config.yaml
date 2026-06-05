@@ -38,8 +38,44 @@ strategy:
 
 runtime:
   timezone: US/Eastern
-  sp100_cache_file: sp100_tickers_cache.txt
+  sp100_cache_file: /data/sp100_tickers_cache.txt
   sp100_cache_max_age_hours: 24
+  # V7 — universe selection. "sp100_live" scrapes Wikipedia (current SP100,
+  # survivorship-biased for backtests). "fixed" uses fixed_universe below.
+  universe_mode: sp100_live
+  fixed_universe:
+    # ~30 stable large-caps continuously in SP100 since 2018. Reduces survivorship
+    # bias but smaller universe = fewer signals. Used only when universe_mode=fixed.
+    - AAPL
+    - MSFT
+    - GOOG
+    - AMZN
+    - META
+    - NVDA
+    - JPM
+    - V
+    - JNJ
+    - WMT
+    - PG
+    - MA
+    - HD
+    - XOM
+    - CVX
+    - KO
+    - PEP
+    - MRK
+    - PFE
+    - ABBV
+    - BAC
+    - WFC
+    - DIS
+    - CSCO
+    - INTC
+    - VZ
+    - T
+    - MCD
+    - NKE
+    - IBM
 
 backtest:
   # Realistic execution model. Defaults match IB paper trading.

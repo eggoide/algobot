@@ -1,15 +1,15 @@
 {
-  "ts_local": "2026-06-04T21:50:04",
-  "ts_ny": "2026-06-04T15:50:03-04:00",
+  "ts_local": "2026-06-05T16:40:06",
+  "ts_ny": "2026-06-05T10:40:05-04:00",
   "market_open": true,
   "ib_connected": true,
   "secs_to_open": 0,
-  "next_sell_ny": "2026-06-04T15:55:00-04:00",
-  "next_buy_ny": "2026-06-05T10:31:00-04:00",
-  "equity": 1020968.9,
-  "cash": 1011277.8,
+  "next_sell_ny": "2026-06-05T10:45:00-04:00",
+  "next_buy_ny": "2026-06-05T11:31:00-04:00",
+  "equity": 1021076.5,
+  "cash": 1011277.81,
   "positions_count": 5,
   "last_action": "PERIODIC_REFRESH_OPEN",
   "last_error": null,
-  "version": "2026-01-09"
+  "version": "unknown"
 }
