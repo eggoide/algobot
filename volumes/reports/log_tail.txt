@@ -1,200 +1,200 @@
-2026-06-04 20:50:06 [INFO] NY 14:50:06 | next SELL 14:55:00 | next BUY 15:31:00 | sleep 295s
-2026-06-04 20:50:06 [INFO] Sleep: 00:04:55
-2026-06-04 20:55:01 [INFO] SELL-CYCLE 2026-06-04-14-55 | NY=14:55:01
-2026-06-04 20:55:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 20:55:02 [INFO] NEE PnL -3.66% (Cena 85.46, hold 78h)
-2026-06-04 20:55:03 [INFO] LOW PnL -5.41% (Cena 207.60, hold 97h)
-2026-06-04 20:55:03 [INFO] WMT PnL -2.87% (Cena 117.53, hold 58h)
-2026-06-04 20:55:03 [INFO] HON PnL +0.33% (Cena 218.49, hold 0h)
-2026-06-04 20:55:03 [INFO] GEV PnL -0.99% (Cena 961.71, hold 26h)
-2026-06-04 20:55:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:55:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 20:55:05 [INFO] NY 14:55:05 | next SELL 15:00:00 | next BUY 15:31:00 | sleep 296s
-2026-06-04 20:55:05 [INFO] Sleep: 00:04:56
-2026-06-04 21:00:01 [INFO] SELL-CYCLE 2026-06-04-15-00 | NY=15:00:01
-2026-06-04 21:00:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:00:02 [INFO] NEE PnL -3.65% (Cena 85.47, hold 78h)
-2026-06-04 21:00:03 [INFO] LOW PnL -5.44% (Cena 207.54, hold 97h)
-2026-06-04 21:00:03 [INFO] WMT PnL -2.71% (Cena 117.72, hold 58h)
-2026-06-04 21:00:03 [INFO] HON PnL +0.35% (Cena 218.52, hold 0h)
-2026-06-04 21:00:03 [INFO] GEV PnL -0.95% (Cena 962.09, hold 26h)
-2026-06-04 21:00:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:00:07 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:00:08 [INFO] NY 15:00:08 | next SELL 15:05:00 | next BUY 15:31:00 | sleep 293s
-2026-06-04 21:00:08 [INFO] Sleep: 00:04:53
-2026-06-04 21:05:01 [INFO] SELL-CYCLE 2026-06-04-15-05 | NY=15:05:01
-2026-06-04 21:05:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:05:02 [INFO] NEE PnL -3.50% (Cena 85.60, hold 78h)
-2026-06-04 21:05:02 [INFO] LOW PnL -5.37% (Cena 207.69, hold 97h)
-2026-06-04 21:05:02 [INFO] WMT PnL -2.82% (Cena 117.60, hold 58h)
-2026-06-04 21:05:02 [INFO] HON PnL +0.19% (Cena 218.16, hold 0h)
-2026-06-04 21:05:03 [INFO] GEV PnL -0.72% (Cena 964.31, hold 26h)
-2026-06-04 21:05:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:05:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:05:04 [INFO] NY 15:05:04 | next SELL 15:10:00 | next BUY 15:31:00 | sleep 297s
-2026-06-04 21:05:04 [INFO] Sleep: 00:04:57
-2026-06-04 21:10:01 [INFO] SELL-CYCLE 2026-06-04-15-10 | NY=15:10:01
-2026-06-04 21:10:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:10:02 [INFO] NEE PnL -3.43% (Cena 85.66, hold 78h)
-2026-06-04 21:10:02 [INFO] LOW PnL -5.27% (Cena 207.91, hold 97h)
-2026-06-04 21:10:03 [INFO] WMT PnL -2.84% (Cena 117.57, hold 58h)
-2026-06-04 21:10:03 [INFO] HON PnL +0.12% (Cena 218.03, hold 0h)
-2026-06-04 21:10:03 [INFO] GEV PnL -0.54% (Cena 966.04, hold 26h)
-2026-06-04 21:10:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:10:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:10:07 [INFO] NY 15:10:07 | next SELL 15:15:00 | next BUY 15:31:00 | sleep 294s
-2026-06-04 21:10:07 [INFO] Sleep: 00:04:54
-2026-06-04 21:15:01 [INFO] SELL-CYCLE 2026-06-04-15-15 | NY=15:15:01
-2026-06-04 21:15:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:15:02 [INFO] NEE PnL -3.39% (Cena 85.69, hold 78h)
-2026-06-04 21:15:02 [INFO] LOW PnL -5.26% (Cena 207.95, hold 97h)
-2026-06-04 21:15:02 [INFO] WMT PnL -2.75% (Cena 117.68, hold 58h)
-2026-06-04 21:15:02 [INFO] HON PnL +0.16% (Cena 218.11, hold 0h)
-2026-06-04 21:15:03 [INFO] GEV PnL -0.65% (Cena 964.95, hold 26h)
-2026-06-04 21:15:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:15:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:15:04 [INFO] NY 15:15:04 | next SELL 15:20:00 | next BUY 15:31:00 | sleep 297s
-2026-06-04 21:15:04 [INFO] Sleep: 00:04:57
-2026-06-04 21:20:01 [INFO] SELL-CYCLE 2026-06-04-15-20 | NY=15:20:01
-2026-06-04 21:20:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:20:02 [INFO] NEE PnL -3.44% (Cena 85.65, hold 78h)
-2026-06-04 21:20:03 [INFO] LOW PnL -5.20% (Cena 208.06, hold 97h)
-2026-06-04 21:20:03 [INFO] WMT PnL -2.68% (Cena 117.76, hold 58h)
-2026-06-04 21:20:03 [INFO] HON PnL +0.28% (Cena 218.38, hold 0h)
-2026-06-04 21:20:03 [INFO] GEV PnL -0.52% (Cena 966.18, hold 26h)
-2026-06-04 21:20:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:20:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:20:07 [INFO] NY 15:20:07 | next SELL 15:25:00 | next BUY 15:31:00 | sleep 294s
-2026-06-04 21:20:07 [INFO] Sleep: 00:04:54
-2026-06-04 21:25:01 [INFO] SELL-CYCLE 2026-06-04-15-25 | NY=15:25:01
-2026-06-04 21:25:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:25:02 [INFO] NEE PnL -3.37% (Cena 85.71, hold 78h)
-2026-06-04 21:25:02 [INFO] LOW PnL -5.26% (Cena 207.93, hold 97h)
-2026-06-04 21:25:03 [INFO] WMT PnL -2.84% (Cena 117.57, hold 58h)
-2026-06-04 21:25:03 [INFO] HON PnL +0.18% (Cena 218.15, hold 0h)
-2026-06-04 21:25:03 [INFO] GEV PnL -0.41% (Cena 967.33, hold 26h)
-2026-06-04 21:25:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:25:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:25:05 [INFO] NY 15:25:05 | next SELL 15:30:00 | next BUY 15:31:00 | sleep 296s
-2026-06-04 21:25:05 [INFO] Sleep: 00:04:56
-2026-06-04 21:30:01 [INFO] SELL-CYCLE 2026-06-04-15-30 | NY=15:30:01
-2026-06-04 21:30:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:30:02 [INFO] NEE PnL -3.42% (Cena 85.67, hold 78h)
-2026-06-04 21:30:02 [INFO] LOW PnL -5.33% (Cena 207.79, hold 97h)
-2026-06-04 21:30:02 [INFO] WMT PnL -2.90% (Cena 117.49, hold 58h)
-2026-06-04 21:30:03 [INFO] HON PnL +0.02% (Cena 217.82, hold 0h)
-2026-06-04 21:30:03 [INFO] GEV PnL -0.27% (Cena 968.64, hold 26h)
-2026-06-04 21:30:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:30:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:30:05 [INFO] NY 15:30:05 | next SELL 15:35:00 | next BUY 15:31:00 | sleep 56s
-2026-06-04 21:30:05 [INFO] Sleep: 00:00:56
-2026-06-04 21:31:01 [INFO] BUY-CYCLE 2026-06-04-15 | NY=15:31:01 | MODE DAILY
-2026-06-04 21:31:01 [INFO] BUY-SCAN: portfolio plné (5/5)
-2026-06-04 21:31:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:31:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:31:06 [INFO] NY 15:31:06 | next SELL 15:35:00 | next BUY 10:31:00 | sleep 235s
-2026-06-04 21:31:06 [INFO] Sleep: 00:03:55
-2026-06-04 21:35:01 [INFO] SELL-CYCLE 2026-06-04-15-35 | NY=15:35:01
-2026-06-04 21:35:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:35:02 [INFO] NEE PnL -3.50% (Cena 85.60, hold 78h)
-2026-06-04 21:35:03 [INFO] LOW PnL -5.24% (Cena 207.98, hold 97h)
-2026-06-04 21:35:03 [INFO] WMT PnL -2.86% (Cena 117.54, hold 58h)
-2026-06-04 21:35:03 [INFO] HON PnL -0.04% (Cena 217.67, hold 0h)
-2026-06-04 21:35:03 [INFO] GEV PnL -0.37% (Cena 967.64, hold 26h)
-2026-06-04 21:35:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:35:05 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:35:05 [INFO] NY 15:35:05 | next SELL 15:40:00 | next BUY 10:31:00 | sleep 296s
-2026-06-04 21:35:05 [INFO] Sleep: 00:04:56
-2026-06-04 21:40:01 [INFO] SELL-CYCLE 2026-06-04-15-40 | NY=15:40:01
-2026-06-04 21:40:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:40:02 [INFO] NEE PnL -3.55% (Cena 85.56, hold 78h)
-2026-06-04 21:40:02 [INFO] LOW PnL -5.20% (Cena 208.06, hold 97h)
-2026-06-04 21:40:02 [INFO] WMT PnL -2.94% (Cena 117.44, hold 58h)
-2026-06-04 21:40:02 [INFO] HON PnL +0.02% (Cena 217.79, hold 0h)
-2026-06-04 21:40:03 [INFO] GEV PnL -0.46% (Cena 966.86, hold 26h)
-2026-06-04 21:40:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:40:04 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:40:04 [INFO] NY 15:40:04 | next SELL 15:45:00 | next BUY 10:31:00 | sleep 297s
-2026-06-04 21:40:04 [INFO] Sleep: 00:04:57
-2026-06-04 21:45:01 [INFO] SELL-CYCLE 2026-06-04-15-45 | NY=15:45:01
-2026-06-04 21:45:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:45:02 [INFO] NEE PnL -3.64% (Cena 85.47, hold 78h)
-2026-06-04 21:45:02 [INFO] LOW PnL -5.19% (Cena 208.10, hold 97h)
-2026-06-04 21:45:03 [INFO] WMT PnL -2.84% (Cena 117.56, hold 58h)
-2026-06-04 21:45:03 [INFO] HON PnL +0.04% (Cena 217.84, hold 0h)
-2026-06-04 21:45:03 [INFO] GEV PnL -0.81% (Cena 963.39, hold 26h)
-2026-06-04 21:45:03 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:45:06 [INFO] REPORT aktualizován: /reports/index.html
-2026-06-04 21:45:06 [INFO] NY 15:45:06 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 295s
-2026-06-04 21:45:06 [INFO] Sleep: 00:04:55
-2026-06-04 21:49:19 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-04 21:49:25 [INFO] Dashboard inicializován hned po startu.
-2026-06-04 21:49:27 [INFO] NY 15:49:27 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 34s
-2026-06-04 21:49:27 [INFO] Sleep: 00:00:34
-2026-06-04 21:50:01 [INFO] SELL-CYCLE 2026-06-04-15-50 | NY=15:50:01
-2026-06-04 21:50:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:50:02 [INFO] NEE PnL -3.52% (Cena 85.58, hold 78h)
-2026-06-04 21:50:02 [INFO] LOW PnL -5.09% (Cena 208.32, hold 97h)
-2026-06-04 21:50:03 [INFO] WMT PnL -2.95% (Cena 117.43, hold 58h)
-2026-06-04 21:50:03 [INFO] HON PnL -0.07% (Cena 217.61, hold 0h)
-2026-06-04 21:50:03 [INFO] GEV PnL -0.94% (Cena 962.14, hold 26h)
-2026-06-04 21:50:05 [INFO] NY 15:50:05 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 296s
-2026-06-04 21:50:05 [INFO] Sleep: 00:04:56
-2026-06-04 21:55:01 [INFO] SELL-CYCLE 2026-06-04-15-55 | NY=15:55:01
-2026-06-04 21:55:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-04 21:55:01 [INFO] NEE PnL -3.58% (Cena 85.53, hold 78h)
-2026-06-04 21:55:02 [INFO] LOW PnL -5.10% (Cena 208.28, hold 97h)
-2026-06-04 21:55:02 [INFO] WMT PnL -2.93% (Cena 117.46, hold 58h)
-2026-06-04 21:55:02 [INFO] HON PnL -0.06% (Cena 217.63, hold 0h)
-2026-06-04 21:55:02 [INFO] GEV PnL -0.89% (Cena 962.60, hold 26h)
-2026-06-04 21:55:04 [INFO] NY 15:55:04 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 63597s
-2026-06-04 21:55:04 [INFO] Sleep: 17:39:57
-2026-06-05 14:45:25 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-05 14:45:34 [INFO] Dashboard inicializován hned po startu.
-2026-06-05 14:45:36 [INFO] Dashboard refresh (trh zavřený).
-2026-06-05 14:45:36 [INFO] Trh zavřený. Další open za 00:44:25 | NY 2026-06-05 08:55:36
-2026-06-05 14:45:36 [INFO] Sleep: 00:10:00
-2026-06-05 16:25:21 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-05 16:25:24 [INFO] Account mode OK: DUO781779 (PAPER) vs TRADING_MODE=paper
-2026-06-05 16:32:52 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-05 16:32:54 [INFO] Account mode OK: DUO781779 (PAPER) vs TRADING_MODE=paper
-2026-06-05 16:33:01 [INFO] Dashboard inicializován hned po startu.
-2026-06-05 16:33:01 [INFO] SELL-CYCLE 2026-06-05-10-30 | NY=10:33:01
-2026-06-05 16:33:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-05 16:33:02 [INFO] HON PnL -0.26% (Cena 217.20, hold 6h)
-2026-06-05 16:33:02 [INFO] NEE PnL -4.01% (Cena 85.15, hold 84h)
-2026-06-05 16:33:03 [INFO] LOW PnL -3.70% (Cena 211.36, hold 104h)
-2026-06-05 16:33:03 [INFO] WMT PnL -0.35% (Cena 120.58, hold 65h)
-2026-06-05 16:33:03 [INFO] GEV PnL -2.37% (Cena 948.30, hold 32h)
-2026-06-05 16:33:04 [INFO] BUY-CYCLE 2026-06-05-10 | NY=10:33:04 | MODE DAILY
-2026-06-05 16:33:05 [INFO] BUY-SCAN: portfolio plné (5/5)
-2026-06-05 16:33:09 [INFO] NY 10:33:09 | next SELL 10:35:00 | next BUY 11:31:00 | sleep 112s
-2026-06-05 16:33:09 [INFO] Sleep: 00:01:52
-2026-06-05 16:34:59 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
-2026-06-05 16:35:01 [INFO] Account mode OK: DUO781779 (PAPER) vs TRADING_MODE=paper
-2026-06-05 16:35:07 [INFO] Dashboard inicializován hned po startu.
-2026-06-05 16:35:08 [INFO] STARTUP Pozic: 5
-2026-06-05 16:35:08 [INFO]   HON qty=9.0 avgCost=217.7611111
-2026-06-05 16:35:08 [INFO]   NEE qty=22.0 avgCost=88.7054591
-2026-06-05 16:35:08 [INFO]   LOW qty=9.0 avgCost=219.4811111
-2026-06-05 16:35:08 [INFO]   WMT qty=16.0 avgCost=121.0025
-2026-06-05 16:35:08 [INFO]   GEV qty=2.0 avgCost=971.28
-2026-06-05 16:35:08 [INFO] RECONCILE OK: 5 pozic IB = DB
-2026-06-05 16:35:08 [INFO] SELL-CYCLE 2026-06-05-10-35 | NY=10:35:08
-2026-06-05 16:35:08 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-05 16:35:09 [INFO] HON PnL -0.53% (Cena 216.61, hold 6h)
-2026-06-05 16:35:09 [INFO] NEE PnL -4.10% (Cena 85.07, hold 84h)
-2026-06-05 16:35:09 [INFO] LOW PnL -3.76% (Cena 211.22, hold 104h)
-2026-06-05 16:35:10 [INFO] WMT PnL -0.34% (Cena 120.59, hold 65h)
-2026-06-05 16:35:10 [INFO] GEV PnL -2.36% (Cena 948.38, hold 32h)
-2026-06-05 16:35:13 [INFO] NY 10:35:13 | next SELL 10:40:00 | next BUY 11:31:00 | sleep 288s
-2026-06-05 16:35:13 [INFO] Sleep: 00:04:48
-2026-06-05 16:40:02 [INFO] SELL-CYCLE 2026-06-05-10-40 | NY=10:40:01
-2026-06-05 16:40:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
-2026-06-05 16:40:03 [INFO] HON PnL -0.68% (Cena 216.27, hold 6h)
-2026-06-05 16:40:03 [INFO] NEE PnL -4.13% (Cena 85.04, hold 84h)
-2026-06-05 16:40:03 [INFO] LOW PnL -3.89% (Cena 210.93, hold 104h)
-2026-06-05 16:40:04 [INFO] WMT PnL -0.75% (Cena 120.10, hold 65h)
-2026-06-05 16:40:04 [INFO] GEV PnL -2.06% (Cena 951.27, hold 32h)
-2026-06-05 16:40:07 [INFO] NY 10:40:07 | next SELL 10:45:00 | next BUY 11:31:00 | sleep 294s
-2026-06-05 16:40:07 [INFO] Sleep: 00:04:54
+2026-06-05 21:45:02 [INFO] HON PnL -1.78% (Cena 213.88, hold 6h)
+2026-06-05 21:45:03 [INFO] NEE PnL -3.77% (Cena 85.36, hold 84h)
+2026-06-05 21:45:03 [INFO] LOW PnL -4.33% (Cena 209.99, hold 104h)
+2026-06-05 21:45:04 [INFO] WMT PnL -1.51% (Cena 119.17, hold 65h)
+2026-06-05 21:45:04 [INFO] GEV PnL -3.92% (Cena 933.25, hold 32h)
+2026-06-05 21:45:08 [INFO] NY 15:45:08 | next SELL 15:50:00 | next BUY 10:31:00 | sleep 293s
+2026-06-05 21:45:08 [INFO] Sleep: 00:04:53
+2026-06-05 21:50:01 [INFO] SELL-CYCLE 2026-06-05-15-50 | NY=15:50:01
+2026-06-05 21:50:01 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-05 21:50:02 [INFO] HON PnL -1.67% (Cena 214.13, hold 6h)
+2026-06-05 21:50:02 [INFO] NEE PnL -3.41% (Cena 85.68, hold 84h)
+2026-06-05 21:50:02 [INFO] LOW PnL -4.26% (Cena 210.14, hold 104h)
+2026-06-05 21:50:03 [INFO] WMT PnL -1.56% (Cena 119.12, hold 65h)
+2026-06-05 21:50:03 [INFO] GEV PnL -3.63% (Cena 936.01, hold 32h)
+2026-06-05 21:50:06 [INFO] NY 15:50:06 | next SELL 15:55:00 | next BUY 10:31:00 | sleep 295s
+2026-06-05 21:50:06 [INFO] Sleep: 00:04:55
+2026-06-05 21:55:01 [INFO] SELL-CYCLE 2026-06-05-15-55 | NY=15:55:01
+2026-06-05 21:55:02 [INFO] SELL-CHECK: pozic 5 (strategie: EnhancedDipBuyStrategy)
+2026-06-05 21:55:02 [INFO] HON PnL -1.75% (Cena 213.96, hold 6h)
+2026-06-05 21:55:02 [INFO] NEE PnL -3.15% (Cena 85.92, hold 84h)
+2026-06-05 21:55:03 [INFO] LOW PnL -4.10% (Cena 210.48, hold 104h)
+2026-06-05 21:55:03 [INFO] WMT PnL -1.46% (Cena 119.24, hold 65h)
+2026-06-05 21:55:03 [INFO] GEV PnL -3.60% (Cena 936.30, hold 32h)
+2026-06-05 21:55:07 [INFO] NY 15:55:07 | next SELL 09:35:00 | next BUY 10:31:00 | sleep 236394s
+2026-06-05 21:55:07 [INFO] Sleep: 65:39:54
+2026-06-06 10:08:14 [INFO] STARTUJI ALGO-BOT (SELL každých 5 min, BUY 1x/h v 10:31–15:33 NY)
+2026-06-06 10:08:17 [INFO] Account mode OK: DUO781779 (PAPER) vs TRADING_MODE=paper
+2026-06-06 10:08:24 [INFO] Dashboard inicializován hned po startu.
+2026-06-06 10:08:25 [INFO] STARTUP Pozic: 5
+2026-06-06 10:08:25 [INFO]   HON qty=9.0 avgCost=217.7611111
+2026-06-06 10:08:25 [INFO]   NEE qty=22.0 avgCost=88.7054591
+2026-06-06 10:08:25 [INFO]   LOW qty=9.0 avgCost=219.4811111
+2026-06-06 10:08:25 [INFO]   WMT qty=16.0 avgCost=121.0025
+2026-06-06 10:08:25 [INFO]   GEV qty=2.0 avgCost=971.28
+2026-06-06 10:08:25 [INFO] RECONCILE OK: 5 pozic IB = DB
+2026-06-06 10:08:27 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:08:27 [INFO] Trh zavřený. Další open za 53:21:34 | NY 2026-06-06 04:18:27
+2026-06-06 10:08:27 [INFO] Sleep: 00:10:00
+2026-06-06 10:18:31 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:18:31 [INFO] Trh zavřený. Další open za 53:11:34 | NY 2026-06-06 04:28:31
+2026-06-06 10:18:31 [INFO] Sleep: 00:10:00
+2026-06-06 10:28:35 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:28:35 [INFO] Trh zavřený. Další open za 53:01:34 | NY 2026-06-06 04:38:35
+2026-06-06 10:28:35 [INFO] Sleep: 00:10:00
+2026-06-06 10:38:39 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:38:39 [INFO] Trh zavřený. Další open za 52:51:34 | NY 2026-06-06 04:48:39
+2026-06-06 10:38:39 [INFO] Sleep: 00:10:00
+2026-06-06 10:48:43 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:48:43 [INFO] Trh zavřený. Další open za 52:41:34 | NY 2026-06-06 04:58:43
+2026-06-06 10:48:43 [INFO] Sleep: 00:10:00
+2026-06-06 10:58:47 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 10:58:47 [INFO] Trh zavřený. Další open za 52:31:34 | NY 2026-06-06 05:08:47
+2026-06-06 10:58:47 [INFO] Sleep: 00:10:00
+2026-06-06 11:08:51 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:08:51 [INFO] Trh zavřený. Další open za 52:21:34 | NY 2026-06-06 05:18:51
+2026-06-06 11:08:51 [INFO] Sleep: 00:10:00
+2026-06-06 11:18:55 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:18:55 [INFO] Trh zavřený. Další open za 52:11:34 | NY 2026-06-06 05:28:55
+2026-06-06 11:18:55 [INFO] Sleep: 00:10:00
+2026-06-06 11:28:58 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:28:58 [INFO] Trh zavřený. Další open za 52:01:34 | NY 2026-06-06 05:38:58
+2026-06-06 11:28:58 [INFO] Sleep: 00:10:00
+2026-06-06 11:39:02 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:39:02 [INFO] Trh zavřený. Další open za 51:51:34 | NY 2026-06-06 05:49:02
+2026-06-06 11:39:02 [INFO] Sleep: 00:10:00
+2026-06-06 11:49:07 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:49:07 [INFO] Trh zavřený. Další open za 51:41:34 | NY 2026-06-06 05:59:07
+2026-06-06 11:49:07 [INFO] Sleep: 00:10:00
+2026-06-06 11:59:11 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 11:59:11 [INFO] Trh zavřený. Další open za 51:31:34 | NY 2026-06-06 06:09:11
+2026-06-06 11:59:11 [INFO] Sleep: 00:10:00
+2026-06-06 12:09:15 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:09:15 [INFO] Trh zavřený. Další open za 51:21:34 | NY 2026-06-06 06:19:15
+2026-06-06 12:09:15 [INFO] Sleep: 00:10:00
+2026-06-06 12:19:21 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:19:21 [INFO] Trh zavřený. Další open za 51:11:34 | NY 2026-06-06 06:29:21
+2026-06-06 12:19:21 [INFO] Sleep: 00:10:00
+2026-06-06 12:29:25 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:29:25 [INFO] Trh zavřený. Další open za 51:01:34 | NY 2026-06-06 06:39:25
+2026-06-06 12:29:25 [INFO] Sleep: 00:10:00
+2026-06-06 12:39:29 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:39:29 [INFO] Trh zavřený. Další open za 50:51:34 | NY 2026-06-06 06:49:29
+2026-06-06 12:39:29 [INFO] Sleep: 00:10:00
+2026-06-06 12:49:33 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:49:33 [INFO] Trh zavřený. Další open za 50:41:34 | NY 2026-06-06 06:59:33
+2026-06-06 12:49:33 [INFO] Sleep: 00:10:00
+2026-06-06 12:59:37 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 12:59:37 [INFO] Trh zavřený. Další open za 50:31:34 | NY 2026-06-06 07:09:37
+2026-06-06 12:59:37 [INFO] Sleep: 00:10:00
+2026-06-06 13:09:41 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 13:09:41 [INFO] Trh zavřený. Další open za 50:21:34 | NY 2026-06-06 07:19:41
+2026-06-06 13:09:41 [INFO] Sleep: 00:10:00
+2026-06-06 13:19:45 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 13:19:45 [INFO] Trh zavřený. Další open za 50:11:34 | NY 2026-06-06 07:29:45
+2026-06-06 13:19:45 [INFO] Sleep: 00:10:00
+2026-06-06 13:29:49 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 13:29:49 [INFO] Trh zavřený. Další open za 50:01:34 | NY 2026-06-06 07:39:49
+2026-06-06 13:29:49 [INFO] Sleep: 00:10:00
+2026-06-06 13:39:53 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 13:39:53 [INFO] Trh zavřený. Další open za 49:51:34 | NY 2026-06-06 07:49:53
+2026-06-06 13:39:53 [INFO] Sleep: 00:10:00
+2026-06-06 13:49:56 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 13:49:56 [INFO] Trh zavřený. Další open za 49:41:34 | NY 2026-06-06 07:59:56
+2026-06-06 13:49:56 [INFO] Sleep: 00:10:00
+2026-06-06 14:00:00 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:00:00 [INFO] Trh zavřený. Další open za 49:31:34 | NY 2026-06-06 08:10:00
+2026-06-06 14:00:00 [INFO] Sleep: 00:10:00
+2026-06-06 14:10:07 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:10:07 [INFO] Trh zavřený. Další open za 49:21:34 | NY 2026-06-06 08:20:07
+2026-06-06 14:10:07 [INFO] Sleep: 00:10:00
+2026-06-06 14:20:11 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:20:11 [INFO] Trh zavřený. Další open za 49:11:34 | NY 2026-06-06 08:30:11
+2026-06-06 14:20:11 [INFO] Sleep: 00:10:00
+2026-06-06 14:30:15 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:30:15 [INFO] Trh zavřený. Další open za 49:01:34 | NY 2026-06-06 08:40:15
+2026-06-06 14:30:15 [INFO] Sleep: 00:10:00
+2026-06-06 14:40:19 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:40:19 [INFO] Trh zavřený. Další open za 48:51:34 | NY 2026-06-06 08:50:19
+2026-06-06 14:40:19 [INFO] Sleep: 00:10:00
+2026-06-06 14:50:23 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 14:50:23 [INFO] Trh zavřený. Další open za 48:41:34 | NY 2026-06-06 09:00:23
+2026-06-06 14:50:23 [INFO] Sleep: 00:10:00
+2026-06-06 15:00:26 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:00:26 [INFO] Trh zavřený. Další open za 48:31:34 | NY 2026-06-06 09:10:26
+2026-06-06 15:00:26 [INFO] Sleep: 00:10:00
+2026-06-06 15:10:30 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:10:30 [INFO] Trh zavřený. Další open za 48:21:34 | NY 2026-06-06 09:20:30
+2026-06-06 15:10:30 [INFO] Sleep: 00:10:00
+2026-06-06 15:20:34 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:20:34 [INFO] Trh zavřený. Další open za 48:11:34 | NY 2026-06-06 09:30:34
+2026-06-06 15:20:34 [INFO] Sleep: 00:10:00
+2026-06-06 15:30:38 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:30:38 [INFO] Trh zavřený. Další open za 48:01:34 | NY 2026-06-06 09:40:38
+2026-06-06 15:30:38 [INFO] Sleep: 00:10:00
+2026-06-06 15:40:42 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:40:42 [INFO] Trh zavřený. Další open za 47:51:34 | NY 2026-06-06 09:50:42
+2026-06-06 15:40:42 [INFO] Sleep: 00:10:00
+2026-06-06 15:50:46 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 15:50:46 [INFO] Trh zavřený. Další open za 47:41:34 | NY 2026-06-06 10:00:46
+2026-06-06 15:50:46 [INFO] Sleep: 00:10:00
+2026-06-06 16:00:49 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:00:49 [INFO] Trh zavřený. Další open za 47:31:34 | NY 2026-06-06 10:10:49
+2026-06-06 16:00:49 [INFO] Sleep: 00:10:00
+2026-06-06 16:10:53 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:10:53 [INFO] Trh zavřený. Další open za 47:21:34 | NY 2026-06-06 10:20:53
+2026-06-06 16:10:53 [INFO] Sleep: 00:10:00
+2026-06-06 16:20:57 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:20:57 [INFO] Trh zavřený. Další open za 47:11:34 | NY 2026-06-06 10:30:57
+2026-06-06 16:20:57 [INFO] Sleep: 00:10:00
+2026-06-06 16:31:01 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:31:01 [INFO] Trh zavřený. Další open za 47:01:34 | NY 2026-06-06 10:41:01
+2026-06-06 16:31:01 [INFO] Sleep: 00:10:00
+2026-06-06 16:41:05 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:41:05 [INFO] Trh zavřený. Další open za 46:51:34 | NY 2026-06-06 10:51:05
+2026-06-06 16:41:05 [INFO] Sleep: 00:10:00
+2026-06-06 16:51:08 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 16:51:08 [INFO] Trh zavřený. Další open za 46:41:34 | NY 2026-06-06 11:01:08
+2026-06-06 16:51:08 [INFO] Sleep: 00:10:00
+2026-06-06 17:01:12 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:01:12 [INFO] Trh zavřený. Další open za 46:31:34 | NY 2026-06-06 11:11:12
+2026-06-06 17:01:12 [INFO] Sleep: 00:10:00
+2026-06-06 17:11:16 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:11:16 [INFO] Trh zavřený. Další open za 46:21:34 | NY 2026-06-06 11:21:16
+2026-06-06 17:11:16 [INFO] Sleep: 00:10:00
+2026-06-06 17:21:20 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:21:20 [INFO] Trh zavřený. Další open za 46:11:34 | NY 2026-06-06 11:31:20
+2026-06-06 17:21:20 [INFO] Sleep: 00:10:00
+2026-06-06 17:31:24 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:31:24 [INFO] Trh zavřený. Další open za 46:01:34 | NY 2026-06-06 11:41:24
+2026-06-06 17:31:24 [INFO] Sleep: 00:10:00
+2026-06-06 17:41:28 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:41:28 [INFO] Trh zavřený. Další open za 45:51:34 | NY 2026-06-06 11:51:28
+2026-06-06 17:41:28 [INFO] Sleep: 00:10:00
+2026-06-06 17:51:32 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 17:51:32 [INFO] Trh zavřený. Další open za 45:41:34 | NY 2026-06-06 12:01:32
+2026-06-06 17:51:32 [INFO] Sleep: 00:10:00
+2026-06-06 18:01:36 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:01:36 [INFO] Trh zavřený. Další open za 45:31:34 | NY 2026-06-06 12:11:36
+2026-06-06 18:01:36 [INFO] Sleep: 00:10:00
+2026-06-06 18:11:40 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:11:40 [INFO] Trh zavřený. Další open za 45:21:34 | NY 2026-06-06 12:21:40
+2026-06-06 18:11:40 [INFO] Sleep: 00:10:00
+2026-06-06 18:21:44 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:21:44 [INFO] Trh zavřený. Další open za 45:11:34 | NY 2026-06-06 12:31:44
+2026-06-06 18:21:44 [INFO] Sleep: 00:10:00
+2026-06-06 18:31:48 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:31:48 [INFO] Trh zavřený. Další open za 45:01:34 | NY 2026-06-06 12:41:48
+2026-06-06 18:31:48 [INFO] Sleep: 00:10:00
+2026-06-06 18:41:51 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:41:51 [INFO] Trh zavřený. Další open za 44:51:34 | NY 2026-06-06 12:51:51
+2026-06-06 18:41:51 [INFO] Sleep: 00:10:00
+2026-06-06 18:51:56 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 18:51:56 [INFO] Trh zavřený. Další open za 44:41:34 | NY 2026-06-06 13:01:56
+2026-06-06 18:51:56 [INFO] Sleep: 00:10:00
+2026-06-06 19:02:00 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 19:02:00 [INFO] Trh zavřený. Další open za 44:31:34 | NY 2026-06-06 13:12:00
+2026-06-06 19:02:00 [INFO] Sleep: 00:10:00
+2026-06-06 19:12:03 [INFO] Dashboard refresh (trh zavřený).
+2026-06-06 19:12:03 [INFO] Trh zavřený. Další open za 44:21:34 | NY 2026-06-06 13:22:03
+2026-06-06 19:12:03 [INFO] Sleep: 00:10:00

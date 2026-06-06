@@ -1,12 +1,12 @@
 {
-  "ts": "2026-06-05T16:40:07",
+  "ts": "2026-06-06T19:12:03",
   "positions": [
     {
       "symbol": "HON",
       "qty": 9,
       "avgCost": 217.7611,
-      "marketPrice": 216.27,
-      "pnl_pct": -0.0068,
+      "marketPrice": 213.99,
+      "pnl_pct": -0.0173,
       "holding_bars": 6,
       "sparkline": [
         235.055,
@@ -24,9 +24,14 @@
         217.815,
         217.72,
         217.61,
-        216.61
+        217.08,
+        216.29,
+        215.2,
+        214.46,
+        213.77,
+        213.99
       ],
-      "stop_loss_progress": 9.8,
+      "stop_loss_progress": 24.7,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 2.5,
       "hwm": null
@@ -35,8 +40,8 @@
       "symbol": "NEE",
       "qty": 22,
       "avgCost": 88.7055,
-      "marketPrice": 85.0401,
-      "pnl_pct": -0.0413,
+      "marketPrice": 85.86,
+      "pnl_pct": -0.0321,
       "holding_bars": 84,
       "sparkline": [
         85.63,
@@ -53,10 +58,15 @@
         85.31,
         85.67,
         85.66,
-        85.17,
-        85.11
+        85.18,
+        85.555,
+        85.31,
+        85.435,
+        85.82,
+        85.28,
+        85.86
       ],
-      "stop_loss_progress": 59.0,
+      "stop_loss_progress": 45.8,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 35.0,
       "hwm": null
@@ -65,8 +75,8 @@
       "symbol": "LOW",
       "qty": 9,
       "avgCost": 219.4811,
-      "marketPrice": 210.935,
-      "pnl_pct": -0.0389,
+      "marketPrice": 210.71,
+      "pnl_pct": -0.04,
       "holding_bars": 104,
       "sparkline": [
         205.46,
@@ -84,9 +94,14 @@
         207.79,
         207.58,
         211.585,
-        211.235
+        210.885,
+        210.21,
+        210.17,
+        210.95,
+        209.58,
+        210.71
       ],
-      "stop_loss_progress": 55.6,
+      "stop_loss_progress": 57.1,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 43.3,
       "hwm": null
@@ -95,8 +110,8 @@
       "symbol": "WMT",
       "qty": 16,
       "avgCost": 121.0025,
-      "marketPrice": 120.1,
-      "pnl_pct": -0.0075,
+      "marketPrice": 118.9,
+      "pnl_pct": -0.0174,
       "holding_bars": 65,
       "sparkline": [
         116.055,
@@ -114,9 +129,14 @@
         117.49,
         117.755,
         120.72,
-        120.615
+        120.18,
+        120.37,
+        120.19,
+        120.345,
+        119.6,
+        118.9
       ],
-      "stop_loss_progress": 10.7,
+      "stop_loss_progress": 24.8,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 27.1,
       "hwm": null
@@ -125,8 +145,8 @@
       "symbol": "GEV",
       "qty": 2,
       "avgCost": 971.28,
-      "marketPrice": 951.265,
-      "pnl_pct": -0.0206,
+      "marketPrice": 933.7,
+      "pnl_pct": -0.0387,
       "holding_bars": 32,
       "sparkline": [
         982.18,
@@ -143,10 +163,15 @@
         963.4137,
         968.64,
         963.21,
-        945.891,
-        948.705
+        945.86,
+        946.73,
+        944.455,
+        940.14,
+        928.26,
+        932.36,
+        933.7
       ],
-      "stop_loss_progress": 29.4,
+      "stop_loss_progress": 55.3,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 13.3,
       "hwm": null
