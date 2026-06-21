@@ -1,6 +1,96 @@
 {
-  "ts": "2026-06-06T19:12:03",
+  "ts": "2026-06-21T17:39:33",
   "items": [
+    {
+      "ts": "2026-06-18T16:31:39",
+      "action": "BUY",
+      "symbol": "ACN",
+      "qty": 14,
+      "price": 133.87,
+      "pnl": -1.000042,
+      "note": "Enhanced: Enhanced RSI=9.7 drop=-14.02% score=0.58"
+    },
+    {
+      "ts": "2026-06-18T15:56:43",
+      "action": "SELL",
+      "symbol": "MSFT",
+      "qty": 4,
+      "price": 375.09,
+      "pnl": -115.47169900000006,
+      "note": "Stop Loss"
+    },
+    {
+      "ts": "2026-06-17T17:31:43",
+      "action": "BUY",
+      "symbol": "ADBE",
+      "qty": 9,
+      "price": 202.35,
+      "pnl": -1.000027,
+      "note": "Enhanced: Enhanced RSI=25.2 drop=-2.48% score=0.35"
+    },
+    {
+      "ts": "2026-06-17T15:55:06",
+      "action": "SELL",
+      "symbol": "LOW",
+      "qty": 9,
+      "price": 226.14,
+      "pnl": 58.930000099999944,
+      "note": "Take Profit"
+    },
+    {
+      "ts": "2026-06-15T16:31:25",
+      "action": "BUY",
+      "symbol": "XOM",
+      "qty": 14,
+      "price": 140.75,
+      "pnl": -1.000042,
+      "note": "Enhanced: Enhanced RSI=23.5 drop=-4.25% score=0.38"
+    },
+    {
+      "ts": "2026-06-15T15:36:07",
+      "action": "SELL",
+      "symbol": "ADBE",
+      "qty": 9,
+      "price": 210.3,
+      "pnl": 58.25922810000001,
+      "note": "Take Profit"
+    },
+    {
+      "ts": "2026-06-12T17:31:24",
+      "action": "BUY",
+      "symbol": "ADBE",
+      "qty": 9,
+      "price": 203.6,
+      "pnl": -1.000027,
+      "note": "Enhanced: Enhanced RSI=10.0 drop=-6.80% score=0.57"
+    },
+    {
+      "ts": "2026-06-12T16:55:06",
+      "action": "SELL",
+      "symbol": "HON",
+      "qty": 9,
+      "price": 224.79,
+      "pnl": 62.216542099999984,
+      "note": "Take Profit"
+    },
+    {
+      "ts": "2026-06-09T17:31:41",
+      "action": "BUY",
+      "symbol": "MSFT",
+      "qty": 4,
+      "price": 403.45,
+      "pnl": -1.000012,
+      "note": "Enhanced: Enhanced RSI=13.7 drop=-2.03% score=0.52"
+    },
+    {
+      "ts": "2026-06-09T16:45:07",
+      "action": "SELL",
+      "symbol": "GEV",
+      "qty": 2,
+      "price": 901.31,
+      "pnl": -140.97753000000006,
+      "note": "Stop Loss"
+    },
     {
       "ts": "2026-06-04T19:31:26",
       "action": "BUY",
@@ -359,96 +449,6 @@
       "qty": 15,
       "price": 137.91000366210938,
       "pnl": 71.20001018164069,
-      "note": "Take Profit"
-    },
-    {
-      "ts": "2026-05-06T20:31:24",
-      "action": "BUY",
-      "symbol": "XOM",
-      "qty": 13,
-      "price": 147.34500122070312,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=29.5 drop=-4.87% score=0.58"
-    },
-    {
-      "ts": "2026-05-06T17:31:35",
-      "action": "BUY",
-      "symbol": "PLTR",
-      "qty": 15,
-      "price": 133.0301055908203,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=27.6 drop=-2.12% score=0.61"
-    },
-    {
-      "ts": "2026-05-06T16:31:42",
-      "action": "BUY",
-      "symbol": "COP",
-      "qty": 16,
-      "price": 118.625,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=29.2 drop=-3.83% score=0.30"
-    },
-    {
-      "ts": "2026-02-11T17:40:02",
-      "action": "SELL",
-      "symbol": "AIG",
-      "qty": 25,
-      "price": 79.76860046386719,
-      "pnl": 59.2150115966797,
-      "note": "Take Profit"
-    },
-    {
-      "ts": "2026-01-28T17:31:01",
-      "action": "SELL",
-      "symbol": "UNH",
-      "qty": 7,
-      "price": 294.3349914550781,
-      "pnl": 89.10494013554694,
-      "note": "Take Profit"
-    },
-    {
-      "ts": "2026-01-27T21:31:46",
-      "action": "BUY",
-      "symbol": "UNH",
-      "qty": 7,
-      "price": 281.510009765625,
-      "pnl": -1.0,
-      "note": "Mode:DAILY, Dip:2%"
-    },
-    {
-      "ts": "2026-01-13T16:31:01",
-      "action": "SELL",
-      "symbol": "AMD",
-      "qty": 9,
-      "price": 218.1999969482422,
-      "pnl": 121.92997263417973,
-      "note": "Take Profit"
-    },
-    {
-      "ts": "2026-01-09T21:15:05",
-      "action": "SELL",
-      "symbol": "MO",
-      "qty": 35,
-      "price": 57.40999984741211,
-      "pnl": 58.19999390942387,
-      "note": "Take Profit"
-    },
-    {
-      "ts": "2026-01-08 19:31:30",
-      "action": "BUY",
-      "symbol": "AMD",
-      "qty": 9,
-      "price": 204.3656005859375,
-      "pnl": -1.0,
-      "note": "Mode:DAILY, Dip:2%"
-    },
-    {
-      "ts": "2026-01-08 19:00:11",
-      "action": "SELL",
-      "symbol": "MDLZ",
-      "qty": 38,
-      "price": 53.25,
-      "pnl": 59.55999959999994,
       "note": "Take Profit"
     }
   ]

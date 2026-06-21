@@ -257,7 +257,7 @@ class EnhancedDipBuyStrategy(Strategy):
                     indicators["bb_pct_b"] = bb_pct
 
                     # Price near or below lower band = oversold
-                    if bb_pct < 0.2:
+                    if bb_pct < 0.3:
                         score += 1.0 * 2
                     elif bb_pct < 0.4:
                         score += 0.5 * 2

@@ -1,5 +1,5 @@
 {
-  "ts": "2026-06-06T19:12:03",
+  "ts": "2026-06-21T17:39:33",
   "name": "EnhancedDipBuyStrategy",
   "mode": "paper",
   "paused": false,
@@ -7,15 +7,15 @@
   "daily_realized_pnl": 0.0,
   "daily_trades_count": 0,
   "daily_loss_limit_pct": 3.0,
-  "last_buy_cycle": "2026-06-05-15",
-  "last_sell_cycle": "2026-06-05-15-55",
+  "last_buy_cycle": "2026-06-18-15",
+  "last_sell_cycle": "2026-06-18-15-55",
   "cooldowns": [],
   "params": {
-    "buy_drop": 0.02,
-    "sell_gain": 0.03,
-    "stop_loss": 0.07,
-    "rsi_limit": 30.0,
-    "trailing_stop_pct": 0.02,
+    "buy_drop": 0.025,
+    "sell_gain": 0.05,
+    "stop_loss": 0.1,
+    "rsi_limit": 28.0,
+    "trailing_stop_pct": 0.03,
     "time_stop_bars": 240,
     "dip_mode": "DAILY"
   }

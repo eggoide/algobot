@@ -1,12 +1,18 @@
 import datetime
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
 from collections import deque
 from io import StringIO
 from typing import Any, Dict, List, Tuple, Optional
+
+# Cap blocking socket ops (yfinance/requests) so a hung Yahoo endpoint can't
+# freeze the main loop past the heartbeat threshold. ib_insync uses asyncio
+# non-blocking sockets and is unaffected.
+socket.setdefaulttimeout(10)
 
 import numpy as np
 import pandas as pd
