@@ -78,6 +78,7 @@ services:
     volumes:
       - ./volumes/reports:/usr/share/nginx/html:ro
       - ./docker/dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/dashboard/.htpasswd:/etc/nginx/.htpasswd:ro
     ports:
       - "8080:80"
     depends_on:

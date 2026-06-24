@@ -1,5 +1,6 @@
 # secrets
 .env
+docker/dashboard/.htpasswd
 
 # runtime data
 volumes/data/*

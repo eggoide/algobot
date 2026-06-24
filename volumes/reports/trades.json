@@ -1,6 +1,24 @@
 {
-  "ts": "2026-06-21T17:39:33",
+  "ts": "2026-06-23T21:55:07",
   "items": [
+    {
+      "ts": "2026-06-22T17:31:39",
+      "action": "BUY",
+      "symbol": "ACN",
+      "qty": 16,
+      "price": 122.36,
+      "pnl": -1.000048,
+      "note": "Enhanced: Enhanced RSI=7.8 drop=-5.18% score=0.83"
+    },
+    {
+      "ts": "2026-06-22T17:15:07",
+      "action": "SELL",
+      "symbol": "ACN",
+      "qty": 14,
+      "price": 120.41,
+      "pnl": -190.4774977000002,
+      "note": "Stop Loss"
+    },
     {
       "ts": "2026-06-18T16:31:39",
       "action": "BUY",
@@ -432,24 +450,6 @@
       "price": 93.4800033569336,
       "pnl": -1.0,
       "note": "Enhanced: Enhanced RSI=28.0 drop=-2.00% score=0.60"
-    },
-    {
-      "ts": "2026-05-07T16:31:24",
-      "action": "BUY",
-      "symbol": "CVX",
-      "qty": 11,
-      "price": 179.8350067138672,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=23.6 drop=-2.86% score=0.38"
-    },
-    {
-      "ts": "2026-05-07T15:45:03",
-      "action": "SELL",
-      "symbol": "PLTR",
-      "qty": 15,
-      "price": 137.91000366210938,
-      "pnl": 71.20001018164069,
-      "note": "Take Profit"
     }
   ]
 }

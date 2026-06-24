@@ -83,7 +83,8 @@ algobot/
 ├── docker/
 │   ├── bot/Dockerfile
 │   ├── web/Dockerfile          # Flask container (gunicorn)
-│   ├── dashboard/nginx.conf    # Reverse proxy /backtest/* + /v2/api/* → web:8081
+│   ├── dashboard/nginx.conf    # Reverse proxy /backtest/* + /v2/api/* → web:8081; Basic Auth
+│   ├── dashboard/.htpasswd    # Hesla (NECOMMITOVAT — v .gitignore)
 │   └── heartbeat/heartbeat.sh  # Watchdog: hlídá mtime status.json + Telegram alert
 │
 ├── volumes/                    # Runtime data (NEcommitovat)
@@ -206,6 +207,39 @@ docker compose build bot && docker compose up -d
 - URL: `http://<server-ip>:8080`
 - Auto-refresh každých 60s (trh otevřený) / 600s (zavřený)
 - Live status a logy přes AJAX polling
+- **Přístup chráněn HTTP Basic Auth** (vyžadováno při přístupu z internetu)
+
+### Přihlášení — nastavení hesla
+
+Dashboard je chráněn nginx Basic Auth. Heslo není součástí repozitáře — soubor `.htpasswd` musíš vytvořit ručně na každém stroji, kde projekt běží.
+
+**Vytvoření `.htpasswd` souboru:**
+
+```bash
+# Varianta A — pomocí nástroje htpasswd (balík apache2-utils / httpd-tools)
+sudo apt install apache2-utils   # Debian/Ubuntu
+htpasswd -c docker/dashboard/.htpasswd tvoje_jmeno
+
+# Varianta B — bez instalace, čistě přes openssl
+echo "tvoje_jmeno:$(openssl passwd -apr1 'tvojeHeslo')" > docker/dashboard/.htpasswd
+```
+
+Soubor `docker/dashboard/.htpasswd` je v `.gitignore` — nikdy ho necommituj.
+
+**Přidání / změna hesla** (pro dalšího uživatele nebo reset bez přepsání souboru):
+
+```bash
+# Přidat dalšího uživatele (bez -c, který by přepsal soubor)
+htpasswd docker/dashboard/.htpasswd druhy_uzivatel
+```
+
+**Aplikování změn** — po vytvoření nebo úpravě `.htpasswd` musí být dashboard container recreatován (restart nestačí, pokud ještě soubor nebyl namountován):
+
+```bash
+docker compose up -d --force-recreate dashboard
+```
+
+> **Bezpečnostní poznámka:** Basic Auth bez HTTPS posílá heslo v Base64 (nešifrovaně). Na IP adrese bez HTTPS doporučuji doplnit firewall pravidlo povolující přístup jen z tvé IP. Pro nasazení s doménou přidej Let's Encrypt certifikát do nginx — `auth_basic` direktivy zůstanou beze změny.
 
 ### `/backtest` — webový backtester
 
