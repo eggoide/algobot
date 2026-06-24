@@ -482,9 +482,223 @@ Validace: replay z live `algobot.db` (Dec 2025 → May 2026, 26 symbolů) vráti
 
 ---
 
+## Migrace na cloud server (live trading)
+
+Tento návod pokrývá kompletní přesun projektu na čistý cloud VM s dashboardem na portu 80 a připojením na reálný IB účet.
+
+### 1. Požadavky na VM
+
+- OS: Ubuntu 22.04 LTS nebo Debian 12 (doporučeno)
+- RAM: min. **2 GB** (IB Gateway potřebuje ~1 GB sám)
+- CPU: 1–2 vCPU stačí
+- Disk: 10 GB
+- Otevřené porty (firewall):
+
+| Port | Přístup | Účel |
+|------|---------|------|
+| 22 | jen tvoje IP | SSH |
+| 80 | jen tvoje IP | Dashboard |
+| 5900 | **ZAVŘÍT** | VNC — přistupovat jen přes SSH tunel |
+| 4001, 4002 | **ZAVŘÍT** | IB Gateway — jen interní Docker síť |
+
+> **Důležité:** IB Gateway ani VNC nesmí být přístupné z internetu. Porty 4001/4002 nejsou v compose.yml vůbec nutné exponovat — jsou jen pro případ přímého přístupu z hostitele. VNC používej výhradně přes SSH tunel (viz níže).
+
+---
+
+### 2. Instalace Dockeru na VM
+
+```bash
+# Přihlášení na VM
+ssh user@<server-ip>
+
+# Instalace Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+newgrp docker   # nebo odhlásit/přihlásit
+
+# Ověření
+docker compose version
+```
+
+---
+
+### 3. Přenos projektu na server
+
+**Varianta A — git (doporučeno):**
+
+```bash
+git clone https://github.com/eggoide/algobot.git
+cd algobot
+```
+
+**Varianta B — rsync z lokálního stroje:**
+
+```bash
+# Spustit LOKÁLNĚ
+rsync -avz --exclude='.env' --exclude='volumes/data/' --exclude='__pycache__' \
+  ~/algobot/ user@<server-ip>:~/algobot/
+```
+
+---
+
+### 4. Konfigurace pro live trading
+
+#### 4a. Upravit `compose.yml`
+
+Dvě změny oproti paper výchozímu stavu:
+
+```yaml
+# Bot service — změnit IB_PORT z 4002 na 4001
+bot:
+  environment:
+    IB_PORT: "4001"    # ← bylo "4002" (paper), live port je 4001
+
+# Dashboard service — změnit port z 8080 na 80
+dashboard:
+  ports:
+    - "80:80"          # ← bylo "8080:80"
+```
+
+#### 4b. Vytvořit `.env`
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Vyplnit:
+
+```env
+TWS_USERID=U1234567        # tvoje live IB číslo účtu (U..., ne DU...)
+TWS_PASSWORD=tvojeHeslo    # IB heslo
+VNC_SERVER_PASSWORD=neco   # libovolné heslo pro VNC (interní)
+TRADING_MODE=live          # ← klíčová změna; paper → live
+
+TG_TOKEN=                  # Telegram bot token (volitelné)
+TG_CHAT_ID=                # Telegram chat ID (volitelné)
+```
+
+> **Bezpečnostní guard:** Bot obsahuje kontrolu `verify_account_mode()` — při každém připojení ověří, že prefix IB účtu odpovídá `TRADING_MODE`. Pokud nastavíš `TRADING_MODE=live` a připojíš se na paper účet (DU...), bot se okamžitě ukončí s chybou. Chrání před nechtěným live obchodem na paper účtu i naopak.
+
+#### 4c. Vytvořit `.htpasswd`
+
+```bash
+# Bez potřeby instalace dalšího nástroje
+echo "admin:$(openssl passwd -apr1 'tvojeHeslo')" > docker/dashboard/.htpasswd
+```
+
+#### 4d. Připravit volume adresáře
+
+```bash
+mkdir -p volumes/data volumes/reports
+```
+
+---
+
+### 5. Spuštění
+
+```bash
+# Build
+docker compose build
+
+# Start všech služeb
+docker compose up -d
+
+# Ověření že vše běží
+docker compose ps
+```
+
+Očekávaný výstup `docker compose ps` (všechny služby `running`):
+
+```
+NAME                 STATUS
+ib-gateway           running
+algobot              running
+algobot-web          running
+algobot-dashboard    running
+algobot-heartbeat    running
+```
+
+---
+
+### 6. První přihlášení do IB Gateway přes VNC
+
+IB Gateway vyžaduje manuální přihlášení při prvním spuštění (zadání 2FA kódu z IB Key / SMS). Přístup přes SSH tunel:
+
+```bash
+# Spustit LOKÁLNĚ — tunel port 5900 na tvůj notebook
+ssh -L 5900:localhost:5900 user@<server-ip> -N
+```
+
+Pak otevřít libovolný VNC klient na `localhost:5900` (heslo = `VNC_SERVER_PASSWORD` z `.env`).
+
+V IB Gateway GUI:
+1. Přihlásit se s live IB credentials
+2. Potvrdit 2FA (IB Key / SMS)
+3. Přijmout případný disclaimer pro paper/live trading
+4. Okno nechat otevřené — IB Gateway běží na pozadí
+
+Po úspěšném přihlášení se bot automaticky připojí (sleduj logy: `docker compose logs -f bot`).
+
+---
+
+### 7. Firewall (UFW)
+
+```bash
+sudo ufw allow 22/tcp      # SSH — VŽDY jako první!
+sudo ufw allow from <tvoje-ip> to any port 80   # Dashboard jen pro tebe
+sudo ufw enable
+
+# Ověření
+sudo ufw status
+```
+
+Pokud tvoje IP není statická, alternativa: VPN nebo `sudo ufw allow 80/tcp` (pak spoléháš jen na Basic Auth heslo).
+
+---
+
+### 8. Ověření funkčnosti
+
+```bash
+# Logy bota — hledej "Připojen k IB", "account: U...", "TRADING_MODE=live OK"
+docker compose logs -f bot
+
+# Dashboard
+curl -u admin:tvojeHeslo http://localhost/
+```
+
+Dashboard v prohlížeči: `http://<server-ip>/`
+
+---
+
+### 9. Automatický start po restartu VM
+
+Docker Compose služby mají `restart: always` — po restartu VM se spustí automaticky, **ale IB Gateway opět vyžaduje manuální 2FA přihlášení přes VNC**. IB Gateway v kontejneru si po restartu nepamatuje přihlašovací session — je nutné se znovu přihlásit.
+
+```bash
+# Restart VM → po spuštění ověřit stav
+docker compose ps
+
+# IB Gateway ještě není přihlášen → opakovat krok 6 (VNC)
+```
+
+---
+
+### Shrnutí změn oproti paper/lokálnímu nasazení
+
+| Co | Paper / lokálně | Cloud / live |
+|----|-----------------|--------------|
+| `TRADING_MODE` v `.env` | `paper` | `live` |
+| `IB_PORT` v `compose.yml` | `4002` | `4001` |
+| Dashboard port | `8080:80` | `80:80` |
+| IB účet prefix | `DU...` (paper) | `U...` (live) |
+| VNC přístup | přímý `localhost:5900` | SSH tunel |
+
+---
+
 ## Upozornění
 
-Projekt je určen pro **paper trading / experimenty**.
+Projekt je určen primárně pro **paper trading / experimenty**.
 Použití na live účtu je **na vlastní riziko**.
 
 ---
