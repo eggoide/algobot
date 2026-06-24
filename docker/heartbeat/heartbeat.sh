@@ -18,6 +18,7 @@ WIN_END="${HEARTBEAT_WINDOW_END_MIN:-965}"
 apk add --no-cache curl tzdata >/dev/null 2>&1 || true
 
 last_alert=0
+was_stale=0
 
 send_tg() {
   if [ -z "${TG_TOKEN:-}" ] || [ -z "${TG_CHAT_ID:-}" ]; then
@@ -65,6 +66,12 @@ while true; do
       send_tg "$msg"
       last_alert=$now
     fi
+    was_stale=1
+  elif [ "$was_stale" -eq 1 ]; then
+    msg="OK: AlgoBot heartbeat — bot se zotavil, status.json je aktuální."
+    echo "[heartbeat] $msg"
+    send_tg "$msg"
+    was_stale=0
   fi
 
   sleep "$INTERVAL"

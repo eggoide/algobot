@@ -543,23 +543,7 @@ rsync -avz --exclude='.env' --exclude='volumes/data/' --exclude='__pycache__' \
 
 ### 4. Konfigurace pro live trading
 
-#### 4a. Upravit `compose.yml`
-
-Dvě změny oproti paper výchozímu stavu:
-
-```yaml
-# Bot service — změnit IB_PORT z 4002 na 4001
-bot:
-  environment:
-    IB_PORT: "4001"    # ← bylo "4002" (paper), live port je 4001
-
-# Dashboard service — změnit port z 8080 na 80
-dashboard:
-  ports:
-    - "80:80"          # ← bylo "8080:80"
-```
-
-#### 4b. Vytvořit `.env`
+#### 4a. Vytvořit `.env`
 
 ```bash
 cp .env.example .env
@@ -576,6 +560,9 @@ TRADING_MODE=live          # ← klíčová změna; paper → live
 
 TG_TOKEN=                  # Telegram bot token (volitelné)
 TG_CHAT_ID=                # Telegram chat ID (volitelné)
+
+IB_PORT=4001               # 4001 = live, 4002 = paper (výchozí)
+DASHBOARD_PORT=80          # 80 = cloud/live, 8080 = lokálně/paper (výchozí)
 ```
 
 > **Bezpečnostní guard:** Bot obsahuje kontrolu `verify_account_mode()` — při každém připojení ověří, že prefix IB účtu odpovídá `TRADING_MODE`. Pokud nastavíš `TRADING_MODE=live` a připojíš se na paper účet (DU...), bot se okamžitě ukončí s chybou. Chrání před nechtěným live obchodem na paper účtu i naopak.
@@ -734,13 +721,16 @@ docker compose ps
 
 ### Shrnutí změn oproti paper/lokálnímu nasazení
 
-| Co | Paper / lokálně | Cloud / live |
-|----|-----------------|--------------|
-| `TRADING_MODE` v `.env` | `paper` | `live` |
-| `IB_PORT` v `compose.yml` | `4002` | `4001` |
-| Dashboard port | `8080:80` | `80:80` |
-| IB účet prefix | `DU...` (paper) | `U...` (live) |
-| VNC přístup | přímý `localhost:5900` | SSH tunel |
+Všechny rozdíly jsou pouze v `.env` — `compose.yml` je identický na obou strojích.
+
+| Proměnná v `.env` | Paper / lokálně | Cloud / live |
+|-------------------|-----------------|--------------|
+| `TRADING_MODE` | `paper` | `live` |
+| `IB_PORT` | `4002` | `4001` |
+| `DASHBOARD_PORT` | `8080` | `80` |
+| IB účet prefix (TWS_USERID) | `DU...` | `U...` |
+
+VNC přístup: lokálně přímý `localhost:5900`, na cloudu přes SSH tunel (viz krok 7).
 
 ---
 

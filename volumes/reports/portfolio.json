@@ -1,12 +1,12 @@
 {
-  "ts": "2026-06-24T18:50:07",
+  "ts": "2026-06-24T20:25:09",
   "positions": [
     {
       "symbol": "ADBE",
       "qty": 9,
       "avgCost": 202.4611,
-      "marketPrice": 199.32,
-      "pnl_pct": -0.0155,
+      "marketPrice": 198.705,
+      "pnl_pct": -0.0186,
       "holding_bars": 26,
       "sparkline": [
         195.18,
@@ -26,9 +26,10 @@
         198.85,
         200.14,
         198.76,
-        198.84
+        197.66,
+        198.68
       ],
-      "stop_loss_progress": 15.5,
+      "stop_loss_progress": 18.6,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 10.8,
       "hwm": null
@@ -37,8 +38,8 @@
       "symbol": "NEE",
       "qty": 22,
       "avgCost": 88.7055,
-      "marketPrice": 86.63,
-      "pnl_pct": -0.0234,
+      "marketPrice": 87.09,
+      "pnl_pct": -0.0182,
       "holding_bars": 162,
       "sparkline": [
         87.28,
@@ -58,9 +59,10 @@
         86.59,
         87.03,
         86.8,
-        86.725
+        86.71,
+        87.09
       ],
-      "stop_loss_progress": 23.4,
+      "stop_loss_progress": 18.2,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 67.5,
       "hwm": null
@@ -69,8 +71,8 @@
       "symbol": "XOM",
       "qty": 14,
       "avgCost": 140.8214,
-      "marketPrice": 136.475,
-      "pnl_pct": -0.0309,
+      "marketPrice": 136.355,
+      "pnl_pct": -0.0317,
       "holding_bars": 39,
       "sparkline": [
         137.38,
@@ -90,9 +92,10 @@
         136.505,
         135.68,
         136.23,
-        136.465
+        136.065,
+        136.355
       ],
-      "stop_loss_progress": 30.9,
+      "stop_loss_progress": 31.7,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 16.2,
       "hwm": null
@@ -101,8 +104,8 @@
       "symbol": "WMT",
       "qty": 16,
       "avgCost": 121.0025,
-      "marketPrice": 119.36,
-      "pnl_pct": -0.0136,
+      "marketPrice": 119.435,
+      "pnl_pct": -0.013,
       "holding_bars": 143,
       "sparkline": [
         117.785,
@@ -122,9 +125,10 @@
         119.35,
         119.73,
         119.66,
-        119.295
+        119.215,
+        119.44
       ],
-      "stop_loss_progress": 13.6,
+      "stop_loss_progress": 13.0,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 59.6,
       "hwm": null
@@ -133,8 +137,8 @@
       "symbol": "ORCL",
       "qty": 12,
       "avgCost": 161.0033,
-      "marketPrice": 157.88,
-      "pnl_pct": -0.0194,
+      "marketPrice": 157.975,
+      "pnl_pct": -0.0188,
       "holding_bars": 0,
       "sparkline": [
         180.34,
@@ -154,9 +158,10 @@
         160.79,
         160.34,
         157.92,
-        157.513
+        155.59,
+        157.975
       ],
-      "stop_loss_progress": 19.4,
+      "stop_loss_progress": 18.8,
       "trailing_stop_progress": 0.0,
       "time_stop_progress": 0.0,
       "hwm": null

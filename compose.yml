@@ -33,7 +33,7 @@ services:
       - .env
     environment:
       IB_HOST: ib-gateway
-      IB_PORT: "4002"
+      IB_PORT: ${IB_PORT:-4002}
       CLIENT_ID: "2"
 
       DB_PATH: /data/algobot.db
@@ -80,7 +80,7 @@ services:
       - ./docker/dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docker/dashboard/.htpasswd:/etc/nginx/.htpasswd:ro
     ports:
-      - "8080:80"
+      - "${DASHBOARD_PORT:-8080}:80"
     depends_on:
       - bot
       - web
