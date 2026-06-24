@@ -252,8 +252,9 @@ def send_telegram_msg(message: str) -> None:
     if not TG_TOKEN or not TG_CHAT_ID:
         return
     try:
+        prefix = "🔴 LIVE" if TRADING_MODE == "live" else "🧪 PAPER"
         url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-        params = {"chat_id": TG_CHAT_ID, "text": message}
+        params = {"chat_id": TG_CHAT_ID, "text": f"[{prefix}] {message}"}
         _TG_SESSION.get(url, params=params, timeout=5)
     except Exception as e:
         log(f"TG CHYBA: {e}", "ERROR")

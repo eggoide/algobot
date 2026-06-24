@@ -1,15 +1,15 @@
 {
-  "ts_local": "2026-06-23T21:55:05",
-  "ts_ny": "2026-06-23T15:55:04-04:00",
+  "ts_local": "2026-06-24T18:50:06",
+  "ts_ny": "2026-06-24T12:50:05-04:00",
   "market_open": true,
   "ib_connected": true,
   "secs_to_open": 0,
-  "next_sell_ny": "2026-06-24T09:35:00-04:00",
-  "next_buy_ny": "2026-06-24T10:31:00-04:00",
-  "equity": 1022567.89,
-  "cash": 1011149.28,
+  "next_sell_ny": "2026-06-24T12:55:00-04:00",
+  "next_buy_ny": "2026-06-24T13:31:00-04:00",
+  "equity": 1022599.52,
+  "cash": 1011273.15,
   "positions_count": 5,
   "last_action": "PERIODIC_REFRESH_OPEN",
-  "last_error": "CRASH: Socket disconnect",
+  "last_error": "Equity je 0 nebo se nepodařilo načíst. Přeskakuji.",
   "version": "unknown"
 }

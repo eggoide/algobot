@@ -1,5 +1,5 @@
 {
-  "ts": "2026-06-23T21:55:07",
+  "ts": "2026-06-24T18:50:07",
   "base_capital": 10000.0,
   "max_drawdown_pct": 2.796,
   "points": [
@@ -499,6 +499,20 @@
       "cumulative_pnl": 740.03,
       "drawdown_pct": -2.796,
       "roi_pct": 7.4
+    },
+    {
+      "t": "2026-06-24T15:45:00",
+      "equity": 10837.18,
+      "cumulative_pnl": 837.18,
+      "drawdown_pct": -1.917,
+      "roi_pct": 8.372
+    },
+    {
+      "t": "2026-06-24T16:31:00",
+      "equity": 10836.18,
+      "cumulative_pnl": 836.18,
+      "drawdown_pct": -1.926,
+      "roi_pct": 8.362
     }
   ]
 }

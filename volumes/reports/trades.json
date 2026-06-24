@@ -1,6 +1,24 @@
 {
-  "ts": "2026-06-23T21:55:07",
+  "ts": "2026-06-24T18:50:07",
   "items": [
+    {
+      "ts": "2026-06-24T16:31:23",
+      "action": "BUY",
+      "symbol": "ORCL",
+      "qty": 12,
+      "price": 160.92,
+      "pnl": -1.000036,
+      "note": "Enhanced: Enhanced RSI=17.0 drop=-2.63% score=0.64"
+    },
+    {
+      "ts": "2026-06-24T15:45:06",
+      "action": "SELL",
+      "symbol": "ACN",
+      "qty": 16,
+      "price": 128.56,
+      "pnl": 97.15445900000005,
+      "note": "Take Profit"
+    },
     {
       "ts": "2026-06-22T17:31:39",
       "action": "BUY",
@@ -432,24 +450,6 @@
       "price": 114.71430206298828,
       "pnl": -65.61116699218746,
       "note": "Time Stop (120 bars)"
-    },
-    {
-      "ts": "2026-05-08T17:31:24",
-      "action": "BUY",
-      "symbol": "WFC",
-      "qty": 26,
-      "price": 76.69000244140625,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=20.6 drop=-3.12% score=0.42"
-    },
-    {
-      "ts": "2026-05-07T20:31:23",
-      "action": "BUY",
-      "symbol": "NEE",
-      "qty": 21,
-      "price": 93.4800033569336,
-      "pnl": -1.0,
-      "note": "Enhanced: Enhanced RSI=28.0 drop=-2.00% score=0.60"
     }
   ]
 }

@@ -593,9 +593,39 @@ echo "admin:$(openssl passwd -apr1 'tvojeHeslo')" > docker/dashboard/.htpasswd
 mkdir -p volumes/data volumes/reports
 ```
 
+#### 4e. Zkopírovat dashboard `index.html` ze starého serveru
+
+Soubor `volumes/reports/index.html` je gitignorovaný — při `git clone` se nepřenese. Je nutné ho zkopírovat ručně ze starého stroje:
+
+```bash
+# Spustit LOKÁLNĚ (ze starého serveru / Raspberry Pi)
+scp ~/algobot/volumes/reports/index.html user@<novy-server-ip>:~/algobot/volumes/reports/
+```
+
+Bez tohoto souboru nginx vrací 403 Forbidden i po správném přihlášení.
+
 ---
 
-### 5. Spuštění
+### 5. Přidat swap (pokud má VM méně než 2 GB RAM)
+
+IB Gateway (Java) potřebuje ~500 MB RAM sám. Na VMs s 1 GB RAM bez swapu dochází k vyhladovění paměti (load average 50+, 90 % iowait). Swap přidej hned po spuštění:
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Přežití po restartu
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Ověření
+free -h
+```
+
+---
+
+### 6. Spuštění
 
 ```bash
 # Build
@@ -621,7 +651,7 @@ algobot-heartbeat    running
 
 ---
 
-### 6. První přihlášení do IB Gateway přes VNC
+### 7. První přihlášení do IB Gateway přes VNC
 
 IB Gateway vyžaduje manuální přihlášení při prvním spuštění (zadání 2FA kódu z IB Key / SMS). Přístup přes SSH tunel:
 
@@ -640,9 +670,27 @@ V IB Gateway GUI:
 
 Po úspěšném přihlášení se bot automaticky připojí (sleduj logy: `docker compose logs -f bot`).
 
+### 7a. Nastavení Trusted IPs v IB Gateway (nutné pro API spojení)
+
+Toto je **nejčastější příčina selhání API spojení** po migraci. IB Gateway ve výchozím stavu odmítá API spojení z jiných IP než localhost — bot se pak připojí přes TCP, ale handshake tiše vyprší (`TimeoutError`).
+
+Zjisti Docker síť bota:
+
+```bash
+docker network inspect algobot_default | grep Subnet
+# Např. 172.19.0.0/16
+```
+
+V IB Gateway GUI (`Configure → Settings → API → Settings`):
+- ☑ **Enable ActiveX and Socket Clients** — musí být zaškrtnuto
+- ☐ **Allow connections from localhost only** — musí být ODŠKRTNUTO
+- **Trusted IPs** — přidej celý Docker subnet, např. `172.19.0.0/16`
+
+> **Pozn.:** Konkrétní subnet závisí na stroji. Při každé migraci na nový server zkontroluj aktuální subnet přes `docker network inspect`.
+
 ---
 
-### 7. Firewall (UFW)
+### 8. Firewall (UFW)
 
 ```bash
 sudo ufw allow 22/tcp      # SSH — VŽDY jako první!
@@ -657,7 +705,7 @@ Pokud tvoje IP není statická, alternativa: VPN nebo `sudo ufw allow 80/tcp` (p
 
 ---
 
-### 8. Ověření funkčnosti
+### 9. Ověření funkčnosti
 
 ```bash
 # Logy bota — hledej "Připojen k IB", "account: U...", "TRADING_MODE=live OK"
@@ -671,7 +719,7 @@ Dashboard v prohlížeči: `http://<server-ip>/`
 
 ---
 
-### 9. Automatický start po restartu VM
+### 10. Automatický start po restartu VM
 
 Docker Compose služby mají `restart: always` — po restartu VM se spustí automaticky, **ale IB Gateway opět vyžaduje manuální 2FA přihlášení přes VNC**. IB Gateway v kontejneru si po restartu nepamatuje přihlašovací session — je nutné se znovu přihlásit.
 
