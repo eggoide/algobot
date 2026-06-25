@@ -582,16 +582,23 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 mkdir -p volumes/data volumes/reports
 ```
 
-#### 4e. Zkopírovat dashboard `index.html` ze starého serveru
+#### 4e. Zkopírovat dashboard assety ze starého serveru
 
-Soubor `volumes/reports/index.html` je gitignorovaný — při `git clone` se nepřenese. Je nutné ho zkopírovat ručně ze starého stroje:
+Soubory v `volumes/reports/` jsou gitignorované — při `git clone` se nepřenesou. Z hostujícího stroje (kde už projekt běží) zkopíruj tři soubory: HTML dashboard, jeho JS, a favicon. Bot je nepřegeneruje — `index.html` jen jednou při startu (a jen pokud chybí), `app.js` ani favicon nikdy.
 
 ```bash
 # Spustit LOKÁLNĚ (ze starého serveru / Raspberry Pi)
-scp ~/algobot/volumes/reports/index.html user@<novy-server-ip>:~/algobot/volumes/reports/
+scp \
+  ~/algobot/volumes/reports/index.html \
+  ~/algobot/volumes/reports/app.js \
+  ~/algobot/volumes/reports/candlestick-chart.png \
+  user@<novy-server-ip>:~/algobot/volumes/reports/
 ```
 
-Bez tohoto souboru nginx vrací 404 i po správném přihlášení (login projde, ale není co servírovat).
+Co se stane bez kterého souboru:
+- Bez `index.html` — nginx vrací 404 i po přihlášení (login projde, ale není co servírovat).
+- Bez `app.js` — dashboard se otevře, ale všechna pole (čas, equity, strategy, sparkliny) zůstanou prázdná.
+- Bez `candlestick-chart.png` — chybí jen favicon v záložce browseru, jinak funguje vše.
 
 ---
 
