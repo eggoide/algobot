@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgoBot · Přihlášení</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:ital,wght@0,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1016;
+  --bg-soft: #11151c;
+  --panel: rgba(255, 255, 255, 0.03);
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
+  --ink: #f1f4f9;
+  --ink-soft: #c7cdd8;
+  --ink-mute: #7b8493;
+  --ink-quiet: #525a68;
+  --accent: #7aa8ff;
+  --accent-soft: rgba(122, 168, 255, 0.12);
+  --loss: #f87171;
+  --loss-soft: rgba(248, 113, 113, 0.10);
+  --aurora: radial-gradient(1200px 600px at 80% -10%, rgba(122, 168, 255, 0.08), transparent 60%),
+            radial-gradient(900px 500px at -10% 30%, rgba(74, 222, 128, 0.05), transparent 60%);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  background-image: var(--aurora);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 36px 32px 28px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+.brand .mark {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-variation-settings: "opsz" 96, "wdth" 100, "wght" 600;
+  font-size: 1.65rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.brand .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-quiet);
+  padding-bottom: 2px;
+}
+
+h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-variation-settings: "opsz" 96, "wdth" 100, "wght" 500;
+  font-size: 1.4rem;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.sub {
+  color: var(--ink-mute);
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-quiet);
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 11px 13px;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+button {
+  width: 100%;
+  margin-top: 8px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.05s;
+}
+button:hover { background: rgba(122, 168, 255, 0.22); }
+button:active { transform: translateY(1px); }
+
+.error {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--loss-soft);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 8px;
+  color: var(--loss);
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.foot {
+  margin-top: 22px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-quiet);
+}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <span class="mark">AlgoBot</span>
+      <span class="tag">Terminal</span>
+    </div>
+    <h1>Přihlášení</h1>
+    <div class="sub">Pokračuj do trading dashboardu.</div>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    <form method="post" action="/auth/login">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <div class="field">
+        <label for="username">Jméno</label>
+        <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+      </div>
+      <div class="field">
+        <label for="password">Heslo</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit">Přihlásit</button>
+    </form>
+
+    <div class="foot">Paper trading · S&amp;P 100</div>
+  </div>
+</body>
+</html>

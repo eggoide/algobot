@@ -20,9 +20,14 @@ from __future__ import annotations
 import os
 import sys
 import json
+import secrets
+from datetime import timedelta
 from typing import Any, Dict
 
-from flask import Flask, jsonify, request, render_template, abort, url_for
+from flask import (
+    Flask, jsonify, request, render_template, abort, url_for,
+    session, redirect, make_response,
+)
 
 # /app is mounted by compose
 sys.path.insert(0, "/app")
@@ -37,6 +42,22 @@ app = Flask(
     template_folder="templates",
     static_folder="static",
 )
+
+# ─────────────────────────────────────────────────────────
+# Session / auth config
+# ─────────────────────────────────────────────────────────
+# FLASK_SECRET_KEY should be set in .env for a stable signing key across restarts.
+# Fallback to a random key (logs everyone out on each container restart).
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+app.config.update(
+    SESSION_COOKIE_NAME="algobot_session",
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+)
+
+DASHBOARD_USER = os.environ.get("DASHBOARD_USER", "eggoide")
+DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "")
 
 # All routes are also exposed under /backtest prefix (nginx proxies that path through)
 # We use Blueprint for cleanliness.
@@ -220,6 +241,50 @@ def v2_control():
     cur["updated_by"] = "dashboard_v2"
     _write_control(cur)
     return jsonify({"ok": True, "control": cur})
+
+
+# ─────────────────────────────────────────────────────────
+# Auth: form-based login / logout / session check
+# Mounted at /auth/* via nginx reverse proxy. nginx uses
+# /auth/check as an internal auth_request subrequest.
+# ─────────────────────────────────────────────────────────
+
+@app.route("/auth/check")
+def auth_check():
+    if session.get("user"):
+        return ("", 204)
+    return ("", 401)
+
+
+@app.route("/auth/login", methods=["GET", "POST"])
+def auth_login():
+    next_url = request.values.get("next") or "/"
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
+
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password") or ""
+        if (
+            DASHBOARD_PASSWORD
+            and secrets.compare_digest(username, DASHBOARD_USER)
+            and secrets.compare_digest(password, DASHBOARD_PASSWORD)
+        ):
+            session.clear()
+            session["user"] = username
+            session.permanent = True
+            return redirect(next_url)
+        return render_template("login.html", error="Neplatné jméno nebo heslo.", next_url=next_url), 401
+
+    if session.get("user"):
+        return redirect(next_url)
+    return render_template("login.html", error=None, next_url=next_url)
+
+
+@app.route("/auth/logout", methods=["GET", "POST"])
+def auth_logout():
+    session.clear()
+    return redirect("/auth/login")
 
 
 if __name__ == "__main__":
