@@ -58,6 +58,7 @@ app.config.update(
 
 DASHBOARD_USER = os.environ.get("DASHBOARD_USER", "eggoide")
 DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "")
+TRADING_MODE = os.environ.get("TRADING_MODE", "paper").lower()
 
 # All routes are also exposed under /backtest prefix (nginx proxies that path through)
 # We use Blueprint for cleanliness.
@@ -274,11 +275,11 @@ def auth_login():
             session["user"] = username
             session.permanent = True
             return redirect(next_url)
-        return render_template("login.html", error="Neplatné jméno nebo heslo.", next_url=next_url), 401
+        return render_template("login.html", error="Neplatné jméno nebo heslo.", next_url=next_url, trading_mode=TRADING_MODE), 401
 
     if session.get("user"):
         return redirect(next_url)
-    return render_template("login.html", error=None, next_url=next_url)
+    return render_template("login.html", error=None, next_url=next_url, trading_mode=TRADING_MODE)
 
 
 @app.route("/auth/logout", methods=["GET", "POST"])

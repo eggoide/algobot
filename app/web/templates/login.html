@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Hanken+Grotesk:ital,wght@0,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/candlestick-chart.png">
 <style>
 :root {
   --bg: #0d1016;
@@ -182,7 +183,7 @@ button:active { transform: translateY(1px); }
       <button type="submit">Přihlásit</button>
     </form>
 
-    <div class="foot">Paper trading · S&amp;P 100</div>
+    <div class="foot">{% if trading_mode == 'live' %}Live trading{% else %}Paper trading{% endif %} · S&amp;P 100</div>
   </div>
 </body>
 </html>
