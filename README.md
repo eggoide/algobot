@@ -83,8 +83,7 @@ algobot/
 ├── docker/
 │   ├── bot/Dockerfile
 │   ├── web/Dockerfile          # Flask container (gunicorn)
-│   ├── dashboard/nginx.conf    # Reverse proxy /backtest/* + /v2/api/* → web:8081; Basic Auth
-│   ├── dashboard/.htpasswd    # Hesla (NECOMMITOVAT — v .gitignore)
+│   ├── dashboard/nginx.conf    # Reverse proxy /backtest/* + /v2/api/* → web:8081; auth_request → Flask
 │   └── heartbeat/heartbeat.sh  # Watchdog: hlídá mtime status.json + Telegram alert
 │
 ├── volumes/                    # Runtime data (NEcommitovat)
@@ -207,39 +206,37 @@ docker compose build bot && docker compose up -d
 - URL: `http://<server-ip>:8080`
 - Auto-refresh každých 60s (trh otevřený) / 600s (zavřený)
 - Live status a logy přes AJAX polling
-- **Přístup chráněn HTTP Basic Auth** (vyžadováno při přístupu z internetu)
+- **Přístup chráněn přihlašovací stránkou** (formulář + podepsaný session cookie)
 
 ### Přihlášení — nastavení hesla
 
-Dashboard je chráněn nginx Basic Auth. Heslo není součástí repozitáře — soubor `.htpasswd` musíš vytvořit ručně na každém stroji, kde projekt běží.
+Dashboard chrání formulářové přihlášení servírované Flaskem; nginx vynucuje session přes `auth_request` a neautentizované requesty redirectne na `/auth/login`. Heslo není součástí repozitáře — nastavuje se v `.env` jako env vars předané `web` kontejneru.
 
-**Vytvoření `.htpasswd` souboru:**
+**Konfigurace v `.env`:**
 
-```bash
-# Varianta A — pomocí nástroje htpasswd (balík apache2-utils / httpd-tools)
-sudo apt install apache2-utils   # Debian/Ubuntu
-htpasswd -c docker/dashboard/.htpasswd tvoje_jmeno
-
-# Varianta B — bez instalace, čistě přes openssl
-echo "tvoje_jmeno:$(openssl passwd -apr1 'tvojeHeslo')" > docker/dashboard/.htpasswd
+```env
+DASHBOARD_USER=tvoje_jmeno
+DASHBOARD_PASSWORD=tvojeHeslo
+FLASK_SECRET_KEY=neco-dlouhe-a-nahodne     # podepisuje session cookie
 ```
 
-Soubor `docker/dashboard/.htpasswd` je v `.gitignore` — nikdy ho necommituj.
-
-**Přidání / změna hesla** (pro dalšího uživatele nebo reset bez přepsání souboru):
+`FLASK_SECRET_KEY` vygeneruj jednorázově a uchovej — bez něj se na každém restartu kontejneru `web` vygeneruje nový a všichni uživatelé se odhlásí:
 
 ```bash
-# Přidat dalšího uživatele (bez -c, který by přepsal soubor)
-htpasswd docker/dashboard/.htpasswd druhy_uzivatel
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-**Aplikování změn** — po vytvoření nebo úpravě `.htpasswd` musí být dashboard container recreatován (restart nestačí, pokud ještě soubor nebyl namountován):
+**Aplikování změn** — po úpravě `.env` stačí restart `web` (změnou nginx.conf restartuj i `dashboard`):
 
 ```bash
-docker compose up -d --force-recreate dashboard
+docker compose up -d web
+# nebo když měníš i nginx.conf:
+docker compose restart web dashboard
 ```
 
-> **Bezpečnostní poznámka:** Basic Auth bez HTTPS posílá heslo v Base64 (nešifrovaně). Na IP adrese bez HTTPS doporučuji doplnit firewall pravidlo povolující přístup jen z tvé IP. Pro nasazení s doménou přidej Let's Encrypt certifikát do nginx — `auth_basic` direktivy zůstanou beze změny.
+**Změna hesla** — uprav `DASHBOARD_PASSWORD` v `.env` a `docker compose up -d web`. Aktivní sessions zůstanou platné (cookie nese jen jméno, ne heslo); pro vynucení odhlášení všech buď změň `FLASK_SECRET_KEY`, nebo nech uživatele jít na `/auth/logout`.
+
+> **Bezpečnostní poznámka:** Bez HTTPS posílá formulář heslo nešifrovaně. Na IP adrese bez HTTPS doporučuji doplnit firewall pravidlo povolující přístup jen z tvé IP. Pro nasazení s doménou přidej Let's Encrypt certifikát do nginx — `auth_request` setup zůstane beze změny.
 
 ### `/backtest` — webový backtester
 
@@ -563,15 +560,20 @@ TG_CHAT_ID=                # Telegram chat ID (volitelné)
 
 IB_PORT=4001               # 4001 = live, 4002 = paper (výchozí)
 DASHBOARD_PORT=80          # 80 = cloud/live, 8080 = lokálně/paper (výchozí)
+
+DASHBOARD_USER=admin           # přihlašovací jméno do dashboardu
+DASHBOARD_PASSWORD=tvojeHeslo  # přihlašovací heslo do dashboardu
+FLASK_SECRET_KEY=              # `python3 -c "import secrets; print(secrets.token_hex(32))"`
 ```
 
 > **Bezpečnostní guard:** Bot obsahuje kontrolu `verify_account_mode()` — při každém připojení ověří, že prefix IB účtu odpovídá `TRADING_MODE`. Pokud nastavíš `TRADING_MODE=live` a připojíš se na paper účet (DU...), bot se okamžitě ukončí s chybou. Chrání před nechtěným live obchodem na paper účtu i naopak.
 
-#### 4c. Vytvořit `.htpasswd`
+#### 4c. Nastavit přihlašovací údaje do dashboardu
+
+Vlož do `.env` (viz výše) `DASHBOARD_USER`, `DASHBOARD_PASSWORD` a `FLASK_SECRET_KEY`. Klíč vygeneruj:
 
 ```bash
-# Bez potřeby instalace dalšího nástroje
-echo "admin:$(openssl passwd -apr1 'tvojeHeslo')" > docker/dashboard/.htpasswd
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 #### 4d. Připravit volume adresáře
@@ -589,7 +591,7 @@ Soubor `volumes/reports/index.html` je gitignorovaný — při `git clone` se ne
 scp ~/algobot/volumes/reports/index.html user@<novy-server-ip>:~/algobot/volumes/reports/
 ```
 
-Bez tohoto souboru nginx vrací 403 Forbidden i po správném přihlášení.
+Bez tohoto souboru nginx vrací 404 i po správném přihlášení (login projde, ale není co servírovat).
 
 ---
 
@@ -688,7 +690,7 @@ sudo ufw enable
 sudo ufw status
 ```
 
-Pokud tvoje IP není statická, alternativa: VPN nebo `sudo ufw allow 80/tcp` (pak spoléháš jen na Basic Auth heslo).
+Pokud tvoje IP není statická, alternativa: VPN nebo `sudo ufw allow 80/tcp` (pak spoléháš jen na heslo v login formuláři).
 
 ---
 
@@ -698,8 +700,8 @@ Pokud tvoje IP není statická, alternativa: VPN nebo `sudo ufw allow 80/tcp` (p
 # Logy bota — hledej "Připojen k IB", "account: U...", "TRADING_MODE=live OK"
 docker compose logs -f bot
 
-# Dashboard
-curl -u admin:tvojeHeslo http://localhost/
+# Dashboard — měl by redirectovat na login formulář
+curl -i http://localhost/    # očekávej 302 Location: /auth/login
 ```
 
 Dashboard v prohlížeči: `http://<server-ip>/`
