@@ -586,6 +586,10 @@ def write_candidates_json(candidates: List[Dict[str, Any]]) -> None:
             "is_buy_signal": bool(c.get("is_buy_signal")),
             "sma_ok": bool(c.get("sma_ok", True)),
         })
+
+    enriched.sort(key=lambda x: (x["is_buy_signal"], x["score"]), reverse=True)
+    enriched = enriched[:CANDIDATES_LIMIT]
+
     payload = {
         "ts": datetime.datetime.now().isoformat(timespec="seconds"),
         "items": enriched,
