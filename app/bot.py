@@ -777,7 +777,8 @@ def write_strategy_state_json(conn) -> None:
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     try:
         row = conn.execute(
-            "SELECT COALESCE(SUM(pnl), 0) AS s, COUNT(*) AS c "
+            "SELECT COALESCE(SUM(CASE WHEN action='SELL' THEN pnl ELSE 0 END), 0) AS s, "
+            "COUNT(*) AS c "
             "FROM trades WHERE ts LIKE ?",
             (today + "%",)
         ).fetchone()
@@ -1477,7 +1478,7 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
         if status == 'Filled' and filled_qty > 0 and fill_price > 0:
             log(f"TRADE BUY {ib_sym} qty={filled_qty} price={fill_price:.2f} fee=${fee_used:.2f} note={note_text} [FILLED]")
             log_trade(
-                conn, 'BUY', ib_sym, fill_price, filled_qty, -float(fee_used), note_text,
+                conn, 'BUY', ib_sym, fill_price, filled_qty, 0.0, note_text,
                 ib_order_id=ib_order_id, requested_price=float(top.price),
                 commission=float(fee_used), status=status,
             )
@@ -1487,7 +1488,7 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             # Partial fill: ulož to, co IB skutečně naplnilo
             log(f"TRADE BUY {ib_sym} PARTIAL qty={filled_qty}/{qty} price={fill_price:.2f} status={status} note={note_text}", "WARNING")
             log_trade(
-                conn, 'BUY', ib_sym, fill_price, filled_qty, -float(fee_used), f"PARTIAL {note_text}",
+                conn, 'BUY', ib_sym, fill_price, filled_qty, 0.0, f"PARTIAL {note_text}",
                 ib_order_id=ib_order_id, requested_price=float(top.price),
                 commission=float(fee_used), status=status or "PartiallyFilled",
             )
