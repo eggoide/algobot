@@ -597,6 +597,137 @@ def write_candidates_json(candidates: List[Dict[str, Any]]) -> None:
     _atomic_write_json(CANDIDATES_JSON, payload)
 
 
+# --- Equity base (chart Y-axis origin) ------------------------------------
+# Cached in-process so write_equity_curve_json doesn't re-derive each tick.
+# Persisted in STATE_FILE under key "equity_base" so restarts don't drift.
+_EQUITY_BASE: Optional[float] = None
+
+
+def _read_unrealized_pnl(ib: IB) -> float:
+    """Sum UnrealizedPnL across all account summary entries. 0.0 if unavailable."""
+    try:
+        ib.sleep(0.2)
+        total = 0.0
+        for v in ib.accountSummary():
+            if v.tag == "UnrealizedPnL":
+                try:
+                    total += float(v.value)
+                except Exception:
+                    pass
+        return total
+    except Exception as e:
+        log(f"equity_base unrealized read error: {e}", "WARNING")
+        return 0.0
+
+
+def init_equity_base(ib: IB, conn) -> None:
+    """Initialize equity_base once per process.
+
+    Two modes:
+      A) manual_capital_limit > 0  → fixed trading budget. Chart shows ROI relative
+         to this value (paper trading: account has $1M but budget is $10k → 8% on $800).
+         No IB query needed.
+      B) manual_capital_limit == 0 → trade with full account. Base = initial NetLiq
+         (NetLiquidation − cum_realized − unrealized), persisted so deposits/withdrawals
+         after start don't move the baseline.
+    """
+    global _EQUITY_BASE
+    if _EQUITY_BASE is not None:
+        return
+
+    if MANUAL_CAPITAL_LIMIT > 0:
+        _EQUITY_BASE = float(MANUAL_CAPITAL_LIMIT)
+        log(f"equity_base from manual_capital_limit: ${_EQUITY_BASE:,.2f}")
+        return
+
+    try:
+        st = load_state()
+        v = st.get("equity_base")
+        if v is not None and float(v) > 0:
+            _EQUITY_BASE = float(v)
+            log(f"equity_base loaded from state: ${_EQUITY_BASE:,.2f}")
+            return
+    except Exception as e:
+        log(f"equity_base load_state error: {e}", "WARNING")
+
+    try:
+        if not ib.isConnected():
+            log("equity_base init: IB not connected, deferring", "WARNING")
+            return
+        _, net_liq = read_account_summary(ib)
+        if net_liq <= 0:
+            log("equity_base init: NetLiquidation <= 0, fallback to 10000", "WARNING")
+            _EQUITY_BASE = 10000.0
+            return
+
+        try:
+            _, vals = cumulative_pnl_series(conn)
+            cum_realized = float(vals[-1]) if vals else 0.0
+        except Exception:
+            cum_realized = 0.0
+
+        unrealized = _read_unrealized_pnl(ib)
+
+        computed = net_liq - cum_realized - unrealized
+        if computed <= 0:
+            log(
+                f"equity_base computed <= 0 (NetLiq=${net_liq:,.2f}, "
+                f"realized=${cum_realized:,.2f}, unrealized=${unrealized:,.2f}); "
+                "fallback to 10000",
+                "WARNING",
+            )
+            _EQUITY_BASE = 10000.0
+            return
+
+        _EQUITY_BASE = round(computed, 2)
+
+        try:
+            st = load_state()
+            st["equity_base"] = _EQUITY_BASE
+            st["equity_base_initialized_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+            st["equity_base_source"] = {
+                "net_liquidation": round(net_liq, 2),
+                "cumulative_realized_pnl": round(cum_realized, 2),
+                "unrealized_pnl": round(unrealized, 2),
+            }
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                json.dump(st, f)
+        except Exception as e:
+            log(f"equity_base persist error: {e}", "WARNING")
+
+        log(
+            f"equity_base initialized from IB: ${_EQUITY_BASE:,.2f} "
+            f"(NetLiq=${net_liq:,.2f}, realized=${cum_realized:,.2f}, "
+            f"unrealized=${unrealized:,.2f})"
+        )
+    except Exception as e:
+        log(f"equity_base init from IB failed: {e}", "ERROR")
+        _EQUITY_BASE = 10000.0
+
+
+def get_equity_base() -> float:
+    """Return equity base.
+
+    Priority:
+      1) manual_capital_limit > 0 (fixed trading budget — always wins, ignores cache/state)
+      2) Cached in-process value (set by init_equity_base from IB)
+      3) Persisted value from STATE_FILE
+      4) Fallback 10000
+    """
+    if MANUAL_CAPITAL_LIMIT > 0:
+        return float(MANUAL_CAPITAL_LIMIT)
+    if _EQUITY_BASE is not None and _EQUITY_BASE > 0:
+        return _EQUITY_BASE
+    try:
+        st = load_state()
+        v = st.get("equity_base")
+        if v is not None and float(v) > 0:
+            return float(v)
+    except Exception:
+        pass
+    return 10000.0
+
+
 def write_equity_curve_json(conn) -> None:
     """Build equity curve + drawdown series from DB cumulative PnL."""
     try:
@@ -605,7 +736,7 @@ def write_equity_curve_json(conn) -> None:
         log(f"v2 equity read error: {e}", "WARNING")
         dates, vals = [], []
 
-    base = float(MANUAL_CAPITAL_LIMIT) if MANUAL_CAPITAL_LIMIT > 0 else 10000.0
+    base = get_equity_base()
     points = []
     peak_equity = base
     max_dd_pct = 0.0
@@ -973,6 +1104,7 @@ def refresh_dashboard(conn, ib: IB, last_action: Optional[str] = None) -> None:
             ib.connect(IB_IP, IB_PORT, clientId=CLIENT_ID, timeout=15)
             ib.reqMarketDataType(3)  # delayed
             verify_account_mode(ib)
+            init_equity_base(ib, conn)
         except Exception as e:
             write_status(
                 market_open=market_open,
@@ -1445,6 +1577,7 @@ def main_loop():
                         ib.reqMarketDataType(3)
                         log(f"IB připojeno (MarketDataType: 3-Delayed). NY={now_ny.strftime('%H:%M:%S')}")
                         verify_account_mode(ib)
+                        init_equity_base(ib, conn)
                         if alert_sent:
                             send_telegram_msg("IB Gateway připojena")
                             alert_sent = False
