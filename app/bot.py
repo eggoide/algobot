@@ -119,6 +119,11 @@ RSI_PERIOD = int(STRAT.get("rsi_period", 14))
 USE_SMA_FILTER = bool(STRAT.get("use_sma_filter", False))
 SMA_PERIOD = int(STRAT.get("sma_period", 200))
 
+USE_CORP_ACTION_FILTER = bool(STRAT.get("use_corp_action_filter", True))
+CORP_ACTION_LOOKBACK_DAYS = int(STRAT.get("corp_action_lookback_days", 5))
+CORP_ACTION_GAP_THRESHOLD = float(STRAT.get("corp_action_gap_threshold", -0.05))
+CORP_ACTION_DIV_PCT_THRESHOLD = float(STRAT.get("corp_action_dividend_pct_threshold", 0.02))
+
 NYC_TZ = pytz.timezone(str(RUNTIME.get("timezone", "US/Eastern")))
 SP100_CACHE_FILE = str(RUNTIME.get("sp100_cache_file", "sp100_tickers_cache.txt"))
 SP100_CACHE_MAX_AGE_HOURS = int(RUNTIME.get("sp100_cache_max_age_hours", 24))
@@ -142,6 +147,8 @@ LOG_POLL_SEC = int(REPORT_CFG.get("log_poll_sec", 5))
 
 LAST_CANDIDATES_REPORT: List[Dict[str, Any]] = []
 SMA_CACHE: Dict[str, Tuple[datetime.datetime, bool]] = {}
+CORP_ACTION_CACHE: Dict[str, Tuple[datetime.datetime, bool, str]] = {}
+CORP_ACTION_CACHE_MAX_AGE_HOURS = 6
 
 # =========================================================
 # STRATEGY INSTANCE
@@ -960,6 +967,88 @@ def check_daily_sma200(symbol: str, period: int = 200, max_age_hours: int = 12) 
         SMA_CACHE[symbol] = (now, False)
         return False
 
+def has_recent_corporate_action(
+    symbol: str,
+    lookback_days: int = CORP_ACTION_LOOKBACK_DAYS,
+    gap_threshold: float = CORP_ACTION_GAP_THRESHOLD,
+    div_pct_threshold: float = CORP_ACTION_DIV_PCT_THRESHOLD,
+) -> Tuple[bool, str]:
+    """Returns (skip_buy, reason).
+
+    Detects three patterns that yfinance auto_adjust does NOT cleanly handle and
+    that fake out the dip-buy signal:
+      1. Stock split within lookback window (rare, but auto_adjust occasionally lags)
+      2. Large special dividend (often paired with spinoffs)
+      3. Unadjusted gap-down at today's open (catches spinoffs + any other surprise)
+    Cached per symbol for CORP_ACTION_CACHE_MAX_AGE_HOURS to avoid hammering yfinance.
+    """
+    now = datetime.datetime.now(datetime.timezone.utc)
+    cached = CORP_ACTION_CACHE.get(symbol)
+    if cached:
+        ts, skip, reason = cached
+        if (now - ts).total_seconds() / 3600.0 <= CORP_ACTION_CACHE_MAX_AGE_HOURS:
+            return skip, reason
+
+    try:
+        yf_sym = symbol.replace(' ', '-')
+        t = yf.Ticker(yf_sym)
+
+        # 1+2: splits & dividends from Ticker.actions
+        try:
+            actions = t.actions
+            if actions is not None and not actions.empty:
+                idx_tz = actions.index.tz
+                cutoff = pd.Timestamp.now(tz=idx_tz) if idx_tz else pd.Timestamp.now()
+                cutoff = cutoff - pd.Timedelta(days=lookback_days)
+                recent = actions[actions.index >= cutoff]
+                for ts_row, row in recent.iterrows():
+                    split_ratio = float(row.get("Stock Splits", 0) or 0)
+                    if split_ratio and split_ratio != 1.0:
+                        reason = f"split {split_ratio:g} on {ts_row.date()}"
+                        CORP_ACTION_CACHE[symbol] = (now, True, reason)
+                        return True, reason
+                    div = float(row.get("Dividends", 0) or 0)
+                    if div > 0:
+                        last_price = 0.0
+                        try:
+                            last_price = float(t.fast_info.get("last_price", 0) or 0)
+                        except Exception:
+                            last_price = 0.0
+                        if last_price > 0 and (div / last_price) > div_pct_threshold:
+                            reason = (f"large dividend ${div:.2f} on {ts_row.date()} "
+                                      f"({div/last_price*100:.1f}% of price)")
+                            CORP_ACTION_CACHE[symbol] = (now, True, reason)
+                            return True, reason
+        except Exception:
+            pass
+
+        # 3: gap-down on raw (unadjusted) daily bars. auto_adjust=False is essential —
+        # adjusted prices would hide the very signal we want to catch.
+        try:
+            hist = t.history(period="7d", interval="1d", auto_adjust=False)
+            if hist is not None and len(hist) >= 2:
+                prev_close = float(hist["Close"].iloc[-2])
+                today_open = float(hist["Open"].iloc[-1])
+                if prev_close > 0 and today_open > 0:
+                    gap = (today_open - prev_close) / prev_close
+                    if gap <= gap_threshold:
+                        reason = (f"gap-down {gap*100:.1f}% "
+                                  f"(open ${today_open:.2f} vs prev close ${prev_close:.2f})")
+                        CORP_ACTION_CACHE[symbol] = (now, True, reason)
+                        return True, reason
+        except Exception:
+            pass
+
+    except Exception as e:
+        log(f"corp-action check failed for {symbol}: {e}", "WARNING")
+        # Don't block the buy on transient yfinance errors; cache short-lived "no skip"
+        CORP_ACTION_CACHE[symbol] = (now, False, "")
+        return False, ""
+
+    CORP_ACTION_CACHE[symbol] = (now, False, "")
+    return False, ""
+
+
 def get_current_price(symbol: str, ib_contract=None, ib_obj: IB = None):
     try:
         yf_symbol = symbol.replace(' ', '-')
@@ -1439,6 +1528,14 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             remaining = int(BUY_COOLDOWN_SEC - (time.time() - last_buy_attempt))
             log(f"BUY-SCAN: SKIP {ib_sym} — cooldown {remaining//60} min po předchozím pokusu", "WARNING")
             return False, candidates_report
+
+        # Corporate-action filter: spinoffy, splity, special dividendy → fake dip signal
+        if USE_CORP_ACTION_FILTER:
+            skip_ca, ca_reason = has_recent_corporate_action(top.symbol)
+            if skip_ca:
+                log(f"BUY-SCAN: SKIP {ib_sym} — corporate action: {ca_reason}", "WARNING")
+                _recent_buy_attempts[ib_sym] = time.time()
+                return False, candidates_report
 
         qty = int((position_size_usd / top.price) // 1)
         est_cost = qty * top.price

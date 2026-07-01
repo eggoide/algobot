@@ -17,6 +17,14 @@ strategy:
   use_sma_filter: false
   sma_period: 200
 
+  # Corporate-action filter — skip BUY if recent split / large dividend / spinoff-like gap.
+  # yfinance auto_adjust řeší splity a běžné dividendy, ale spinoffy (HON → Solstice apod.)
+  # se projeví jako velký gap-down, který strategie chybně čte jako dip-buy signal.
+  use_corp_action_filter: true
+  corp_action_lookback_days: 5         # how far back to scan splits / dividends
+  corp_action_gap_threshold: -0.05     # raw open-vs-prev-close gap that triggers skip
+  corp_action_dividend_pct_threshold: 0.02   # dividend > X% of price = suspicious (special / spinoff)
+
   # Enhanced strategy options (used by EnhancedDipBuyStrategy)
   use_trailing_stop: true
   trailing_stop_pct: 0.03    # sell if price drops 2% from high water mark (only when in profit)
