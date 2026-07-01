@@ -3,12 +3,15 @@
 Automatizovaný trading bot pro **Interactive Brokers (IB)** běžící v Dockeru.
 Projekt využívá **IB Gateway**, **Python (ib_insync)**, **SQLite** pro perzistentní historii obchodů a **statický HTML dashboard** servírovaný přes nginx.
 
+Provoz je rozdělený na dva servery: **paper** (raspberry, větev `main`) pro vývoj a testování, **live** (Oracle cloud, větev `production`) pro reálné obchodování s malým účtem. Detail workflow v sekci [Dva servery: paper × live](#dva-servery-paper--live).
+
 ---
 
 ## Vlastnosti
 
-- Paper trading přes **IB Gateway**
+- **Paper i live trading** přes IB Gateway (rozděleno na dva servery, dvě git větve)
 - **Enhanced strategie** s RSI, MACD, Bollinger Bands, trailing stop, time stop
+- **Corporate-action filtr** — blokuje BUY na titulech s nedávným splitem, spinoffem nebo gap-down ≤ −5 % (chrání proti fake-dip signálům typu HON → Solstice)
 - Backtesting framework s optimalizací parametrů a walk-forward analýzou
 - Perzistentní historie obchodů v **SQLite** (včetně IB order ID, requested price, skutečné commission, fill status)
 - HTML dashboard s PnL, portfoliem a historií + Pause Trading toggle
@@ -18,12 +21,13 @@ Projekt využívá **IB Gateway**, **Python (ib_insync)**, **SQLite** pro perzis
   - Dashboard (nginx)
   - Flask backtest service (`algobot-web`)
   - Heartbeat watchdog (Telegram alert pokud bot přestane updatovat `status.json`)
-- Odolné vůči restartům — perzistovaný state (high-water marks, BUY/SELL cooldowns) + reconciliation IB pozic vs DB při startu
+- Odolné vůči restartům — perzistovaný state (high-water marks, BUY/SELL cooldowns, equity base) + reconciliation IB pozic vs DB při startu
 - **PAPER/LIVE account guard** — abort při mismatchi `TRADING_MODE` env vs IB account prefix (DU* paper / U* live)
 - **NYSE kalendář svátků** přes `pandas_market_calendars` (Memorial Day, Thanksgiving, ranní zavření atd.)
 - **Wait-for-fill** ověření BUY i SELL obchodů přes IB (do DB se zapisuje až po reálném fillu; partial fill se ukládá s reálnou qty)
-- Telegram notifikace s retry (`HTTPAdapter` max_retries=3)
+- Telegram notifikace s retry (`HTTPAdapter` max_retries=3), prefixované `[LIVE]` / `[PAPER]` podle `TRADING_MODE`
 - Unit testy (`tests/`, pytest) pro `indicators.py` a `strategy.py`
+- Reset skript (`scripts/reset_trades.sh`) pro kompletní vyčištění DB a stavu se zálohou
 - Připravené na dlouhodobý běh (server / VPS)
 
 ---
@@ -80,6 +84,9 @@ algobot/
 │   ├── test_strategy.py        # should_exit větve (TP, SL, trailing, time stop)
 │   └── README.md
 │
+├── scripts/
+│   └── reset_trades.sh         # Kompletní čistič DB + stavu (backup do volumes/backups/)
+│
 ├── docker/
 │   ├── bot/Dockerfile
 │   ├── web/Dockerfile          # Flask container (gunicorn)
@@ -113,39 +120,49 @@ Soubor `.env` **nikdy necommituj** – obsahuje citlivé údaje (IB credentials,
 
 ### config.yaml
 
-Hlavní konfigurace strategie v `app/config.yaml`. Klíčové sekce: `capital`, `strategy`, `runtime` (timezone, universe), `backtest`, `report`. Příklad strategy bloku:
+Hlavní konfigurace strategie v `app/config.yaml`. Klíčové sekce: `capital`, `strategy`, `runtime` (timezone, universe), `backtest`, `report`. Aktuální hodnoty na paperu:
 
 ```yaml
 capital:
-  manual_capital_limit: 10000    # Kapitál na obchodování
+  manual_capital_limit: 10000    # Kapitál na obchodování (0 = obchoduje z celého NetLiquidation)
   max_positions: 5               # Max současných pozic
-  fee_usd: 1.0                  # Poplatek za obchod
+  fee_usd: 1.0                  # Poplatek za obchod (fallback, používá se ib fee model)
 
 strategy:
   dip_mode: DAILY               # DAILY / HOURLY referenční cena
-  buy_drop: 0.02                # Nákup při poklesu 2%
-  sell_gain: 0.03               # Prodej při zisku 3%
+  buy_drop: 0.025               # Nákup při poklesu ≥ 2.5% od referenční ceny
+  sell_gain: 0.05               # Take-profit při zisku ≥ 5%
 
   use_stop_loss: true           # Stop-loss aktivní
-  stop_loss: 0.07               # Stop-loss na -7%
+  stop_loss: 0.10               # Stop-loss na -10%
 
-  rsi_limit: 30                 # Nákup jen při RSI < 30
+  rsi_limit: 28                 # Nákup jen při RSI < 28
   rsi_period: 14
+
+  use_sma_filter: false         # SMA 200 filtr (volitelný)
+  sma_period: 200
+
+  # Corporate-action filter — přeskočí BUY na titulech s nedávným splitem, velkou dividendou nebo gap-down ≤ −5 %
+  use_corp_action_filter: true
+  corp_action_lookback_days: 5
+  corp_action_gap_threshold: -0.05
+  corp_action_dividend_pct_threshold: 0.02
 
   # Enhanced strategie
   use_trailing_stop: true       # Trailing stop (prodej při poklesu od maxima)
-  trailing_stop_pct: 0.02       # 2% od high water mark
+  trailing_stop_pct: 0.03       # 3% od high water mark (aktivní jen když je pozice v zisku)
 
-  use_time_stop: true           # Časový stop
-  time_stop_bars: 240           # POZOR: v live běhu se počítá ve wall-clock hodinách (viz Známé limity)
+  use_time_stop: true           # Časový stop — zavřít pozici po N NYSE hodinových barech
+  time_stop_bars: 240           # ≈ 5 obchodních dnů; live i backtest počítá NYSE hodiny (fixed 2026-05-25)
 
-  use_macd: true                # MACD konfirmace signálu
+  use_macd: false               # MACD konfirmace signálu
   use_bollinger: true           # Bollinger Bands konfirmace
   use_volume_filter: false      # Volume filtr (volitelný)
-  use_sma_filter: false         # SMA 200 filtr (volitelný)
 ```
 
 `runtime.universe_mode` (V7) volí mezi `sp100_live` (Wikipedia scrape, survivorship-biased) a `fixed` (pevný blue-chip seznam ze `runtime.fixed_universe`). Default `sp100_live`.
+
+> **Poznámka k live serveru:** Live drží `manual_capital_limit: 0` a `max_positions: 3` jako lokální (uncommitted) změny nad `production` větví — malý reálný účet ($2.4 k) nesnese sizing paperového setupu. Detaily v sekci [Dva servery: paper × live](#dva-servery-paper--live).
 
 ---
 
@@ -338,28 +355,31 @@ python3 run_backtest.py --walk-forward --train-bars 1500 --test-bars 500
 
 ## Strategie
 
-### DipBuy (původní)
+Aktuální nasazení (paper i live) používá `EnhancedDipBuyStrategy`. Prahy odpovídají `app/config.yaml`; níže uvádím live-relevantní hodnoty.
+
+### DipBuy (původní, jen v backtestu pro srovnání)
 
 Jednoduchá mean-reversion strategie:
-- **Nákup**: RSI < 30 AND cena klesla >= 2% od referenční ceny
-- **Prodej**: zisk >= 3% (Take Profit) nebo ztráta >= 7% (Stop Loss)
+- **Nákup**: RSI < `rsi_limit` AND cena klesla ≥ `buy_drop` od referenční ceny
+- **Prodej**: zisk ≥ `sell_gain` (Take Profit) nebo ztráta ≥ `stop_loss` (Stop Loss)
 
-### EnhancedDipBuy (aktuální)
+### EnhancedDipBuy (aktuální produkční)
 
-Vylepšená strategie se scoring systémem a dalšími indikátory:
+Vylepšená strategie se scoring systémem a dalšími indikátory. Konkrétní prahy jsou v `app/config.yaml`.
 
 **Nákupní signál** (všechny podmínky musí platit):
-- RSI < 30 (oversold)
-- Cena klesla >= 2% od referenční ceny
-- MACD histogram se otáčí nahoru (bullish divergence)
+- RSI < 28 (oversold)
+- Cena klesla ≥ 2.5 % od referenční ceny
 - Cena blízko spodního Bollinger Bandu (oversold konfirmace)
-- Vážené skóre ze všech indikátorů určí sílu signálu
+- **BUY workflow filtr**: `has_recent_corporate_action()` přeskočí titul, pokud v posledních 5 dnech proběhl split, byla vyplacena dividenda > 2 % ceny, nebo dnešní open je ≤ −5 % vůči včerejšímu close (spinoff / shock guard)
+- MACD histogram (volitelný, aktuálně `use_macd: false`) a Volume filtr (volitelný) jsou vypnuté — zapíná se v configu
+- Vážené skóre ze všech aktivních indikátorů určí pořadí kandidátů; scan_and_buy vezme top-1 signál
 
 **Prodejní signály** (stačí jeden):
-- **Take Profit**: zisk >= 3%
-- **Stop Loss**: ztráta >= 7%
-- **Trailing Stop**: cena klesla 2% od maxima (jen když v zisku)
-- **Time Stop**: pozice držena déle než `time_stop_bars` (live: wall-clock hodiny, backtest: počet barů — viz Známé limity)
+- **Take Profit**: zisk ≥ 5 %
+- **Stop Loss**: ztráta ≥ 10 %
+- **Trailing Stop**: cena klesla 3 % od HWM (jen když v zisku)
+- **Time Stop**: pozice držena déle než `time_stop_bars` NYSE hodinových barů (~5 obchodních dnů). Live i backtest počítá stejnou jednotku (NYSE hodiny, ne wall-clock)
 
 ---
 
@@ -449,10 +469,16 @@ Validace: replay z live `algobot.db` (Dec 2025 → May 2026, 26 symbolů) vráti
 | **V5** | **Plný refactor `bot.py`** | `bot.py` má ~1650 řádků. `scheduler.py` už vyextrahován; zbývá rozdělit na `ib_client.py`, `position_manager.py`, `buy_scanner.py`, `dashboard_writer.py`, `state.py`. Cíl: `bot.py` < 300 řádků. Hygiena, neblokuje live. | částečně |
 | **bug** | **HWM seeding v `should_exit`** | Unit testy odhalily, že `_high_water_marks` se v `EnhancedDipBuyStrategy.should_exit` nikdy implicitně neseeduje (default == `current_price` → `>` vždy False). Trailing stop funguje jen pokud HWM nasype externí caller nebo state restore. Fix: `>=` v should_exit, nebo explicit seed v `scan_and_buy` po BUY fillu. | TODO |
 
-### Hotovo v sezení 2026-06-05
+### Hotovo po 2026-06-05
 
 | # | Téma | Detail |
 |---|------|--------|
+| **Corp-action filter** | Fake-dip guard (2026-06-30, na live 2026-07-01) | `has_recent_corporate_action()` v `scan_and_buy` blokuje BUY na titulech s nedávným splitem, dividendou > 2 % ceny nebo gap-down ≤ −5 %. Cache 6 h, cooldown 60 min. Trigger: live nákup HON po Solstice spinoffu → −10 % stop-loss. |
+| **Equity base persistence** | Chart Y-axis origin (2026-06-30) | `init_equity_base` spočítá base z IB (`NetLiq − realized − unrealized`) při prvním startu s `manual_capital_limit=0`, uloží do `bot_state.json`. Deposit/withdraw po startu nesune křivku. Když `manual_capital_limit > 0`, base = ta hodnota (paper setup). |
+| **Two-server split** | Paper/main × live/production (2026-07-01) | Live sleduje `production`, paper `main`. Corp-action a další feature commity se merguje `main → production` a live udělá `git pull`. Lokální overrides na live (`manual_capital_limit: 0`, `max_positions: 3`) zůstávají jako uncommitted diff. |
+| **Reset skript** | `scripts/reset_trades.sh` (2026-07-01) | Vyčistí DB + state + dashboard JSONy se zálohou; volitelný restart bota. |
+| **Telegram prefix** | `[LIVE]` / `[PAPER]` (2026-06-30) | `send_telegram_msg` prefixuje zprávy podle `TRADING_MODE`, ať se v jednom kanále nespletou. |
+| **Denní realized PnL fix** | (2026-07-01) | `write_strategy_state_json` sčítá jen `action='SELL'` (dřív mixoval s BUY commissions přes negativní pnl). `log_trade` u BUY teď píše `pnl=0`; provize je v `commission` sloupci. |
 | **B1** | BUY fill verification | `placeOrder` → wait 8s na terminal status → do DB jen reálná `avgFillPrice` + `filled_qty`; partial fill se ukládá; cooldown 60 min v `_recent_buy_attempts`; WARN telegram při nefillu |
 | **B5** | PAPER/LIVE guard | `verify_account_mode(ib)` po každém connect → abort při DU* (paper) vs U* (live) mismatchi vůči `TRADING_MODE` env |
 | **B6** | State perzistence + reconciliation | `save_state` automaticky ukládá `high_water_marks` + `recent_sell_attempts` + `recent_buy_attempts`; `restore_runtime_state` re-hydratuje při startu (expirované cooldowny filtruje); `reconcile_positions` po startup dumpu loguje IB-vs-DB mismatch (+ Telegram WARN) |
@@ -476,6 +502,65 @@ Validace: replay z live `algobot.db` (Dec 2025 → May 2026, 26 symbolů) vráti
 | 1 | **Survivorship bias v backtestu** | I s `universe_mode: fixed` (V7) je fixní seznam jen pragmatický kompromis. Pro skutečně bias-free backtest je potřeba point-in-time historický index list (CRSP nebo placené API). |
 | 2 | **Joby v paměti** | `algobot-web` ukládá historie joů v RAM. Restart kontejneru je smaže. Pro perzistenci: Redis/sqlite. |
 | 3 | **hourly data limit yfinance** | yfinance dává cca 730 dní hourly historie. Pro delší backtesty použij `--interval 1d`. |
+
+---
+
+## Dva servery: paper × live
+
+Provoz je rozdělený na dva stroje, dvě git větve:
+
+| | Paper (vývoj) | Live (produkce) |
+|---|---|---|
+| Stroj | raspberry / lokální | Oracle cloud `152.70.19.143` |
+| Cesta | `/home/eggoide/algobot` | `/home/ubuntu/algobot` |
+| Git větev | `main` | `production` |
+| `.env` | `TRADING_MODE=paper`, `IB_PORT=4002` | `TRADING_MODE=live`, `IB_PORT=4001` |
+| IB účet | `DU*` (paper, ~$1 M) | `U*` (real money, ~$2.4 k) |
+| Lokální overrides v `config.yaml` | žádné | `manual_capital_limit: 0`, `max_positions: 3` — uncommitted, aby paper testovací setup nezapisoval na live |
+
+### Promoce z paperu na live
+
+Když je stabilní stav na `main` (po testech + review), povýší se na `production`:
+
+```bash
+# 1) Paper stroj: fast-forward production → main a push
+git checkout production
+git merge --ff-only main
+git push origin production
+git checkout main
+```
+
+```bash
+# 2) Live stroj: pull production + zachovat lokální capital overrides
+ssh -i ~/.ssh/ssh-key-2026-05-25.key ubuntu@152.70.19.143 "cd algobot && \
+  cp app/config.yaml /tmp/config.yaml.live-preswitch-\$(date +%Y%m%d-%H%M%S) && \
+  git diff app/config.yaml > /tmp/live_config_overrides.patch && \
+  git checkout -- app/config.yaml && \
+  git fetch origin --prune && \
+  git pull && \
+  git apply /tmp/live_config_overrides.patch && \
+  docker compose restart bot"
+```
+
+Compose bind-mountuje `./app:/app`, takže **rebuild není potřeba** — jen `docker compose restart bot` natáhne nový `bot.py`. Rebuild dělej jen když se mění `requirements.txt`, `Dockerfile` nebo cokoli v `docker/`.
+
+### Proč mít zvláštní `production` větev
+
+- Snižuje riziko, že experiment na `main` (config tweak, nedokončený feature, debug log) skončí na reálném účtu při náhodném `git pull` na live.
+- Umožňuje dělat na `main` průběžné drobné commity a promovat je do `production` v dávce až po review.
+- Live nemá žádné vlastní commity, jen uncommitted overrides pro `capital:` blok — každá skutečná změna projde přes `production`.
+
+### Kompletní vyčištění (start od nuly)
+
+Když je potřeba smazat celou obchodní historii a stav bota a začít od nuly, existuje jednorázový skript:
+
+```bash
+./scripts/reset_trades.sh              # interaktivně, ptá se na potvrzení
+./scripts/reset_trades.sh --yes        # bez potvrzení
+./scripts/reset_trades.sh --yes --no-restart   # jen vyčistit, bota nespouštět
+```
+
+Skript zálohuje `algobot.db` (+ WAL/SHM) a `bot_state.json` do `volumes/backups/reset-<timestamp>/`, smaže je, vyčistí dashboard JSONy a restartuje kontejner `bot`. Před spuštěním je nutné zavřít případné otevřené pozice v IB (jinak je reconciliation při startu naimportuje zpět).
 
 ---
 
