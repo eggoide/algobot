@@ -1358,7 +1358,7 @@ def manage_positions_sell_only(conn, ib: IB):
             _recent_sell_attempts[contract.symbol] = time.time()
 
             # Čekej na fill nebo terminální stav (až 8 s)
-            deadline = time.time() + 8.0
+            deadline = time.time() + 20.0
             while time.time() < deadline:
                 ib.sleep(0.5)
                 st = trade.orderStatus.status
