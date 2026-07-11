@@ -53,6 +53,10 @@ REPORT_CFG = CFG.get("report", {})
 IB_IP = os.getenv("IB_HOST", "127.0.0.1")
 IB_PORT = int(os.getenv("IB_PORT", "4002"))
 CLIENT_ID = int(os.getenv("CLIENT_ID", "2"))
+# IB Gateway container needs time to boot + log in after `bot` container starts;
+# suppress the CRITICAL connect alert for this long after startup to avoid a
+# spurious daily alert that self-resolves within seconds.
+IB_STARTUP_GRACE_SEC = int(os.getenv("IB_STARTUP_GRACE_SEC", "180"))
 # Expected trading mode: env > inferred from IB_PORT (4001=live / 4002=paper)
 TRADING_MODE = os.getenv("TRADING_MODE", "live" if IB_PORT == 4001 else "paper").lower()
 
@@ -1623,6 +1627,7 @@ def main_loop():
     ib = IB()
     alert_sent = False
     did_startup_dump = False
+    bot_start_monotonic = time.monotonic()
 
     try:
         now_ny = get_ny_time()
@@ -1690,7 +1695,8 @@ def main_loop():
 
                     except Exception as e:
                         log(f"Chyba spojení s IB: {e}", "ERROR")
-                        if not alert_sent:
+                        in_startup_grace = (time.monotonic() - bot_start_monotonic) < IB_STARTUP_GRACE_SEC
+                        if not alert_sent and not in_startup_grace:
                             send_telegram_msg(f"CRITICAL: Chyba spojení s IB Gateway - {e}")
                             alert_sent = True
 
@@ -1711,7 +1717,7 @@ def main_loop():
                         except Exception:
                             pass
 
-                        countdown_sleep(60, "Retry za:")
+                        countdown_sleep(10 if in_startup_grace else 60, "Retry za:")
                         continue
 
                 state = load_state()
