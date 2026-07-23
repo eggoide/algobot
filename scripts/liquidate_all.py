@@ -20,7 +20,7 @@ from ib_insync import IB, Stock, MarketOrder
 
 IB_HOST = os.getenv("IB_HOST", "ib-gateway")
 IB_PORT = int(os.getenv("IB_PORT", "4002"))
-CLIENT_ID = 9  # záměrně jiný než bot (2)
+CLIENT_ID = 13  # záměrně jiný než bot (2)
 FILL_TIMEOUT_SEC = 45
 
 
@@ -63,8 +63,9 @@ def main() -> int:
         print("\nOdesílám market příkazy…")
         trades = []
         for sym, action, abs_qty, _ in plan:
+            # Bez qualifyContracts — bot.py zadává příkazy stejně přímo a qualify
+            # se u SMART/USD při otevření trhu umí zaseknout bez timeoutu.
             contract = Stock(sym, "SMART", "USD")
-            ib.qualifyContracts(contract)
             order = MarketOrder(action, abs_qty, tif="DAY")
             trades.append((sym, ib.placeOrder(contract, order)))
             print(f"  -> {action} {abs_qty} {sym} odesláno")
