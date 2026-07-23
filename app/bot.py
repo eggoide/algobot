@@ -1598,62 +1598,73 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log(f"BUY-SCAN: žádný signál (kandidátů do reportu {len(candidates_report)})")
             return False, candidates_report
 
-        # Take best signal
-        top = signals[0]
-        ib_sym = yf_to_ib_symbol(top.symbol)
-
-        has_pos = any(p.contract.symbol == ib_sym for p in current_positions)
+        # Iteruj přes signály seřazené podle strength — pokud top spadne na filtru
+        # (RSI floor, corp-action, earnings, cooldown, has_pos, qty, cash), zkus dalšího.
         try:
-            has_ord = any(t.contract.symbol == ib_sym and t.order.action == 'BUY' for t in ib.openTrades())
+            open_buy_symbols = {t.contract.symbol for t in ib.openTrades() if t.order.action == 'BUY'}
         except Exception:
-            has_ord = False
+            open_buy_symbols = set()
+        held_symbols = {p.contract.symbol for p in current_positions}
 
-        if has_pos or has_ord:
-            log(f"BUY-SCAN: SKIP {ib_sym} už v portfoliu nebo v openOrders", "WARNING")
-            return False, candidates_report
+        top = None
+        ib_sym = None
+        qty = 0
+        est_cost = 0.0
 
-        # Cooldown: po posledním (i neúspěšném) BUY pokusu nezkoušej ten samý symbol
-        last_buy_attempt = _recent_buy_attempts.get(ib_sym, 0.0)
-        if time.time() - last_buy_attempt < BUY_COOLDOWN_SEC:
-            remaining = int(BUY_COOLDOWN_SEC - (time.time() - last_buy_attempt))
-            log(f"BUY-SCAN: SKIP {ib_sym} — cooldown {remaining//60} min po předchozím pokusu", "WARNING")
-            return False, candidates_report
+        for cand in signals:
+            cand_ib_sym = yf_to_ib_symbol(cand.symbol)
 
-        # RSI floor: extrémně přeprodané tituly (RSI < floor) = falling knife.
-        # Levný check (RSI už máme ze signálu), proto první.
-        if USE_RSI_FLOOR:
-            entry_rsi = top.indicators.get("rsi")
-            if entry_rsi is not None and entry_rsi < RSI_FLOOR:
-                log(f"BUY-SCAN: SKIP {ib_sym} — RSI {entry_rsi:.1f} < floor {RSI_FLOOR:.0f} "
-                    f"(falling knife)", "WARNING")
-                _recent_buy_attempts[ib_sym] = time.time()
-                return False, candidates_report
+            if cand_ib_sym in held_symbols or cand_ib_sym in open_buy_symbols:
+                log(f"BUY-SCAN: SKIP {cand_ib_sym} už v portfoliu nebo v openOrders", "WARNING")
+                continue
 
-        # Corporate-action filter: spinoffy, splity, special dividendy → fake dip signal
-        if USE_CORP_ACTION_FILTER:
-            skip_ca, ca_reason = has_recent_corporate_action(top.symbol)
-            if skip_ca:
-                log(f"BUY-SCAN: SKIP {ib_sym} — corporate action: {ca_reason}", "WARNING")
-                _recent_buy_attempts[ib_sym] = time.time()
-                return False, candidates_report
+            last_buy_attempt = _recent_buy_attempts.get(cand_ib_sym, 0.0)
+            if time.time() - last_buy_attempt < BUY_COOLDOWN_SEC:
+                remaining = int(BUY_COOLDOWN_SEC - (time.time() - last_buy_attempt))
+                log(f"BUY-SCAN: SKIP {cand_ib_sym} — cooldown {remaining//60} min po předchozím pokusu", "WARNING")
+                continue
 
-        # Earnings filter: nákup těsně před/po výsledovce = event risk (viz WMT, ACN, DE, COST)
-        if USE_EARNINGS_FILTER:
-            skip_earn, earn_reason = has_upcoming_earnings(top.symbol)
-            if skip_earn:
-                log(f"BUY-SCAN: SKIP {ib_sym} — {earn_reason}", "WARNING")
-                _recent_buy_attempts[ib_sym] = time.time()
-                return False, candidates_report
+            if USE_RSI_FLOOR:
+                entry_rsi = cand.indicators.get("rsi")
+                if entry_rsi is not None and entry_rsi < RSI_FLOOR:
+                    log(f"BUY-SCAN: SKIP {cand_ib_sym} — RSI {entry_rsi:.1f} < floor {RSI_FLOOR:.0f} "
+                        f"(falling knife)", "WARNING")
+                    _recent_buy_attempts[cand_ib_sym] = time.time()
+                    continue
 
-        qty = int((position_size_usd / top.price) // 1)
-        est_cost = qty * top.price
+            if USE_CORP_ACTION_FILTER:
+                skip_ca, ca_reason = has_recent_corporate_action(cand.symbol)
+                if skip_ca:
+                    log(f"BUY-SCAN: SKIP {cand_ib_sym} — corporate action: {ca_reason}", "WARNING")
+                    _recent_buy_attempts[cand_ib_sym] = time.time()
+                    continue
 
-        if qty <= 0:
-            log("BUY-SCAN: SKIP qty=0", "WARNING")
-            return False, candidates_report
+            if USE_EARNINGS_FILTER:
+                skip_earn, earn_reason = has_upcoming_earnings(cand.symbol)
+                if skip_earn:
+                    log(f"BUY-SCAN: SKIP {cand_ib_sym} — {earn_reason}", "WARNING")
+                    _recent_buy_attempts[cand_ib_sym] = time.time()
+                    continue
 
-        if account_cash < est_cost:
-            log(f"BUY-SCAN: SKIP nedostatek hotovosti (cash ${account_cash:.0f} < est ${est_cost:.0f})", "WARNING")
+            cand_qty = int((position_size_usd / cand.price) // 1)
+            cand_cost = cand_qty * cand.price
+
+            if cand_qty <= 0:
+                log(f"BUY-SCAN: SKIP {cand_ib_sym} qty=0 (price ${cand.price:.2f} > slot ${position_size_usd:.0f})", "WARNING")
+                continue
+
+            if account_cash < cand_cost:
+                log(f"BUY-SCAN: SKIP {cand_ib_sym} nedostatek hotovosti (cash ${account_cash:.0f} < est ${cand_cost:.0f})", "WARNING")
+                continue
+
+            top = cand
+            ib_sym = cand_ib_sym
+            qty = cand_qty
+            est_cost = cand_cost
+            break
+
+        if top is None:
+            log(f"BUY-SCAN: všech {len(signals)} signálů zafiltrováno — žádný BUY")
             return False, candidates_report
 
         log(f"BUY {ib_sym} | {top.reason} | qty={qty}")

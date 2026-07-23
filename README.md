@@ -383,7 +383,7 @@ Vylepšená strategie se scoring systémem a dalšími indikátory. Konkrétní 
 - Cena blízko spodního Bollinger Bandu (oversold konfirmace)
 - **BUY workflow filtr**: `has_recent_corporate_action()` přeskočí titul, pokud v posledních 5 dnech proběhl split, byla vyplacena dividenda > 2 % ceny, nebo dnešní open je ≤ −5 % vůči včerejšímu close (spinoff / shock guard)
 - MACD histogram (volitelný, aktuálně `use_macd: false`) a Volume filtr (volitelný) jsou vypnuté — zapíná se v configu
-- Vážené skóre ze všech aktivních indikátorů určí pořadí kandidátů; scan_and_buy vezme top-1 signál
+- Vážené skóre ze všech aktivních indikátorů určí pořadí kandidátů; `scan_and_buy` iteruje od nejsilnějšího dolů — pokud top spadne na filtru (RSI floor, corp-action, earnings, cooldown, has_pos, qty, cash), zkusí dalšího v pořadí, dokud jeden neprojde vším
 
 **Prodejní signály** (stačí jeden):
 - **Take Profit**: zisk ≥ 5 %
