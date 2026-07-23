@@ -1378,6 +1378,12 @@ def manage_positions_sell_only(conn, ib: IB):
 
     log(f"SELL-CHECK: pozic {len(current_positions)} (strategie: {STRATEGY.name})")
 
+    # Dashboard v2 pause toggle — při pauze se neodesílají prodeje (ani SL/time-stop),
+    # portfolio se ale dál zobrazuje. Pozor: pauza tím pozastaví i ochranné exity.
+    paused = bool(read_control().get("paused"))
+    if paused:
+        log("SELL-CHECK: obchodování PAUSOVÁNO z dashboardu — prodeje pozastaveny (jen zobrazuji portfolio)")
+
     for pos in current_positions:
         contract = pos.contract
         curr_price = get_current_price(contract.symbol, contract, ib)
@@ -1403,6 +1409,17 @@ def manage_positions_sell_only(conn, ib: IB):
 
         reason = exit_signal.reason if exit_signal else ""
         log(f"{contract.symbol} PnL {pnl_pct*100:+.2f}% (Cena {curr_price:.2f}, hold {holding_bars}h){' -> ' + reason if reason else ''}")
+
+        if exit_signal and paused:
+            log(f"{contract.symbol} SELL SKIP — pauza z dashboardu (signál: {reason})")
+            portfolio_data.append({
+                'symbol': contract.symbol,
+                'qty': pos.position,
+                'avgCost': pos.avgCost,
+                'marketPrice': curr_price,
+                'pnl_pct': pnl_pct
+            })
+            continue
 
         if exit_signal:
             # Cooldown: pokud jsme se v posledních SELL_COOLDOWN_SEC pokusili prodat
