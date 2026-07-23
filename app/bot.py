@@ -853,6 +853,10 @@ def write_strategy_state_json(conn) -> None:
             "rsi_limit": RSI_LIMIT,
             "trailing_stop_pct": float(STRAT.get("trailing_stop_pct", 0.0)) if STRAT.get("use_trailing_stop") else None,
             "time_stop_bars": int(STRAT.get("time_stop_bars", 0)) if STRAT.get("use_time_stop") else None,
+            "rsi_floor": RSI_FLOOR if USE_RSI_FLOOR else None,
+            "earnings_filter": (f"-{EARNINGS_LOOKBACK_DAYS}/+{EARNINGS_LOOKAHEAD_DAYS}d"
+                                if USE_EARNINGS_FILTER else None),
+            "corp_action_filter": bool(USE_CORP_ACTION_FILTER),
             "dip_mode": DIP_MODE,
         },
     }
