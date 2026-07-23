@@ -12,6 +12,8 @@ Provoz je rozdělený na dva servery: **paper** (raspberry, větev `main`) pro v
 - **Paper i live trading** přes IB Gateway (rozděleno na dva servery, dvě git větve)
 - **Enhanced strategie** s RSI, MACD, Bollinger Bands, trailing stop, time stop
 - **Corporate-action filtr** — blokuje BUY na titulech s nedávným splitem, spinoffem nebo gap-down ≤ −5 % (chrání proti fake-dip signálům typu HON → Solstice)
+- **Earnings filtr** — blokuje BUY, pokud jsou čtvrtletní výsledky na spadnutí (default −1 až +7 dní); dip před earnings = koupě event-risku (viz analýza největších SL ztrát)
+- **RSI floor** — blokuje BUY při extrémně přeprodaném RSI (< 15), tzv. falling knife; historicky 50% win rate oproti 93 % v pásmu RSI 25–28
 - Backtesting framework s optimalizací parametrů a walk-forward analýzou
 - Perzistentní historie obchodů v **SQLite** (včetně IB order ID, requested price, skutečné commission, fill status)
 - HTML dashboard s PnL, portfoliem a historií + Pause Trading toggle
@@ -139,6 +141,9 @@ strategy:
   rsi_limit: 28                 # Nákup jen při RSI < 28
   rsi_period: 14
 
+  use_rsi_floor: true           # RSI floor — přeskočí BUY při extrémně přeprodaném RSI (falling knife)
+  rsi_floor: 15                 # Dolní hranice RSI; pod ní se nenakupuje
+
   use_sma_filter: false         # SMA 200 filtr (volitelný)
   sma_period: 200
 
@@ -147,6 +152,11 @@ strategy:
   corp_action_lookback_days: 5
   corp_action_gap_threshold: -0.05
   corp_action_dividend_pct_threshold: 0.02
+
+  # Earnings filter — přeskočí BUY v okně kolem čtvrtletních výsledků (event risk)
+  use_earnings_filter: true
+  earnings_lookahead_days: 7    # blokuj BUY, pokud jsou výsledky v následujících X dnech
+  earnings_lookback_days: 1     # ... nebo max X dní zpět
 
   # Enhanced strategie
   use_trailing_stop: true       # Trailing stop (prodej při poklesu od maxima)

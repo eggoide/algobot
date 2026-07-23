@@ -120,6 +120,9 @@ STOP_LOSS = float(STRAT.get("stop_loss", 0.15))
 RSI_LIMIT = float(STRAT.get("rsi_limit", 30))
 RSI_PERIOD = int(STRAT.get("rsi_period", 14))
 
+USE_RSI_FLOOR = bool(STRAT.get("use_rsi_floor", True))
+RSI_FLOOR = float(STRAT.get("rsi_floor", 15))
+
 USE_SMA_FILTER = bool(STRAT.get("use_sma_filter", False))
 SMA_PERIOD = int(STRAT.get("sma_period", 200))
 
@@ -127,6 +130,10 @@ USE_CORP_ACTION_FILTER = bool(STRAT.get("use_corp_action_filter", True))
 CORP_ACTION_LOOKBACK_DAYS = int(STRAT.get("corp_action_lookback_days", 5))
 CORP_ACTION_GAP_THRESHOLD = float(STRAT.get("corp_action_gap_threshold", -0.05))
 CORP_ACTION_DIV_PCT_THRESHOLD = float(STRAT.get("corp_action_dividend_pct_threshold", 0.02))
+
+USE_EARNINGS_FILTER = bool(STRAT.get("use_earnings_filter", True))
+EARNINGS_LOOKAHEAD_DAYS = int(STRAT.get("earnings_lookahead_days", 7))
+EARNINGS_LOOKBACK_DAYS = int(STRAT.get("earnings_lookback_days", 1))
 
 NYC_TZ = pytz.timezone(str(RUNTIME.get("timezone", "US/Eastern")))
 SP100_CACHE_FILE = str(RUNTIME.get("sp100_cache_file", "sp100_tickers_cache.txt"))
@@ -153,6 +160,8 @@ LAST_CANDIDATES_REPORT: List[Dict[str, Any]] = []
 SMA_CACHE: Dict[str, Tuple[datetime.datetime, bool]] = {}
 CORP_ACTION_CACHE: Dict[str, Tuple[datetime.datetime, bool, str]] = {}
 CORP_ACTION_CACHE_MAX_AGE_HOURS = 6
+EARNINGS_CACHE: Dict[str, Tuple[datetime.datetime, bool, str]] = {}
+EARNINGS_CACHE_MAX_AGE_HOURS = 12
 
 # =========================================================
 # STRATEGY INSTANCE
@@ -748,9 +757,11 @@ def write_equity_curve_json(conn) -> None:
         dates, vals = [], []
 
     base = get_equity_base()
-    points = []
     peak_equity = base
     max_dd_pct = 0.0
+    # Dedup by timestamp: lightweight-charts requires strictly ascending time.
+    # Keep last cum_pnl per unique ts (rows arrive ordered).
+    by_ts: "dict[str, dict]" = {}
     for d, v in zip(dates, vals):
         cum_pnl = float(v or 0.0)
         equity = base + cum_pnl
@@ -760,18 +771,18 @@ def write_equity_curve_json(conn) -> None:
         if dd_pct < max_dd_pct:
             max_dd_pct = dd_pct
         roi_pct = (cum_pnl / base) * 100.0 if base > 0 else 0.0
-        # date string from db is ISO-ish; ensure parseable
         try:
             iso = datetime.datetime.fromisoformat(d.replace(" ", "T")[:19]).isoformat()
         except Exception:
             iso = d
-        points.append({
+        by_ts[iso] = {
             "t": iso,
             "equity": round(equity, 2),
             "cumulative_pnl": round(cum_pnl, 2),
             "drawdown_pct": round(dd_pct, 3),
             "roi_pct": round(roi_pct, 3),
-        })
+        }
+    points = list(by_ts.values())
 
     payload = {
         "ts": datetime.datetime.now().isoformat(timespec="seconds"),
@@ -1050,6 +1061,77 @@ def has_recent_corporate_action(
         return False, ""
 
     CORP_ACTION_CACHE[symbol] = (now, False, "")
+    return False, ""
+
+
+def has_upcoming_earnings(
+    symbol: str,
+    lookahead_days: int = EARNINGS_LOOKAHEAD_DAYS,
+    lookback_days: int = EARNINGS_LOOKBACK_DAYS,
+) -> Tuple[bool, str]:
+    """Returns (skip_buy, reason).
+
+    Blocks a BUY when a quarterly earnings report falls within
+    [today - lookback_days, today + lookahead_days]. Dip-buying into an earnings
+    event is buying event risk — historically the source of several of the largest
+    stop-loss losses (WMT, ACN, DE, COST). Fail-open: transient yfinance errors do
+    NOT block the buy. Cached per symbol for EARNINGS_CACHE_MAX_AGE_HOURS.
+    """
+    now = datetime.datetime.now(datetime.timezone.utc)
+    cached = EARNINGS_CACHE.get(symbol)
+    if cached:
+        ts, skip, reason = cached
+        if (now - ts).total_seconds() / 3600.0 <= EARNINGS_CACHE_MAX_AGE_HOURS:
+            return skip, reason
+
+    try:
+        yf_sym = symbol.replace(' ', '-')
+        t = yf.Ticker(yf_sym)
+        today = datetime.date.today()
+        dates = []
+
+        # Primary source: explicit earnings dates (past + future).
+        try:
+            ed = t.get_earnings_dates(limit=16)
+            if ed is not None and not ed.empty:
+                for idx in ed.index:
+                    try:
+                        dates.append(pd.Timestamp(idx).tz_localize(None).date()
+                                     if pd.Timestamp(idx).tzinfo else pd.Timestamp(idx).date())
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
+        # Fallback: calendar dict (only forward-looking, but better than nothing).
+        if not dates:
+            try:
+                cal = t.calendar
+                if isinstance(cal, dict):
+                    ed_list = cal.get("Earnings Date") or []
+                    if not isinstance(ed_list, (list, tuple)):
+                        ed_list = [ed_list]
+                    for d in ed_list:
+                        try:
+                            dates.append(pd.Timestamp(d).date())
+                        except Exception:
+                            continue
+            except Exception:
+                pass
+
+        for d in dates:
+            delta = (d - today).days
+            if -lookback_days <= delta <= lookahead_days:
+                reason = f"earnings {d} ({delta:+d}d)"
+                EARNINGS_CACHE[symbol] = (now, True, reason)
+                return True, reason
+
+    except Exception as e:
+        log(f"earnings check failed for {symbol}: {e}", "WARNING")
+        EARNINGS_CACHE[symbol] = (now, False, "")
+        return False, ""
+
+    EARNINGS_CACHE[symbol] = (now, False, "")
     return False, ""
 
 
@@ -1533,11 +1615,29 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
             log(f"BUY-SCAN: SKIP {ib_sym} — cooldown {remaining//60} min po předchozím pokusu", "WARNING")
             return False, candidates_report
 
+        # RSI floor: extrémně přeprodané tituly (RSI < floor) = falling knife.
+        # Levný check (RSI už máme ze signálu), proto první.
+        if USE_RSI_FLOOR:
+            entry_rsi = top.indicators.get("rsi")
+            if entry_rsi is not None and entry_rsi < RSI_FLOOR:
+                log(f"BUY-SCAN: SKIP {ib_sym} — RSI {entry_rsi:.1f} < floor {RSI_FLOOR:.0f} "
+                    f"(falling knife)", "WARNING")
+                _recent_buy_attempts[ib_sym] = time.time()
+                return False, candidates_report
+
         # Corporate-action filter: spinoffy, splity, special dividendy → fake dip signal
         if USE_CORP_ACTION_FILTER:
             skip_ca, ca_reason = has_recent_corporate_action(top.symbol)
             if skip_ca:
                 log(f"BUY-SCAN: SKIP {ib_sym} — corporate action: {ca_reason}", "WARNING")
+                _recent_buy_attempts[ib_sym] = time.time()
+                return False, candidates_report
+
+        # Earnings filter: nákup těsně před/po výsledovce = event risk (viz WMT, ACN, DE, COST)
+        if USE_EARNINGS_FILTER:
+            skip_earn, earn_reason = has_upcoming_earnings(top.symbol)
+            if skip_earn:
+                log(f"BUY-SCAN: SKIP {ib_sym} — {earn_reason}", "WARNING")
                 _recent_buy_attempts[ib_sym] = time.time()
                 return False, candidates_report
 

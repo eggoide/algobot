@@ -14,6 +14,12 @@ strategy:
   rsi_limit: 28
   rsi_period: 14
 
+  # RSI floor — extrémně přeprodané tituly (RSI < floor) jsou "falling knife": obvykle
+  # za tak hlubokým oversold stojí fundamentální problém, ne dočasný dip.
+  # Analýza 2026-07-23 (48 obchodů): RSI 25–28 => 93 % win, RSI < 15 => jen 50 % win.
+  use_rsi_floor: true
+  rsi_floor: 15                        # neBUYuj, pokud je vstupní RSI pod touto hodnotou
+
   use_sma_filter: false
   sma_period: 200
 
@@ -25,12 +31,20 @@ strategy:
   corp_action_gap_threshold: -0.05     # raw open-vs-prev-close gap that triggers skip
   corp_action_dividend_pct_threshold: 0.02   # dividend > X% of price = suspicious (special / spinoff)
 
+  # Earnings filter — skip BUY, pokud je čtvrtletní výsledovka na spadnutí (nebo právě proběhla).
+  # Dip před earnings = koupě event-risku; analýza 2026-07-23 ukázala, že 4 z 8 největších
+  # SL ztrát (WMT, ACN, DE, COST) byly nákupy v okně výsledků. Používá yfinance kalendář,
+  # fail-open při chybě (výpadek dat BUY neblokuje). Cache 12 h.
+  use_earnings_filter: true
+  earnings_lookahead_days: 7           # blokuj BUY, pokud jsou výsledky v následujících X dnech
+  earnings_lookback_days: 1            # ... nebo max X dní zpět (čerstvý post-earnings gap)
+
   # Enhanced strategy options (used by EnhancedDipBuyStrategy)
   use_trailing_stop: true
   trailing_stop_pct: 0.03    # sell if price drops 2% from high water mark (only when in profit)
 
   use_time_stop: true
-  time_stop_bars: 240        # close position after ~5 trading days (hourly bars)
+  time_stop_bars: 120        # close position after ~5 trading days (hourly bars)
 
   use_macd: false
   macd_fast: 12

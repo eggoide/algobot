@@ -105,16 +105,17 @@ def cumulative_pnl_series(conn: sqlite3.Connection) -> Tuple[List[str], List[flo
     rows = conn.execute(
         """
         SELECT ts,
-               SUM(pnl) OVER (ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum_pnl
+               SUM(CASE WHEN action='SELL' THEN pnl ELSE 0 END)
+                 OVER (ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum_pnl
         FROM trades
-        ORDER BY ts
+        ORDER BY ts, id
         """
     ).fetchall()
 
     dates: List[str] = []
     values: List[float] = []
     for r in rows:
-        dates.append(r["ts"].replace("T", " ")[0:16])
+        dates.append(r["ts"].replace("T", " ")[0:19])
         values.append(float(r["cum_pnl"] or 0.0))
     return dates, values
 
