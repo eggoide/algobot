@@ -106,8 +106,10 @@ FEE = float(CAPITAL.get("fee_usd", 1.0))
 SELL_COOLDOWN_SEC = 30 * 60
 _recent_sell_attempts: Dict[str, float] = {}
 
-# Anti-duplicate BUY: cooldown per symbol after any buy attempt (filled or not)
-BUY_COOLDOWN_SEC = 60 * 60
+# Anti-duplicate BUY: cooldown per symbol after any buy attempt (filled or not).
+# Musí být kratší než buy-scan cyklus (hodinový, v :31), jinak by 3600 s cooldown
+# vždy o pár sekund přerostl do dalšího cyklu a blokoval symbol 2 hodiny.
+BUY_COOLDOWN_SEC = 55 * 60
 _recent_buy_attempts: Dict[str, float] = {}
 
 DIP_MODE = str(STRAT.get("dip_mode", "DAILY")).upper()
@@ -1629,21 +1631,18 @@ def scan_and_buy(conn, ib: IB, account_cash: float, portfolio_equity: float):
                 if entry_rsi is not None and entry_rsi < RSI_FLOOR:
                     log(f"BUY-SCAN: SKIP {cand_ib_sym} — RSI {entry_rsi:.1f} < floor {RSI_FLOOR:.0f} "
                         f"(falling knife)", "WARNING")
-                    _recent_buy_attempts[cand_ib_sym] = time.time()
                     continue
 
             if USE_CORP_ACTION_FILTER:
                 skip_ca, ca_reason = has_recent_corporate_action(cand.symbol)
                 if skip_ca:
                     log(f"BUY-SCAN: SKIP {cand_ib_sym} — corporate action: {ca_reason}", "WARNING")
-                    _recent_buy_attempts[cand_ib_sym] = time.time()
                     continue
 
             if USE_EARNINGS_FILTER:
                 skip_earn, earn_reason = has_upcoming_earnings(cand.symbol)
                 if skip_earn:
                     log(f"BUY-SCAN: SKIP {cand_ib_sym} — {earn_reason}", "WARNING")
-                    _recent_buy_attempts[cand_ib_sym] = time.time()
                     continue
 
             cand_qty = int((position_size_usd / cand.price) // 1)
